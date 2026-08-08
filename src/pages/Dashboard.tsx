@@ -231,7 +231,7 @@ export default function Dashboard() {
           <StatItem
             icon={Crown}
             value={adminStats.eBoard}
-            label={adminStats.eBoard === 1 ? "E-Board Member" : "E-Board Members"}
+            label={adminStats.eBoard === 1 ? "Admin" : "Admins"}
             link="/members"
           />
         </div>

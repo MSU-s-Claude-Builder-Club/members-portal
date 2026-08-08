@@ -212,7 +212,7 @@ export const PersonCard = ({
                                                 className="font-mono text-xs uppercase tracking-[0.08em]"
                                             >
                                                 <Crown className="h-4 w-4" />
-                                                E-Board
+                                                Admin
                                             </DropdownMenuItem>
                                         </DropdownMenuSubContent>
                                     </DropdownMenuSub>
