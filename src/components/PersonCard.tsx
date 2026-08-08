@@ -10,7 +10,7 @@ import {
     DropdownMenuSubTrigger,
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { Trophy, Mail, GraduationCap, Crown, Users, Award, Settings, UserMinus, Ban, ArrowBigUpDashIcon } from 'lucide-react';
+import { Mail, GraduationCap, Crown, Users, Award, Settings, UserMinus, Ban, ArrowBigUpDashIcon } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/database.types';
 import type { AppRole } from '@/contexts/AuthContext';
 
@@ -135,7 +135,7 @@ export const PersonCard = ({
             </div>
 
             {/* Meta row */}
-            <div className="mt-4 flex flex-1 items-end justify-between gap-3 text-xs">
+            <div className="mt-4 flex flex-1 items-end gap-3 text-xs">
                 {person.class_year ? (
                     <span className="flex items-center gap-1.5 text-muted-foreground transition-colors duration-200 group-hover:text-page/60">
                         <GraduationCap className="h-3.5 w-3.5 shrink-0" />
@@ -147,12 +147,6 @@ export const PersonCard = ({
                         No class year
                     </span>
                 )}
-                <span className="flex items-center gap-1.5 text-muted-foreground transition-colors duration-200 group-hover:text-page/60">
-                    <Trophy className="h-3.5 w-3.5 shrink-0" />
-                    <span className="font-mono text-sm font-semibold tabular-nums text-foreground transition-colors duration-200 group-hover:text-page">
-                        {person.points}
-                    </span>
-                </span>
             </div>
 
             {/* Footer */}

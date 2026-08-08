@@ -30,7 +30,6 @@ import {
   Users,
   LogOut,
   Settings,
-  Trophy,
   UserPlus,
   ChevronUp,
   TabletSmartphone
@@ -273,12 +272,6 @@ const AppSidebar = ({
                   </p>
                   <div className="mt-1 flex items-center gap-3">
                     <UserBadge className="shrink-0 whitespace-nowrap px-2 py-0 font-mono text-[10px] tracking-[0.08em]" />
-                    {profile && (
-                      <span className="flex items-center gap-1 font-mono text-xs tabular-nums text-muted-foreground">
-                        <Trophy className="h-3 w-3" aria-hidden="true" />
-                        <span className="font-medium">{profile.points}</span>
-                      </span>
-                    )}
                   </div>
                 </div>
                 <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" />

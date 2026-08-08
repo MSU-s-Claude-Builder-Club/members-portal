@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/popover';
 import { DetailModal } from '@/components/modals/DetailModal';
 import { EditModal } from '@/components/modals/EditModal';
-import { Plus, Calendar as CalendarIcon, MapPin, Users, Trophy, Eye, Edit, QrCode, Clock, MailCheck, X, CheckCircle, Mail } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, MapPin, Users, Eye, Edit, QrCode, Clock, MailCheck, X, CheckCircle, Mail } from 'lucide-react';
 import { FaGoogle, FaApple } from 'react-icons/fa';
 import { format } from 'date-fns';
 import { cn, escapeCsv } from '@/lib/utils';
@@ -308,15 +308,6 @@ const Events = () => {
       toast({
         title: 'Required Field Missing',
         description: 'Please enter a location',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (points < 0) {
-      toast({
-        title: 'Invalid Value',
-        description: 'Points cannot be negative',
         variant: 'destructive',
       });
       return;
@@ -820,15 +811,6 @@ const Events = () => {
               </>
             )}
 
-            {event.points > 0 && (
-              <>
-                <span aria-hidden="true" className="text-grey-3">·</span>
-                <span className="inline-flex items-center gap-1.5">
-                  <Trophy className="h-3.5 w-3.5 shrink-0" />
-                  +{event.points} points
-                </span>
-              </>
-            )}
           </div>
 
           {/* Capacity — tabular receipt + square progress bar */}
@@ -1143,17 +1125,6 @@ const Events = () => {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="points" required>Points</Label>
-            <Input
-              id="points"
-              type="number"
-              value={points}
-              onChange={(e) => setPoints(parseInt(e.target.value) || 0)}
-              min={0}
-            />
-          </div>
-
           {rsvpRequired && (
             <div className="space-y-2">
               <Label htmlFor="maxAttendance" required>Max Attendance</Label>
@@ -1361,19 +1332,6 @@ const Events = () => {
               icon: <MapPin className="h-4 w-4" />,
               content: modalState.selectedItem.location,
             },
-            ...(modalState.selectedItem.points > 0
-              ? [
-                {
-                  title: 'Points Reward',
-                  icon: <Trophy className="h-4 w-4" />,
-                  content: (
-                    <span className="font-mono font-semibold tabular-nums text-primary">
-                      +{modalState.selectedItem.points} points
-                    </span>
-                  ),
-                },
-              ]
-              : []),
             ...(modalState.selectedItem.description
               ? [
                 {

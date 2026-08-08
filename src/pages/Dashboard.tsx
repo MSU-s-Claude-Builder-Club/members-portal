@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
-  Trophy,
   Calendar,
   FolderKanban,
   BookOpen,
@@ -241,14 +240,9 @@ export default function Dashboard() {
 
     // Everyone else shows personal stats (from AuthContext)
     return (
-      <div className="grid grid-cols-2 pl-px pt-px lg:grid-cols-4">
+      <div className="grid grid-cols-2 pl-px pt-px lg:grid-cols-3">
         <StatItem
-          icon={Trophy}
           emphasis
-          value={profile?.points || 0}
-          label="Points"
-        />
-        <StatItem
           icon={FolderKanban}
           value={
             userProjects.inProgress.length > 0
@@ -343,7 +337,6 @@ export default function Dashboard() {
                 >
                   <div className="flex items-center justify-between gap-2">
                     <p className="min-w-0 truncate font-sans text-sm font-semibold text-foreground">{event.name}</p>
-                    {event.points > 0 && <Badge variant="default" className="shrink-0">+{event.points}</Badge>}
                   </div>
                   <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs text-muted-foreground">
                     <span className="flex items-center gap-1.5 tabular-nums">

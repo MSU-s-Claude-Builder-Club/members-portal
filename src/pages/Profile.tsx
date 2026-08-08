@@ -605,16 +605,10 @@ const Profile = () => {
               </div>
 
               {/* Stats bento — hairline-collapsed cells, ONE primary emphasis */}
-              <div className="grid grid-cols-3 divide-x divide-border border-t border-border">
-                <div className="p-4">
-                  <p className="font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Points</p>
-                  <p className="mt-1 font-sans text-2xl font-bold tracking-[-0.02em] tabular-nums text-primary">
-                    {profile.points}
-                  </p>
-                </div>
+              <div className="grid grid-cols-2 divide-x divide-border border-t border-border">
                 <div className="p-4">
                   <p className="font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Term</p>
-                  <p className="mt-1 font-sans text-2xl font-bold tracking-[-0.02em] tabular-nums">
+                  <p className="mt-1 font-sans text-2xl font-bold tracking-[-0.02em] tabular-nums text-primary">
                     {profile.term_joined || '—'}
                   </p>
                 </div>
@@ -800,7 +794,7 @@ const Profile = () => {
               <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-destructive">Danger zone</p>
               <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <p className="max-w-[60ch] text-sm text-muted-foreground">
-                  Permanently delete your account, your uploaded files, and your points. This cannot be undone.
+                  Permanently delete your account and your uploaded files. This cannot be undone.
                 </p>
                 <AlertDialog open={showDeleteDialog} onOpenChange={(open) => {
                   setShowDeleteDialog(open);
@@ -834,7 +828,6 @@ const Profile = () => {
                             You will lose:
                           </p>
                           <ol className="text-sm space-y-1 text-muted-foreground ml-4">
-                            <li className="list-decimal">All your points ({profile?.points || 0} points)</li>
                             <li className="list-decimal">Your profile information and settings</li>
                             <li className="list-decimal">Uploaded files (resume, profile picture)</li>
                             <li className="list-decimal">Access to the members portal</li>

@@ -224,11 +224,6 @@ const ProfileModal = ({ open = false, onClose, member, embedded = false, classNa
           </div>
         )}
 
-        <div className="flex items-center justify-between gap-4 border-b border-hairline-faint py-2.5">
-          <span className={ROW_LABEL}>Points</span>
-          <p className="font-mono text-sm font-semibold tabular-nums">{member.points}</p>
-        </div>
-
         {member.position && (
           <div className="flex items-center justify-between gap-4 border-b border-hairline-faint py-2.5">
             <span className={ROW_LABEL}>Position</span>

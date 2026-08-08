@@ -136,22 +136,10 @@ const Checkin = () => {
                         </>
                     )}
 
-                    {result?.points_awarded !== undefined && (
-                        <div className="mt-6 border border-border">
-                            <div className="flex items-center justify-between gap-3 border-b border-hairline-faint px-4 py-2">
-                                <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                                    {result.points_awarded >= 0 ? 'Points awarded' : 'Points deducted'}
-                                </span>
-                                {result.event_name && (
-                                    <span className="min-w-0 truncate font-mono text-[10px] uppercase tracking-[0.08em] text-grey-2">
-                                        {result.event_name}
-                                    </span>
-                                )}
-                            </div>
-                            <p className={`px-4 py-3 font-sans text-4xl font-bold tracking-[-0.02em] tabular-nums ${result.points_awarded >= 0 ? 'text-primary' : 'text-destructive'}`}>
-                                {result.points_awarded >= 0 ? '+' : ''}{result.points_awarded}
-                            </p>
-                        </div>
+                    {result?.event_name && (
+                        <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.08em] text-grey-2">
+                            {result.event_name}
+                        </p>
                     )}
 
                     <button
