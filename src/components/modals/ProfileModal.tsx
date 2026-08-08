@@ -1,11 +1,11 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Mail, Linkedin, Github, Briefcase, BookOpen, Copy, Check } from 'lucide-react';
@@ -334,17 +334,19 @@ const ProfileModal = ({ open = false, onClose, member, embedded = false, classNa
     );
   }
 
-  // Otherwise, return as modal (onOpenChange receives new open state; only call onClose when closing)
+  // Otherwise, return as a right-side sidebar (onOpenChange receives new open state; only call onClose when closing)
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose?.(); }}>
-      <DialogContent className="max-w-lg w-[95vw] mx-auto">
-        <DialogHeader>
-          <DialogTitle>Member Profile</DialogTitle>
-          <DialogDescription>View member details</DialogDescription>
-        </DialogHeader>
-        {profileContent}
-      </DialogContent>
-    </Dialog>
+    <Sheet open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose?.(); }}>
+      <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-md">
+        <SheetHeader>
+          <SheetTitle>Member Profile</SheetTitle>
+          <SheetDescription>View member details</SheetDescription>
+        </SheetHeader>
+        <div className="mt-6">
+          {profileContent}
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 };
 
