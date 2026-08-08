@@ -10,6 +10,7 @@ import {
     LectureTerm,
 } from '@/components/ui/lecture-typography';
 import { CodeBlock } from '@/components/ui/code-block';
+import InteractiveExercise from '@/components/ui/interactive-exercise';
 
 export default function Week2Lecture2() {
     return (
@@ -18,36 +19,36 @@ export default function Week2Lecture2() {
                 week={2}
                 session="Lecture 2"
                 title="Hash Maps, Complexity & Interview Patterns"
-                description="Hash maps, Big-O analysis, two-pointer and sliding window patterns — the toolkit for turning O(n²) brute-force solutions into O(n) answers."
+                description="Hash maps, Big-O analysis, two-pointer and sliding window patterns: the toolkit for turning O(n²) brute-force solutions into O(n) answers."
                 icon={<Binary className="h-4 w-4" />}
             />
 
             {/* ── 01 HASH MAPS ─────────────────────────────────────────────── */}
-            <LectureSectionHeading number="01" title="Hash Maps — The O(1) Lookup" />
+            <LectureSectionHeading number="01" title="Hash Maps: The O(1) Lookup" />
 
             <LectureP>
-                A <LectureTip tip="Key-value store with O(1) average lookup, insert, and delete. Also called hash table, dictionary, or associative array. The single most useful data structure in programming.">hash map</LectureTip> (also called a hash table, dictionary, or associative array) stores key-value pairs and lets you look up any value by its key in <strong className="text-foreground">average O(1) time</strong>. This is the single most useful data structure in programming — it powers caches, database indexes, routers, compilers, and roughly half of all interview solutions.
+                A <LectureTip tip="Key-value store with O(1) average lookup, insert, and delete. Also called hash table, dictionary, or associative array. The single most useful data structure in programming.">hash map</LectureTip> (also called a hash table, dictionary, or associative array) stores key-value pairs and lets you look up any value by its key in <strong className="text-foreground">average O(1) time</strong>. This is the single most useful data structure in programming. It powers caches, database indexes, routers, compilers, and roughly half of all interview solutions.
             </LectureP>
 
             <LectureSubHeading title="How it works" />
 
             <LectureP>
-                A hash map uses a <LectureTip tip="Converts a key into an array index (bucket number). Deterministic: same key always produces the same index. A good hash function distributes keys uniformly across buckets.">hash function</LectureTip> to convert a key into an array index (called a <LectureTerm>bucket</LectureTerm>). The value is stored at that index. When you look up a key, the hash function computes the same index, and retrieval is instant — no searching required.
+                A hash map uses a <LectureTip tip="Converts a key into an array index (bucket number). Deterministic: same key always produces the same index. A good hash function distributes keys uniformly across buckets.">hash function</LectureTip> to convert a key into an array index (called a <LectureTerm>bucket</LectureTerm>). The value is stored at that index. When you look up a key, the hash function computes the same index, and retrieval is instant, with no searching required.
             </LectureP>
             <LectureP>
-                When two different keys hash to the same bucket, that is a <LectureTip tip="Two different keys hash to the same bucket. Resolved by chaining (linked list per bucket) or open addressing (probe for the next open slot). Why O(1) is average, not guaranteed.">collision</LectureTip>. Hash maps resolve collisions through <em>chaining</em> (each bucket holds a linked list of entries) or <em>open addressing</em> (probe for the next available slot). You do not need to implement collision resolution — Python handles it — but understanding the mechanism explains why O(1) is the <em>average</em> case, not a guarantee. In the worst case (all keys collide), every operation degrades to O(n).
+                When two different keys hash to the same bucket, that is a <LectureTip tip="Two different keys hash to the same bucket. Resolved by chaining (linked list per bucket) or open addressing (probe for the next open slot). Why O(1) is average, not guaranteed.">collision</LectureTip>. Hash maps resolve collisions through <em>chaining</em> (each bucket holds a linked list of entries) or <em>open addressing</em> (probe for the next available slot). You do not need to implement collision resolution (Python handles it), but understanding the mechanism explains why O(1) is the <em>average</em> case, not a guarantee. In the worst case (all keys collide), every operation degrades to O(n).
             </LectureP>
 
             <LectureSubHeading title="Python's dict and set" />
 
             <LectureP>
-                Python's <LectureTip code tip="Python's built-in hash map. O(1) average lookup, insert, delete by key. The most-used data structure in Python — you've been using it since day one.">dict</LectureTip> is a hash map. <LectureTip code tip="Python's hash set — stores unique keys only (no values). O(1) average membership test. Use for deduplication and fast 'have I seen this?' checks.">set</LectureTip> is a hash set (keys only, no values). You have been using hash maps since day one. The <LectureTip code tip="Membership operator. O(1) on dict/set (hash lookup). O(n) on list (linear scan). Always prefer set/dict for membership checks over list.">in</LectureTip> operator on a dict or set is O(1) average — on a list, it is O(n) because every element must be checked.
+                Python's <LectureTip code tip="Python's built-in hash map. O(1) average lookup, insert, delete by key. The most-used data structure in Python, and you've been using it since day one.">dict</LectureTip> is a hash map. <LectureTip code tip="Python's hash set: stores unique keys only (no values). O(1) average membership test. Use for deduplication and fast 'have I seen this?' checks.">set</LectureTip> is a hash set (keys only, no values). You have been using hash maps since day one. The <LectureTip code tip="Membership operator. O(1) on dict/set (hash lookup). O(n) on list (linear scan). Always prefer set/dict for membership checks over list.">in</LectureTip> operator on a dict or set is O(1) average; on a list, it is O(n) because every element must be checked.
             </LectureP>
 
             <CodeBlock language="python"
-                title="hash_map_basics.py — practical dict and set usage"
+                title="hash_map_basics.py · practical dict and set usage"
                 lines={[
-                    '# Frequency counting — how many times does each word appear?',
+                    '# Frequency counting: how many times does each word appear?',
                     'words = ["apple", "banana", "apple", "cherry", "banana", "apple"]',
                     'freq = {}',
                     'for word in words:',
@@ -55,7 +56,7 @@ export default function Week2Lecture2() {
                     'print(freq)  # {"apple": 3, "banana": 2, "cherry": 1}',
                     '',
                     '',
-                    '# Membership check — O(1) with set vs O(n) with list',
+                    '# Membership check: O(1) with set vs O(n) with list',
                     'seen = set()',
                     'for word in words:',
                     '    if word in seen:',
@@ -66,20 +67,34 @@ export default function Week2Lecture2() {
                     '',
                     '# Default values with .get(key, default)',
                     'config = {"host": "localhost", "port": 8080}',
-                    'timeout = config.get("timeout", 30)   # 30 — key missing, returns default',
-                    'host = config.get("host", "0.0.0.0")  # "localhost" — key found, returns value',
+                    'timeout = config.get("timeout", 30)   # 30: key missing, returns default',
+                    'host = config.get("host", "0.0.0.0")  # "localhost": key found, returns value',
                 ]}
             />
 
             <LectureCallout type="tip">
-                When to reach for a hash map: <strong className="text-foreground">"Have I seen this before?"</strong> — use a set. <strong className="text-foreground">"How many times does X appear?"</strong> — use a dict for frequency counting. <strong className="text-foreground">"What is the complement of X?"</strong> — store values in a dict and look up complements in O(1). These three questions cover a massive portion of hash map interview problems.
+                When to reach for a hash map: <strong className="text-foreground">"Have I seen this before?"</strong> calls for a set. <strong className="text-foreground">"How many times does X appear?"</strong> calls for a dict and frequency counting. <strong className="text-foreground">"What is the complement of X?"</strong> calls for storing values in a dict and looking up complements in O(1). These three questions cover a massive portion of hash map interview problems.
             </LectureCallout>
+
+            <LectureP>
+                Try it yourself. The exercise below uses JavaScript, where a plain object works as a hash map exactly like Python's dict.
+            </LectureP>
+
+            <InteractiveExercise
+                runtime="js"
+                language="javascript"
+                title="Exercise 1: frequency counting with a hash map"
+                prompt={<>Complete the loop so that <code>freq</code> counts how many times each word appears, then let the program log <code>3</code> (the count for <code>"apple"</code>). The output must be exactly <code>3</code>.</>}
+                starter={'const words = ["apple", "banana", "apple", "cherry", "banana", "apple"];\nconst freq = {};\nfor (const word of words) {\n  // increment the count for word in freq\n  // hint shape: freq[word] = ...\n}\nconsole.log(freq["apple"]);'}
+                expected="3"
+                hint='Use (freq[word] || 0) + 1 so missing keys start at zero.'
+            />
 
             {/* ── 02 BIG-O NOTATION ────────────────────────────────────────── */}
             <LectureSectionHeading number="02" title="Big-O Notation" />
 
             <LectureP>
-                <LectureTip tip="Describes how an algorithm's runtime or space grows with input size. Drop constants and lower-order terms: 2n + 5 is O(n). Focused on the growth rate, not the exact time.">Big-O notation</LectureTip> describes how an algorithm's runtime (or space usage) grows as the input size grows. We care about the <strong className="text-foreground">growth rate</strong>, not the exact time — we drop constants and lower-order terms because they become irrelevant at scale. An O(n) algorithm might be slower than O(n²) for n = 5, but for n = 1,000,000 the difference is between one second and eleven days.
+                <LectureTip tip="Describes how an algorithm's runtime or space grows with input size. Drop constants and lower-order terms: 2n + 5 is O(n). Focused on the growth rate, not the exact time.">Big-O notation</LectureTip> describes how an algorithm's runtime (or space usage) grows as the input size grows. We care about the <strong className="text-foreground">growth rate</strong>, not the exact time; we drop constants and lower-order terms because they become irrelevant at scale. An O(n) algorithm might be slower than O(n²) for n = 5, but for n = 1,000,000 the difference is between one second and eleven days.
             </LectureP>
 
             <LectureSubHeading title="The common complexities" />
@@ -104,12 +119,12 @@ export default function Week2Lecture2() {
             </div>
 
             <CodeBlock language="python"
-                title="complexity_examples.py — same problem, three different Big-Os"
+                title="complexity_examples.py · same problem, three different Big-Os"
                 lines={[
                     '# Problem: does the list contain a duplicate?',
                     '',
                     '',
-                    '# O(n²) — brute force: compare every pair',
+                    '# O(n²) brute force: compare every pair',
                     'def has_duplicate_brute(nums):',
                     '    for i in range(len(nums)):',
                     '        for j in range(i + 1, len(nums)):',
@@ -118,7 +133,7 @@ export default function Week2Lecture2() {
                     '    return False',
                     '',
                     '',
-                    '# O(n log n) — sort first, then check adjacent elements',
+                    '# O(n log n): sort first, then check adjacent elements',
                     'def has_duplicate_sort(nums):',
                     '    nums_sorted = sorted(nums)',
                     '    for i in range(1, len(nums_sorted)):',
@@ -127,7 +142,7 @@ export default function Week2Lecture2() {
                     '    return False',
                     '',
                     '',
-                    '# O(n) — use a hash set',
+                    '# O(n): use a hash set',
                     'def has_duplicate_set(nums):',
                     '    seen = set()',
                     '    for num in nums:',
@@ -161,7 +176,7 @@ export default function Week2Lecture2() {
             <LectureSectionHeading number="03" title="Analyzing Your Data Structures" />
 
             <LectureP>
-                Now that you understand Big-O, apply it to every data structure from Lecture 1 — plus the hash map you just learned. This table is one of the most referenced tools in interview prep. Know these cold.
+                Now that you understand Big-O, apply it to every data structure from Lecture 1, plus the hash map you just learned. This table is one of the most referenced tools in interview prep. Know these cold.
             </LectureP>
 
             <div className="my-6 rounded-xl border border-border overflow-hidden text-xs">
@@ -178,8 +193,8 @@ export default function Week2Lecture2() {
                     { name: 'Queue', access: 'O(n)', search: 'O(n)', insert: 'O(1)', delete: 'O(1)' },
                     { name: 'BST (balanced)', access: 'O(log n)', search: 'O(log n)', insert: 'O(log n)', delete: 'O(log n)' },
                     { name: 'BST (worst)', access: 'O(n)', search: 'O(n)', insert: 'O(n)', delete: 'O(n)' },
-                    { name: 'Hash map (avg)', access: '—', search: 'O(1)', insert: 'O(1)', delete: 'O(1)' },
-                    { name: 'Hash map (worst)', access: '—', search: 'O(n)', insert: 'O(n)', delete: 'O(n)' },
+                    { name: 'Hash map (avg)', access: 'n/a', search: 'O(1)', insert: 'O(1)', delete: 'O(1)' },
+                    { name: 'Hash map (worst)', access: 'n/a', search: 'O(n)', insert: 'O(n)', delete: 'O(n)' },
                 ].map((row) => (
                     <div key={row.name} className="grid grid-cols-5 px-4 py-2 border-b border-border last:border-b-0">
                         <span className="font-semibold text-foreground">{row.name}</span>
@@ -192,11 +207,11 @@ export default function Week2Lecture2() {
             </div>
 
             <LectureP>
-                <strong className="text-foreground">*</strong> Python list <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">append()</code> is O(1) amortized, but inserting at an arbitrary index is O(n) because elements must shift. Hash map "access" is marked "—" because hash maps do not support index-based access — you access by key, which is the search operation.
+                <strong className="text-foreground">*</strong> Python list <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">append()</code> is O(1) amortized, but inserting at an arbitrary index is O(n) because elements must shift. Hash map "access" is marked "n/a" because hash maps do not support index-based access; you access by key, which is the search operation.
             </LectureP>
 
             <LectureCallout type="info">
-                This table explains why interviewers love hash maps: O(1) for the operations you care about most (lookup and insert). It also explains why BSTs matter: they give O(log n) <em>ordered</em> access — something hash maps cannot do (hash maps have no inherent order). Each structure has a sweet spot; the skill is matching the structure to the problem.
+                This table explains why interviewers love hash maps: O(1) for the operations you care about most (lookup and insert). It also explains why BSTs matter: they give O(log n) <em>ordered</em> access, something hash maps cannot do (hash maps have no inherent order). Each structure has a sweet spot; the skill is matching the structure to the problem.
             </LectureCallout>
 
             {/* ── 04 TWO-POINTER PATTERN ────────────────────────────────────── */}
@@ -213,7 +228,7 @@ export default function Week2Lecture2() {
             </LectureP>
 
             <CodeBlock language="python"
-                title="two_pointer_opposite.py — find pair that sums to target in sorted array"
+                title="two_pointer_opposite.py · find pair that sums to target in sorted array"
                 lines={[
                     'def pair_sum(sorted_arr, target):',
                     '    """Return indices of two numbers that sum to target.',
@@ -225,17 +240,17 @@ export default function Week2Lecture2() {
                     '        if total == target:',
                     '            return [left, right]',
                     '        elif total < target:',
-                    '            left += 1    # need a bigger sum — move left forward',
+                    '            left += 1    # need a bigger sum: move left forward',
                     '        else:',
-                    '            right -= 1   # need a smaller sum — move right backward',
+                    '            right -= 1   # need a smaller sum: move right backward',
                     '',
                     '    return []  # no pair found',
                     '',
                     '',
                     '# Example',
                     'nums = [1, 3, 5, 7, 11, 15]',
-                    'print(pair_sum(nums, 12))  # [0, 4] — nums[0] + nums[4] = 1 + 11 = 12',
-                    'print(pair_sum(nums, 8))   # [1, 2] — nums[1] + nums[2] = 3 + 5 = 8',
+                    'print(pair_sum(nums, 12))  # [0, 4]: nums[0] + nums[4] = 1 + 11 = 12',
+                    'print(pair_sum(nums, 8))   # [1, 2]: nums[1] + nums[2] = 3 + 5 = 8',
                 ]}
             />
 
@@ -246,7 +261,7 @@ export default function Week2Lecture2() {
             </LectureP>
 
             <CodeBlock language="python"
-                title="two_pointer_same.py — remove duplicates from sorted array in-place"
+                title="two_pointer_same.py · remove duplicates from sorted array in-place"
                 lines={[
                     'def remove_duplicates(sorted_arr):',
                     '    """Remove duplicates in-place, return new length.',
@@ -272,7 +287,7 @@ export default function Week2Lecture2() {
             />
 
             <LectureP>
-                Recognize the pattern: <strong className="text-foreground">"given a sorted array, find a pair..."</strong> — opposite-end two pointers. <strong className="text-foreground">"reorganize an array in-place..."</strong> — same-direction two pointers.
+                Recognize the pattern: <strong className="text-foreground">"given a sorted array, find a pair..."</strong> means opposite-end two pointers. <strong className="text-foreground">"reorganize an array in-place..."</strong> means same-direction two pointers.
             </LectureP>
 
             <LectureCallout type="tip">
@@ -283,7 +298,7 @@ export default function Week2Lecture2() {
             <LectureSectionHeading number="05" title="Sliding Window Pattern" />
 
             <LectureP>
-                The <LectureTip tip="A contiguous subarray or substring that slides across input. Each element enters and leaves the window exactly once, reducing O(n×k) recalculation to O(n). Fixed-size or variable-size.">sliding window pattern</LectureTip> maintains a "window" — a contiguous subarray or substring — and slides it across the input, updating a running state as elements enter and leave the window. This reduces O(n × k) brute-force recalculation to O(n) because each element is added and removed from the window exactly once.
+                The <LectureTip tip="A contiguous subarray or substring that slides across input. Each element enters and leaves the window exactly once, reducing O(n×k) recalculation to O(n). Fixed-size or variable-size.">sliding window pattern</LectureTip> maintains a "window" (a contiguous subarray or substring) and slides it across the input, updating a running state as elements enter and leave the window. This reduces O(n × k) brute-force recalculation to O(n) because each element is added and removed from the window exactly once.
             </LectureP>
 
             <LectureSubHeading title="Fixed-size window" />
@@ -293,7 +308,7 @@ export default function Week2Lecture2() {
             </LectureP>
 
             <CodeBlock language="python"
-                title="sliding_window_fixed.py — maximum sum subarray of size k"
+                title="sliding_window_fixed.py · maximum sum subarray of size k"
                 lines={[
                     'def max_sum_subarray(arr, k):',
                     '    """Find the maximum sum of any contiguous subarray of size k.',
@@ -315,8 +330,18 @@ export default function Week2Lecture2() {
                     '',
                     '# Example',
                     'arr = [2, 1, 5, 1, 3, 2]',
-                    'print(max_sum_subarray(arr, 3))  # 9 — subarray [5, 1, 3]',
+                    'print(max_sum_subarray(arr, 3))  # 9: subarray [5, 1, 3]',
                 ]}
+            />
+
+            <InteractiveExercise
+                runtime="js"
+                language="javascript"
+                title="Exercise 2: fixed-size sliding window"
+                prompt={<>Complete the loop so the program logs <code>9</code>, the maximum sum of any contiguous subarray of size 3 in <code>[2, 1, 5, 1, 3, 2]</code>. Slide the window by adding <code>arr[i]</code>, subtracting <code>arr[i - k]</code>, and keeping the best sum. The output must be exactly <code>9</code>.</>}
+                starter={'const arr = [2, 1, 5, 1, 3, 2];\nconst k = 3;\nlet windowSum = arr[0] + arr[1] + arr[2]; // sum of the first window\nlet best = windowSum;\nfor (let i = k; i < arr.length; i++) {\n  // add arr[i], remove arr[i - k], update best\n}\nconsole.log(best);'}
+                expected="9"
+                hint="windowSum += arr[i] - arr[i - k]; then best = Math.max(best, windowSum);"
             />
 
             <LectureSubHeading title="Variable-size window" />
@@ -326,7 +351,7 @@ export default function Week2Lecture2() {
             </LectureP>
 
             <CodeBlock language="python"
-                title="sliding_window_variable.py — longest substring without repeating characters"
+                title="sliding_window_variable.py · longest substring without repeating characters"
                 lines={[
                     'def longest_unique_substring(s):',
                     '    """Find the length of the longest substring with no repeating characters.',
@@ -348,14 +373,14 @@ export default function Week2Lecture2() {
                     '',
                     '',
                     '# Example',
-                    'print(longest_unique_substring("abcabcbb"))  # 3 — "abc"',
-                    'print(longest_unique_substring("bbbbb"))     # 1 — "b"',
-                    'print(longest_unique_substring("pwwkew"))     # 3 — "wke"',
+                    'print(longest_unique_substring("abcabcbb"))  # 3: "abc"',
+                    'print(longest_unique_substring("bbbbb"))     # 1: "b"',
+                    'print(longest_unique_substring("pwwkew"))     # 3: "wke"',
                 ]}
             />
 
             <LectureP>
-                Recognize the pattern: <strong className="text-foreground">"contiguous subarray of size k"</strong> — fixed sliding window. <strong className="text-foreground">"longest/shortest substring satisfying a condition"</strong> — variable sliding window.
+                Recognize the pattern: <strong className="text-foreground">"contiguous subarray of size k"</strong> means fixed sliding window. <strong className="text-foreground">"longest/shortest substring satisfying a condition"</strong> means variable sliding window.
             </LectureP>
 
             <LectureCallout type="tip">
@@ -369,14 +394,14 @@ export default function Week2Lecture2() {
                 Hash maps appear in interviews more than any other data structure. Three patterns cover the vast majority of hash-map-based problems. Learn to recognize each one and the solution structure becomes automatic.
             </LectureP>
 
-            <LectureSubHeading title="Pattern 1 — complement lookup (Two Sum)" />
+            <LectureSubHeading title="Pattern 1: complement lookup (Two Sum)" />
 
             <LectureP>
                 For each element, compute its complement (<code className="text-xs bg-muted px-1.5 py-0.5 rounded border">target - element</code>), check if the complement exists in the map, and if not, store the current element. One pass, O(n) time, O(n) space. This is the single most-asked interview question.
             </LectureP>
 
             <CodeBlock language="python"
-                title="two_sum.py — the canonical hash map problem"
+                title="two_sum.py · the canonical hash map problem"
                 lines={[
                     'def two_sum(nums, target):',
                     '    """Return indices of two numbers that add up to target.',
@@ -393,19 +418,19 @@ export default function Week2Lecture2() {
                     '',
                     '',
                     '# Example',
-                    'print(two_sum([2, 7, 11, 15], 9))   # [0, 1] — 2 + 7 = 9',
-                    'print(two_sum([3, 2, 4], 6))         # [1, 2] — 2 + 4 = 6',
+                    'print(two_sum([2, 7, 11, 15], 9))   # [0, 1]: 2 + 7 = 9',
+                    'print(two_sum([3, 2, 4], 6))         # [1, 2]: 2 + 4 = 6',
                 ]}
             />
 
-            <LectureSubHeading title="Pattern 2 — frequency counting" />
+            <LectureSubHeading title="Pattern 2: frequency counting" />
 
             <LectureP>
                 Count occurrences of each element with a dict, then use those counts to answer the question. This pattern solves: "is X an anagram of Y?", "what is the most frequent element?", "which elements appear exactly once?"
             </LectureP>
 
             <CodeBlock language="python"
-                title="frequency.py — anagram check via frequency counting"
+                title="frequency.py · anagram check via frequency counting"
                 lines={[
                     'def is_anagram(s, t):',
                     '    """Check if t is an anagram of s.',
@@ -431,14 +456,14 @@ export default function Week2Lecture2() {
                 ]}
             />
 
-            <LectureSubHeading title="Pattern 3 — group by key" />
+            <LectureSubHeading title="Pattern 3: group by key" />
 
             <LectureP>
                 Use a dict to bucket items by some derived key. Given a list of words, group all anagrams together by using the sorted characters as the key. Given a list of transactions, group by user ID. The pattern is always: compute a key, append to the list at that key.
             </LectureP>
 
             <CodeBlock language="python"
-                title="group_anagrams.py — group by sorted characters"
+                title="group_anagrams.py · group by sorted characters"
                 lines={[
                     'from collections import defaultdict',
                     '',
@@ -463,14 +488,14 @@ export default function Week2Lecture2() {
             />
 
             <LectureCallout type="info">
-                These three patterns — complement lookup, frequency counting, and group-by-key — cover an enormous fraction of hash-map interview questions. When you see a problem and think "I need fast lookup," start with one of these three.
+                These three patterns (complement lookup, frequency counting, and group-by-key) cover an enormous fraction of hash-map interview questions. When you see a problem and think "I need fast lookup," start with one of these three.
             </LectureCallout>
 
             {/* ── 07 THE PROBLEM-SOLVING FRAMEWORK ──────────────────────────── */}
             <LectureSectionHeading number="07" title="The Problem-Solving Framework" />
 
             <LectureP>
-                Knowing data structures and patterns is necessary but not sufficient. You also need a <strong className="text-foreground">systematic process</strong> for approaching unfamiliar problems. The following six steps work for interview problems, homework assignments, and real engineering tasks. The steps are always the same — only the problem changes.
+                Knowing data structures and patterns is necessary but not sufficient. You also need a <strong className="text-foreground">systematic process</strong> for approaching unfamiliar problems. The following six steps work for interview problems, homework assignments, and real engineering tasks. The steps are always the same; only the problem changes.
             </LectureP>
 
             <div className="my-6 space-y-2">
@@ -479,7 +504,7 @@ export default function Week2Lecture2() {
                     { step: '2', title: 'Trace examples', desc: 'Walk through 2-3 concrete examples by hand before writing any code. This reveals patterns and catches misunderstandings early.' },
                     { step: '3', title: 'Brute force', desc: 'Write the simplest correct solution, even if it is O(n²) or worse. A working solution is better than no solution. Interviewers want to see you can produce correctness first.' },
                     { step: '4', title: 'Optimize', desc: 'Identify the bottleneck. Can a hash map eliminate a nested loop? Can two pointers replace brute-force pair checking? Can a sliding window avoid recomputation?' },
-                    { step: '5', title: 'Code', desc: 'Translate the optimized approach into clean, readable code. Name variables clearly. Handle edge cases. Do not optimize prematurely — clarity first.' },
+                    { step: '5', title: 'Code', desc: 'Translate the optimized approach into clean, readable code. Name variables clearly. Handle edge cases. Do not optimize prematurely; clarity first.' },
                     { step: '6', title: 'Test', desc: 'Run through edge cases: empty input, single element, all duplicates, negative numbers, maximum size. Trace your code on at least one non-trivial example.' },
                 ].map((row) => (
                     <div key={row.step} className="flex items-start gap-3 rounded-lg border border-border px-4 py-3">
@@ -495,7 +520,7 @@ export default function Week2Lecture2() {
             <LectureSubHeading title="Worked example: first repeating character" />
 
             <LectureP>
-                <strong className="text-foreground">Problem:</strong> given a string, return the first character that appears more than once. Return <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">None</code> if all characters are unique. This is one of the Activity challenges — let's walk through the framework.
+                <strong className="text-foreground">Problem:</strong> given a string, return the first character that appears more than once. Return <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">None</code> if all characters are unique. This is one of the Activity challenges, so let's walk through the framework.
             </LectureP>
 
             <LectureP>
@@ -508,11 +533,11 @@ export default function Week2Lecture2() {
                 <strong className="text-foreground">3. Brute force:</strong> For each character, scan the rest of the string to check if it appears again. O(n²).
             </LectureP>
             <LectureP>
-                <strong className="text-foreground">4. Optimize:</strong> The bottleneck is "have I seen this character before?" — that is a hash set lookup. One pass through the string, checking membership in a set at each step. O(n) time, O(1) space (alphabet is bounded).
+                <strong className="text-foreground">4. Optimize:</strong> The bottleneck is "have I seen this character before?", and that is a hash set lookup. One pass through the string, checking membership in a set at each step. O(n) time, O(1) space (alphabet is bounded).
             </LectureP>
 
             <CodeBlock language="python"
-                title="first_repeat.py — applying the framework"
+                title="first_repeat.py · applying the framework"
                 lines={[
                     '# Step 5: Code',
                     'def first_repeat(s):',
@@ -529,13 +554,13 @@ export default function Week2Lecture2() {
                     '# Step 6: Test',
                     'print(first_repeat("abcadb"))   # "a"',
                     'print(first_repeat("abcdef"))   # None',
-                    'print(first_repeat(""))          # None  — edge case: empty string',
-                    'print(first_repeat("aabb"))      # "a"  — first duplicate encountered',
+                    'print(first_repeat(""))          # None  (edge case: empty string)',
+                    'print(first_repeat("aabb"))      # "a"  (first duplicate encountered)',
                 ]}
             />
 
             <LectureCallout type="info">
-                This framework is not just for interviews — it is how experienced engineers approach any unfamiliar problem. The difference between a junior and senior engineer is often not what they know, but that they follow a process instead of guessing. Build the habit now.
+                This framework is not just for interviews; it is how experienced engineers approach any unfamiliar problem. The difference between a junior and senior engineer is often not what they know, but that they follow a process instead of guessing. Build the habit now.
             </LectureCallout>
 
 

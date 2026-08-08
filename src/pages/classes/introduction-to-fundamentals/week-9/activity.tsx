@@ -10,6 +10,7 @@ import { CodeBlock } from '@/components/ui/code-block';
 import { ActivityHint } from '@/components/ui/activity-hint';
 import { ActivityChallenge } from '@/components/ui/activity-challenge';
 import { ActivityTask, ActivityTaskListProvider } from '@/components/ui/activity-task';
+import InteractiveExercise from '@/components/ui/interactive-exercise';
 
 export default function Week9Activity() {
     return (
@@ -19,7 +20,7 @@ export default function Week9Activity() {
                     week={9}
                     session="Activity"
                     title="Build Your Frontend"
-                    description="Your API is live. Now build the interface — React components, Tailwind styling, and real data flowing from your backend. By the end of this session you have a complete full-stack app you built from scratch."
+                    description="Your API is live. Now build the interface: React components, Tailwind styling, and real data flowing from your backend. By the end of this session you have a complete full-stack app you built from scratch."
                     icon={<Globe className="h-4 w-4" />}
                 />
 
@@ -46,7 +47,7 @@ export default function Week9Activity() {
                 </div>
 
                 <TerminalBlock
-                    title="bash — frontend"
+                    title="bash · frontend"
                     lines={[
                         { cmd: 'npm create vite@latest . -- --template react-ts' },
                         { cmd: 'npm install' },
@@ -56,16 +57,16 @@ export default function Week9Activity() {
                 />
 
                 <LectureCallout type="info">
-                    Vite is incredibly fast — changes appear instantly in your browser during development.
+                    Vite is incredibly fast. Changes appear instantly in your browser during development.
                 </LectureCallout>
 
                 <ActivityHint label="Tailwind configuration">
-                    Replace the contents of <code className="bg-muted px-1 rounded text-xs">src/index.css</code> with the single Tailwind import. That's all you need — Tailwind's build plugin handles the rest.
+                    Replace the contents of <code className="bg-muted px-1 rounded text-xs">src/index.css</code> with the single Tailwind import. That's all you need; Tailwind's build plugin handles the rest.
                 </ActivityHint>
 
                 <CodeBlock
                     language="css"
-                    title="src/index.css — replace all existing content with this"
+                    title="src/index.css · replace all existing content with this"
                     lines={[
                         '@import "tailwindcss";',
                     ]}
@@ -79,8 +80,8 @@ export default function Week9Activity() {
                 {[
                     '3 or more views/pages (use React Router for navigation between them)',
                     'All data fetched from your live FastAPI backend using fetch + useEffect',
-                    'No hardcoded mock data — if the backend is down, the UI should show an error state',
-                    'Fully styled with Tailwind — no inline styles, no separate CSS files',
+                    'No hardcoded mock data: if the backend is down, the UI should show an error state',
+                    'Fully styled with Tailwind (no inline styles, no separate CSS files)',
                     'Loading and error states handled for every fetch call',
                 ].map((req, i) => (
                     <div key={i} className="flex gap-3 rounded-lg border border-border bg-card p-3">
@@ -110,7 +111,7 @@ export default function Week9Activity() {
                 </div>
 
                 <ActivityHint label="basic router setup">
-                    <code className="bg-muted px-1 rounded text-xs">{'<BrowserRouter><Routes><Route path="/" element={<Home />} />...'}</code> — then use <code className="bg-muted px-1 rounded text-xs">Link</code> components in your nav to navigate.
+                    <code className="bg-muted px-1 rounded text-xs">{'<BrowserRouter><Routes><Route path="/" element={<Home />} />...'}</code>, then use <code className="bg-muted px-1 rounded text-xs">Link</code> components in your nav to navigate.
                 </ActivityHint>
             </ActivityChallenge>
 
@@ -155,6 +156,30 @@ export default function Week9Activity() {
                 />
             </ActivityChallenge>
 
+            <LectureCallout type="info">
+                Before you build the remaining views, prove you have the two core pieces of React logic down: immutable state updates and conditional rendering. Both exercises run real JavaScript right here in the page.
+            </LectureCallout>
+
+            <InteractiveExercise
+                runtime="js"
+                language="javascript"
+                title="Exercise 1: Immutable State Updates"
+                prompt={<>React state must never be mutated in place. Given the <code>items</code> array below, create a <strong>new</strong> array named <code>next</code> that contains all existing items plus <code>"dates"</code> at the end, without calling <code>push</code> on <code>items</code>. Then log <code>next.length</code> so the output is exactly <code>4</code>.</>}
+                starter={'const items = ["apple", "banana", "cherry"];\n// Build a NEW array with "dates" appended (no items.push!)\nconst next = items; // fix this line\nconsole.log(next.length);'}
+                expected="4"
+                hint='Use the spread operator: [...items, "dates"] creates a fresh array, exactly what you pass to a setState function.'
+            />
+
+            <InteractiveExercise
+                runtime="js"
+                language="javascript"
+                title="Exercise 2: Conditional Rendering Logic"
+                prompt={<>Every fetch has three states. Complete <code>render(state)</code> so it returns <code>"Loading..."</code> when <code>state.loading</code> is true, <code>"Error: "</code> plus the message when <code>state.error</code> is set, and otherwise the number of items followed by <code>" items"</code>. The test call must log exactly <code>3 items</code>.</>}
+                starter={'function render(state) {\n  // 1. if state.loading is true, return "Loading..."\n  // 2. if state.error is set, return "Error: " + state.error\n  // 3. otherwise return state.items.length + " items"\n}\n\nconsole.log(render({ loading: false, error: null, items: ["a", "b", "c"] }));'}
+                expected="3 items"
+                hint="Check loading first, then error, then fall through to the success case. This is the same if/return ladder as in the fetch pattern above."
+            />
+
             <ActivityChallenge
                 number="3.3"
                 title="Build the Remaining Views"
@@ -163,7 +188,7 @@ export default function Week9Activity() {
                 <div className="space-y-1">
                     <ActivityTask>Implement your remaining 2+ views</ActivityTask>
                     <ActivityTask>Each must fetch from or post to your API</ActivityTask>
-                    <ActivityTask>Style everything with Tailwind — pay attention to spacing, color, and responsive layout</ActivityTask>
+                    <ActivityTask>Style everything with Tailwind, paying attention to spacing, color, and responsive layout</ActivityTask>
                 </div>
 
                 <ActivityHint label="project structure">

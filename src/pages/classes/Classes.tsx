@@ -25,6 +25,15 @@ type Semester = Database['public']['Tables']['semesters']['Row'];
 
 type ClassWithMembers = ItemWithMembers<Class>;
 
+/** Classes with a dedicated hardcoded resource-page route (see App.tsx). A class
+ *  "links" to one by having a name that slugifies to its slug; any other class
+ *  has no page and must not render a "View Class Page" link (it would 404). */
+const CLASS_PAGE_SLUGS = new Set([
+  'introduction-to-fundamentals',
+  'guide-to-leetcode',
+  'the-founders-track',
+]);
+
 /* DESIGN.md recipes — status chips (§5), CTAs (§5), eyebrows (§3) */
 const CHIP_BASE =
   'inline-flex items-center whitespace-nowrap border px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] transition-colors duration-200 motion-reduce:transition-none';
@@ -503,13 +512,19 @@ const Classes = () => {
       });
     };
 
+    // A class links to a dedicated resource page by having a name that slugifies
+    // to one of the hardcoded class-page routes. Any other name has no page, so
+    // we hide the link rather than navigate into the 404 catch-all.
+    const classPageSlug = cls.name
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-zA-Z0-9-]/g, '')
+      .toLowerCase();
+    const hasClassPage = CLASS_PAGE_SLUGS.has(classPageSlug);
+
     const goToClassPage = () => {
-      const className = cls.name
-        .trim()
-        .replace(/\s+/g, '-')
-        .replace(/[^a-zA-Z0-9-]/g, '')
-        .toLowerCase();
-      navigate(`/classes/${className}`);
+      if (!hasClassPage) return;
+      navigate(`/classes/${classPageSlug}`);
     };
 
     return (
@@ -626,7 +641,7 @@ const Classes = () => {
             {isBoardOrAbove ? 'Edit Details' : 'View Details'}
           </button>
 
-          {(status.state === 'in_progress' || status.state === 'completed') && !isMobile && (
+          {hasClassPage && (status.state === 'in_progress' || status.state === 'completed') && !isMobile && (
             <button
               type="button"
               onClick={goToClassPage}

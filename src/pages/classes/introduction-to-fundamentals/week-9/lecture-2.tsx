@@ -10,6 +10,7 @@ import {
     LectureTerm,
 } from '@/components/ui/lecture-typography';
 import { TerminalBlock } from '@/components/ui/terminal-block';
+import InteractiveExercise from '@/components/ui/interactive-exercise';
 
 // Tailwind default palette (hex) so dynamic color swatches render without purging
 const TAILWIND_PALETTE: Record<string, Record<number, string>> = {
@@ -75,7 +76,7 @@ export default function Week9Lecture2() {
                 language="css"
                 title="traditional CSS vs Tailwind"
                 lines={[
-                    '/* Traditional — write CSS in a separate file, apply a class name */',
+                    '/* Traditional: write CSS in a separate file, apply a class name */',
                     '.card {',
                     '    background: white;',
                     '    border-radius: 8px;',
@@ -84,13 +85,13 @@ export default function Week9Lecture2() {
                     '}',
                     '/* applied as: <div class="card">...</div> */',
                     '',
-                    '/* Tailwind — styles live directly in the element */',
+                    '/* Tailwind: styles live directly in the element */',
                     '<div class="bg-white rounded-lg p-4 shadow-sm">...</div>',
                 ]}
             />
 
             <LectureP>
-                The tradeoff is real: Tailwind markup is more verbose. But you get enormous benefits in return. No naming things (notoriously hard). No stylesheet bloat — unused classes are automatically purged from your production build. No context-switching between files. And no specificity wars — utility classes have the same specificity, so the one you write last wins.
+                The tradeoff is real: Tailwind markup is more verbose. But you get enormous benefits in return. No naming things (notoriously hard). No stylesheet bloat, because unused classes are automatically purged from your production build. No context-switching between files. And no specificity wars: utility classes have the same specificity, so the one you write last wins.
             </LectureP>
 
             <LectureCallout type="info">
@@ -98,7 +99,7 @@ export default function Week9Lecture2() {
             </LectureCallout>
 
             <TerminalBlock
-                title="bash — install Tailwind in a Vite project"
+                title="bash · install Tailwind in a Vite project"
                 lines={[
                     { comment: 'install Tailwind and the Vite plugin', cmd: 'npm install -D tailwindcss @tailwindcss/vite' },
                     { comment: 'add @import "tailwindcss" to your main CSS file', cmd: 'echo \'@import "tailwindcss";\' > src/index.css' },
@@ -106,14 +107,14 @@ export default function Week9Lecture2() {
             />
 
             <LectureCallout type="tip">
-                The Activity walks through the full setup step by step. For now, just know that installation is two commands — the rest is automatic.
+                The Activity walks through the full setup step by step. For now, just know that installation is two commands, and the rest is automatic.
             </LectureCallout>
 
             {/* ── 02 THE SCALE SYSTEM ─────────────────────────────────────────── */}
             <LectureSectionHeading number="02" title="The Scale System" />
 
             <LectureP>
-                Tailwind uses a consistent numeric scale for spacing, sizing, and more. The base unit is <strong className="text-foreground">4px</strong>, so <code className={CODE_INLINE}>1 = 4px</code>, <code className={CODE_INLINE}>2 = 8px</code>, <code className={CODE_INLINE}>4 = 16px</code>, <code className={CODE_INLINE}>8 = 32px</code>, and so on. This gives your UI inherent visual consistency — everything aligns to the same grid.
+                Tailwind uses a consistent numeric scale for spacing, sizing, and more. The base unit is <strong className="text-foreground">4px</strong>, so <code className={CODE_INLINE}>1 = 4px</code>, <code className={CODE_INLINE}>2 = 8px</code>, <code className={CODE_INLINE}>4 = 16px</code>, <code className={CODE_INLINE}>8 = 32px</code>, and so on. This gives your UI inherent visual consistency, since everything aligns to the same grid.
             </LectureP>
 
             <div className="my-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -257,7 +258,7 @@ export default function Week9Lecture2() {
             <LectureSectionHeading number="06" title="State Variants" />
 
             <LectureP>
-                Tailwind can apply styles conditionally based on element state using <LectureTerm>variants</LectureTerm> — prefixes that correspond to CSS pseudo-classes. The pattern is the same as responsive prefixes: <code className={CODE_INLINE}>variant:class</code>.
+                Tailwind can apply styles conditionally based on element state using <LectureTerm>variants</LectureTerm>, which are prefixes that correspond to CSS pseudo-classes. The pattern is the same as responsive prefixes: <code className={CODE_INLINE}>variant:class</code>.
             </LectureP>
 
             <CodeBlock
@@ -281,19 +282,19 @@ export default function Week9Lecture2() {
             <LectureSectionHeading number="07" title="Dynamic Classes in React" />
 
             <LectureP>
-                Combining Tailwind with React state lets you style components dynamically. The key rule: <strong className="text-foreground">always write complete class names</strong>. Don't try to construct them from fragments at runtime — Tailwind's build tool scans for complete class strings, and if it never sees <code className={CODE_INLINE}>text-red-500</code> written out fully, it won't include it in the output.
+                Combining Tailwind with React state lets you style components dynamically. The key rule: <strong className="text-foreground">always write complete class names</strong>. Don't try to construct them from fragments at runtime. Tailwind's build tool scans for complete class strings, and if it never sees <code className={CODE_INLINE}>text-red-500</code> written out fully, it won't include it in the output.
             </LectureP>
 
             <CodeBlock
                 language="tsx"
-                title="dynamic classes — right vs wrong"
+                title="dynamic classes: right vs wrong"
                 lines={[
-                    '// ❌ Broken — Tailwind never sees the full class name',
+                    '// ❌ Broken: Tailwind never sees the full class name',
                     "const color = isError ? 'red' : 'green'",
                     '<p className={`text-${color}-500`}>',
-                    '// ✅ Correct — full class names are always present in source',
+                    '// ✅ Correct: full class names are always present in source',
                     "<p className={isError ? 'text-red-500' : 'text-green-500'}>",
-                    '// ✅ Also correct — use cn() for complex conditional merging',
+                    '// ✅ Also correct: use cn() for complex conditional merging',
                     "import { cn } from '@/lib/utils'",
                     '<button className={cn(',
                     "    'px-4 py-2 rounded font-medium',",
@@ -305,8 +306,22 @@ export default function Week9Lecture2() {
             />
 
             <LectureP>
-                The <LectureTip code tip="cn() — a utility function from @/lib/utils that combines clsx (conditional class joining) and tailwind-merge (deduplication of conflicting Tailwind classes). The standard pattern for dynamic Tailwind classes in a React + shadcn project.">cn()</LectureTip> function (from <code className={CODE_INLINE}>@/lib/utils</code>) is already in this project and is the standard way to handle dynamic classes. It merges class strings and intelligently resolves conflicts — so if you pass both <code className={CODE_INLINE}>px-4</code> and <code className={CODE_INLINE}>px-8</code>, <code className={CODE_INLINE}>px-8</code> wins.
+                The <LectureTip code tip="cn() is a utility function from @/lib/utils that combines clsx (conditional class joining) and tailwind-merge (deduplication of conflicting Tailwind classes). The standard pattern for dynamic Tailwind classes in a React + shadcn project.">cn()</LectureTip> function (from <code className={CODE_INLINE}>@/lib/utils</code>) is already in this project and is the standard way to handle dynamic classes. It merges class strings and intelligently resolves conflicts, so if you pass both <code className={CODE_INLINE}>px-4</code> and <code className={CODE_INLINE}>px-8</code>, <code className={CODE_INLINE}>px-8</code> wins.
             </LectureP>
+
+            <LectureP>
+                Time to write the JS logic yourself. The heart of <code className={CODE_INLINE}>cn()</code> is simple: take a list of values, keep only the truthy ones, and join them with spaces. Build a tiny version of it below.
+            </LectureP>
+
+            <InteractiveExercise
+                runtime="js"
+                language="javascript"
+                title="Exercise 1: Build a Mini cn()"
+                prompt={<>Complete <code>classNames(...args)</code> so it keeps only the truthy arguments and joins them with a single space. When you run the starter code, it should log exactly <code>px-4 rounded bg-orange-500</code>.</>}
+                starter={"function classNames(...args) {\n  // keep only the truthy values, then join them with a single space\n  return '';\n}\n\nconsole.log(classNames('px-4', false, 'rounded', null, 'bg-orange-500'));"}
+                expected="px-4 rounded bg-orange-500"
+                hint="args.filter(Boolean) removes falsy values; .join(' ') glues the rest together."
+            />
 
             {/* ── 08 BUILDING A COMPONENT ─────────────────────────────────────── */}
             <LectureSectionHeading number="08" title="Putting It Together: A Task Card" />
@@ -317,7 +332,7 @@ export default function Week9Lecture2() {
 
             <CodeBlock
                 language="tsx"
-                title="TaskCard.tsx — fully styled with Tailwind"
+                title="TaskCard.tsx · fully styled with Tailwind"
                 lines={[
                     'interface TaskCardProps { title: string; done: boolean; onToggle: () => void }',
                     'export function TaskCard({ title, done, onToggle }: TaskCardProps) {',
@@ -373,13 +388,23 @@ export default function Week9Lecture2() {
                 If your API is on a different origin (e.g. frontend on <code className={CODE_INLINE}>localhost:5173</code>, backend on <code className={CODE_INLINE}>localhost:8000</code>), the browser enforces <LectureTerm>CORS</LectureTerm>. Your FastAPI app must send <code className={CODE_INLINE}>Access-Control-Allow-Origin</code> (e.g. via <code className={CODE_INLINE}>CORSMiddleware</code>). Otherwise the browser will block the response.
             </LectureCallout>
 
+            <InteractiveExercise
+                runtime="js"
+                language="javascript"
+                title="Exercise 2: Work With API JSON"
+                prompt={<>An API responded with the JSON string below. Parse it with <code>JSON.parse</code>, count how many tasks are <strong>not</strong> done, and log that count. Your code should log exactly <code>1</code>.</>}
+                starter={"const response = '{\"tasks\":[{\"title\":\"Style the card\",\"done\":true},{\"title\":\"Wire up fetch\",\"done\":false},{\"title\":\"Add CORS\",\"done\":true}]}';\n\n// 1. parse the JSON string into an object\n// 2. count the tasks whose done property is false\n// 3. log the count\n"}
+                expected="1"
+                hint="const data = JSON.parse(response); then data.tasks.filter(t => !t.done).length is your answer."
+            />
+
             <LectureCallout type="warning">
                 Never put API keys or secrets in frontend code. Anything in your React bundle can be read by anyone. Use environment variables (e.g. <code className={CODE_INLINE}>VITE_API_URL</code>) only for non-secret configuration like the base URL; sensitive operations must go through your backend.
             </LectureCallout>
 
             <LectureSubHeading title="Deploy your frontend" />
             <LectureP>
-                When you're ready to ship, run <code className={CODE_INLINE}>npm run build</code>. Vite compiles and bundles your app into a <code className={CODE_INLINE}>dist/</code> folder of static files. Use <code className={CODE_INLINE}>VITE_API_URL</code> (and other <code className={CODE_INLINE}>VITE_*</code> env vars) for the production API base URL; Vite inlines them at build time. Services like Vercel or Netlify can deploy from your repo and run the build step in CI — we cover pipelines in Week 8.
+                When you're ready to ship, run <code className={CODE_INLINE}>npm run build</code>. Vite compiles and bundles your app into a <code className={CODE_INLINE}>dist/</code> folder of static files. Use <code className={CODE_INLINE}>VITE_API_URL</code> (and other <code className={CODE_INLINE}>VITE_*</code> env vars) for the production API base URL; Vite inlines them at build time. Services like Vercel or Netlify can deploy from your repo and run the build step in CI. We cover pipelines in Week 8.
             </LectureP>
 
 

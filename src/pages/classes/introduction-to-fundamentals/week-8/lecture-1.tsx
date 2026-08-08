@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/lecture-typography';
 import { TerminalBlock } from '@/components/ui/terminal-block';
 import { CodeBlock } from '@/components/ui/code-block';
+import InteractiveExercise from '@/components/ui/interactive-exercise';
 
 export default function Week8Lecture1() {
     return (
@@ -29,7 +30,7 @@ export default function Week8Lecture1() {
                 Without tests, every change is a gamble: did you break the login flow? The list endpoint? You find out when a user (or you, later) hits the bug. <LectureTerm>Automated tests</LectureTerm> run in seconds and tell you exactly what still works and what broke. They're the safety net that makes refactoring and adding features less scary.
             </LectureP>
             <LectureP>
-                You don't need to test every line. Focus on: (1) critical paths — login, creating/editing the main resource, any payment or auth logic; (2) edge cases — empty list, invalid input, unauthorized access; (3) the contract of your API and key components. One good test per important behavior is worth more than dozens of trivial tests.
+                You don't need to test every line. Focus on: (1) critical paths, such as login, creating/editing the main resource, and any payment or auth logic; (2) edge cases, like an empty list, invalid input, or unauthorized access; (3) the contract of your API and key components. One good test per important behavior is worth more than dozens of trivial tests.
             </LectureP>
 
             <LectureCallout type="info">
@@ -42,11 +43,11 @@ export default function Week8Lecture1() {
                 <LectureTerm>Unit tests</LectureTerm> isolate one function or component: you call the function with inputs and assert on the output, or render a component and assert on the DOM or behavior. Dependencies are often <LectureTip tip="A fake implementation used in tests so you control inputs and don't hit the real API or database.">mocked</LectureTip> (e.g. replace <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">fetch</code> with a stub that returns fixed data).
             </LectureP>
             <LectureP>
-                <LectureTerm>Integration tests</LectureTerm> test several pieces together — e.g. your FastAPI endpoint plus the database, or your React app calling the real (or test) API. They're slower but catch more real-world bugs because they exercise the same paths your users actually hit.
+                <LectureTerm>Integration tests</LectureTerm> test several pieces together, e.g. your FastAPI endpoint plus the database, or your React app calling the real (or test) API. They're slower but catch more real-world bugs because they exercise the same paths your users actually hit.
             </LectureP>
 
             <LectureCallout type="tip">
-                Think of it like testing a car. A unit test checks that one gear spins correctly in isolation. An integration test starts the engine and drives around the block. You need both — the gear test catches manufacturing defects, and the drive test catches problems that only appear when everything is connected.
+                Think of it like testing a car. A unit test checks that one gear spins correctly in isolation. An integration test starts the engine and drives around the block. You need both: the gear test catches manufacturing defects, and the drive test catches problems that only appear when everything is connected.
             </LectureCallout>
 
             <LectureP>
@@ -59,7 +60,7 @@ export default function Week8Lecture1() {
                 FastAPI provides a <LectureTerm>TestClient</LectureTerm> that calls your app without running a server. You get request/response objects and can assert status codes, JSON body, and headers. Under the hood, TestClient uses <LectureTip code tip="An async HTTP client for Python. FastAPI's TestClient wraps it so you can call your endpoints without starting a real server process.">httpx</LectureTip> to make requests.
             </LectureP>
             <TerminalBlock
-                title="bash — backend project root"
+                title="bash · backend project root"
                 lines={[
                     { comment: 'install pytest and httpx (FastAPI uses httpx under the hood)', cmd: 'pip install pytest httpx' },
                     { comment: 'run tests', cmd: 'pytest' },
@@ -73,7 +74,7 @@ export default function Week8Lecture1() {
 
             <LectureSubHeading title="Shared fixtures with conftest.py" />
             <LectureP>
-                <LectureTip code tip="A special pytest file that holds shared fixtures and configuration. pytest loads it automatically — any fixture defined here is available to every test file in the same directory (and subdirectories) without importing it.">conftest.py</LectureTip> is where you put <LectureTip tip="Reusable setup/teardown logic for tests. A fixture runs before (and optionally after) each test. Common fixtures: test database sessions, authenticated clients, sample data.">test fixtures</LectureTip> — reusable setup and teardown logic. <LectureTip code tip="Python's standard test runner. Auto-discovers files named test_*.py, runs functions starting with test_, and reports pass/fail. Extensible with plugins like pytest-cov.">pytest</LectureTip> loads this file automatically, so every test file gets access to the fixtures without importing them.
+                <LectureTip code tip="A special pytest file that holds shared fixtures and configuration. pytest loads it automatically, so any fixture defined here is available to every test file in the same directory (and subdirectories) without importing it.">conftest.py</LectureTip> is where you put <LectureTip tip="Reusable setup/teardown logic for tests. A fixture runs before (and optionally after) each test. Common fixtures: test database sessions, authenticated clients, sample data.">test fixtures</LectureTip>, which are reusable setup and teardown logic. <LectureTip code tip="Python's standard test runner. Auto-discovers files named test_*.py, runs functions starting with test_, and reports pass/fail. Extensible with plugins like pytest-cov.">pytest</LectureTip> loads this file automatically, so every test file gets access to the fixtures without importing them.
             </LectureP>
             <CodeBlock
                 language="python"
@@ -116,7 +117,7 @@ export default function Week8Lecture1() {
                 ]}
             />
             <LectureP>
-                The <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">autouse=True</code> on <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">test_db</code> means every test automatically gets a fresh database — tables are created before the test and dropped after. The <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">client</code> fixture gives each test a ready-to-use TestClient without repeating the setup.
+                The <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">autouse=True</code> on <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">test_db</code> means every test automatically gets a fresh database: tables are created before the test and dropped after. The <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">client</code> fixture gives each test a ready-to-use TestClient without repeating the setup.
             </LectureP>
 
             <LectureSubHeading title="Writing your first test file" />
@@ -166,13 +167,36 @@ export default function Week8Lecture1() {
                 A common pattern is to create an <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">auth_client</code> fixture in <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">conftest.py</code> that logs in a test user and returns a TestClient with the token already set. This avoids repeating login logic in every auth test.
             </LectureCallout>
 
+            <LectureSubHeading title="Try it yourself" />
+            <LectureP>
+                The heart of every test is the same idea: run some code, compare the result to what you expected, and report pass or fail. The two exercises below have you build that pattern by hand in pure Python, exactly what pytest does for you under the hood.
+            </LectureP>
+            <InteractiveExercise
+                runtime="python"
+                language="python"
+                title="Exercise 1: Write a tiny test"
+                prompt={<>Implement <code>add(a, b)</code> so it returns the sum of its arguments. The test below it prints <code>PASS</code> when <code>add(2, 3)</code> equals <code>5</code>, and <code>FAIL</code> otherwise. Your output must be exactly <code>PASS</code>.</>}
+                starter={"def add(a, b):\n    return 0  # fix this\n\n# a hand-rolled test, just like pytest does internally\nif add(2, 3) == 5:\n    print(\"PASS\")\nelse:\n    print(\"FAIL\")"}
+                expected="PASS"
+                hint="add should return a + b."
+            />
+            <InteractiveExercise
+                runtime="python"
+                language="python"
+                title="Exercise 2: Validate like an endpoint"
+                prompt={<>Write <code>create_note(title)</code> that returns the status code <code>201</code> when <code>title</code> is a non-empty string, and <code>422</code> when it is empty. Then print <code>create_note(&quot;Test&quot;)</code> on one line and <code>create_note(&quot;&quot;)</code> on the next, so the output is exactly <code>201</code> then <code>422</code>.</>}
+                starter={"def create_note(title):\n    # return 201 if title is non-empty, else 422\n    return 0  # fix this\n\nprint(create_note(\"Test\"))\nprint(create_note(\"\"))"}
+                expected={"201\n422"}
+                hint="Check the title with an if: an empty string is falsy in Python, so `if title:` works."
+            />
+
             <LectureSectionHeading number="04" title="Testing React with Vitest" />
 
             <LectureP>
                 Install Vitest and a DOM environment. <LectureTip tip="A JavaScript implementation of the browser DOM that runs in Node.js. Lets you render React components in tests without a real browser.">jsdom</LectureTip> simulates a browser in Node.js so your components can render. <LectureTip tip="A testing utility that renders React components and provides queries (getByText, getByRole, etc.) that mirror how users find elements on screen. Encourages testing behavior, not internals.">@testing-library/react</LectureTip> gives you utilities to render components and query the DOM the way a user would.
             </LectureP>
             <TerminalBlock
-                title="bash — frontend project root"
+                title="bash · frontend project root"
                 lines={[
                     { comment: 'install Vitest and testing library', cmd: 'npm install -D vitest @testing-library/react @testing-library/jest-dom jsdom' },
                     { comment: 'run tests once', cmd: 'npm run test' },
@@ -253,11 +277,11 @@ export default function Week8Lecture1() {
 
             <LectureSubHeading title="Cleaning up mocks" />
             <LectureP>
-                When you mock globals like <LectureTip code tip="vi.stubGlobal() — replaces a global variable (like fetch or localStorage) with a mock for the duration of the test. Pairs with vi.restoreAllMocks() to clean up.">vi.stubGlobal</LectureTip>, the mock persists across tests unless you explicitly restore it. Add an <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">afterEach</code> block to prevent stale mocks from leaking between tests.
+                When you mock globals like <LectureTip code tip="vi.stubGlobal() replaces a global variable (like fetch or localStorage) with a mock for the duration of the test. Pairs with vi.restoreAllMocks() to clean up.">vi.stubGlobal</LectureTip>, the mock persists across tests unless you explicitly restore it. Add an <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">afterEach</code> block to prevent stale mocks from leaking between tests.
             </LectureP>
             <CodeBlock
                 language="typescript"
-                title="src/App.test.tsx — add at the top level"
+                title="src/App.test.tsx · add at the top level"
                 lines={[
                     'import { afterEach, vi } from "vitest";',
                     '',
@@ -286,7 +310,7 @@ export default function Week8Lecture1() {
             </LectureP>
 
             <TerminalBlock
-                title="bash — run before every push"
+                title="bash · run before every push"
                 lines={[
                     { comment: 'backend', cmd: 'cd backend && pytest -v' },
                     { comment: 'frontend', cmd: 'cd frontend && npm test' },

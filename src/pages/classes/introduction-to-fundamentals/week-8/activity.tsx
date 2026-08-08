@@ -11,6 +11,7 @@ import { ActivityTask, ActivityTaskListProvider } from '@/components/ui/activity
 import { ActivityHint } from '@/components/ui/activity-hint';
 import { CodeBlock } from '@/components/ui/code-block';
 import { TerminalBlock } from '@/components/ui/terminal-block';
+import InteractiveExercise from '@/components/ui/interactive-exercise';
 
 export default function Week8Activity() {
     return (
@@ -29,7 +30,7 @@ export default function Week8Activity() {
                 </LectureCallout>
 
                 <LectureCallout type="tip">
-                    <strong>Where do test files go?</strong> Backend: create a <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">tests/</code> directory next to <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">main.py</code> with <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">conftest.py</code> and <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">test_*.py</code> files. Frontend: co-locate tests next to the component — <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">src/App.test.tsx</code> lives beside <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">src/App.tsx</code>. Pytest and Vitest both auto-discover files matching these patterns.
+                    <strong>Where do test files go?</strong> Backend: create a <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">tests/</code> directory next to <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">main.py</code> with <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">conftest.py</code> and <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">test_*.py</code> files. Frontend: co-locate tests next to the component, so <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">src/App.test.tsx</code> lives beside <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">src/App.tsx</code>. Pytest and Vitest both auto-discover files matching these patterns.
                 </LectureCallout>
 
                 <LectureSectionHeading number="01" title="Backend Tests" />
@@ -43,7 +44,7 @@ export default function Week8Activity() {
                         <ActivityTask>Install test dependencies: <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">pip install pytest httpx pytest-cov</code></ActivityTask>
                         <ActivityTask>Create a <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">backend/tests/</code> directory (or <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">tests/</code> at your backend root)</ActivityTask>
                         <ActivityTask>Create <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">tests/conftest.py</code> with a test database fixture (see Lecture 1 for the full example)</ActivityTask>
-                        <ActivityTask>Run <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">pytest -v</code> and confirm it discovers (and passes) 0 tests — no errors</ActivityTask>
+                        <ActivityTask>Run <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">pytest -v</code> and confirm it discovers (and passes) 0 tests with no errors</ActivityTask>
                     </div>
                     <ActivityHint label="conftest.py fixture">
                         Your <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">conftest.py</code> should override <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">get_db</code> with a test session and use <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">autouse=True</code> to create/drop tables around each test. Copy the example from Lecture 1 and adjust the import paths for your project.
@@ -63,6 +64,20 @@ export default function Week8Activity() {
                     </div>
                 </ActivityChallenge>
 
+                <LectureP>
+                    Before moving on, warm up with the core idea behind every unit test: call a function, compare the result to what you expect, and report pass or fail.
+                </LectureP>
+
+                <InteractiveExercise
+                    runtime="python"
+                    language="python"
+                    title="Exercise 1: A Tiny Unit Test"
+                    prompt={<>Fix <code>add(a, b)</code> so the check passes. Your program must print exactly <code>PASS</code>.</>}
+                    starter={"def add(a, b):\n    return 0  # bug: fix this so it returns the sum\n\nif add(2, 3) == 5:\n    print(\"PASS\")\nelse:\n    print(\"FAIL\")"}
+                    expected="PASS"
+                    hint="Return a + b instead of 0. The if-check works just like an assert in pytest."
+                />
+
                 <LectureSectionHeading number="02" title="Frontend Tests" />
 
                 <LectureP>
@@ -70,7 +85,7 @@ export default function Week8Activity() {
                 </LectureP>
                 <CodeBlock
                     language="json"
-                    title="package.json — scripts section"
+                    title="package.json · scripts section"
                     lines={[
                         '{',
                         '  "scripts": {',
@@ -131,6 +146,15 @@ export default function Week8Activity() {
                     </ActivityHint>
                 </ActivityChallenge>
 
+                <InteractiveExercise
+                    runtime="check"
+                    language="yaml"
+                    title="Exercise 2: Know Your Workflow Keys"
+                    prompt={<>In a GitHub Actions job, what value do you give the <code>runs-on</code> key to use the latest Ubuntu runner?</>}
+                    expected={["ubuntu-latest", "runs-on: ubuntu-latest"]}
+                    hint="It is the same value used in both lecture workflow examples: the OS name, a hyphen, then 'latest'."
+                />
+
                 <ActivityChallenge
                     number="3.2"
                     title="Verify the green check"
@@ -150,7 +174,7 @@ export default function Week8Activity() {
                 >
                     <div className="space-y-1">
                         <ActivityTask>Add <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">vitest run --coverage</code> and/or <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">pytest --cov=app --cov-report=term-missing</code> to your workflow</ActivityTask>
-                        <ActivityTask>Optionally set a minimum coverage threshold — fail the job if coverage drops below it</ActivityTask>
+                        <ActivityTask>Optionally set a minimum coverage threshold that fails the job if coverage drops below it</ActivityTask>
                     </div>
                 </ActivityChallenge>
 
@@ -197,7 +221,7 @@ export default function Week8Activity() {
                 </ActivityChallenge>
 
                 <TerminalBlock
-                    title="bash — verify everything works"
+                    title="bash · verify everything works"
                     lines={[
                         { comment: 'backend tests', cmd: 'cd backend && pytest -v' },
                         { comment: 'frontend tests', cmd: 'cd frontend && npm test' },

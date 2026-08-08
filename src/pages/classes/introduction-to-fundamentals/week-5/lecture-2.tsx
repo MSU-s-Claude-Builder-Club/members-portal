@@ -10,6 +10,7 @@ import {
     LectureTerm,
 } from '@/components/ui/lecture-typography';
 import { CodeBlock } from '@/components/ui/code-block';
+import InteractiveExercise from '@/components/ui/interactive-exercise';
 
 const SPRINT_THEMES = [
     { week: 6, theme: 'Containers', issues: ['Dockerfile for backend', 'docker-compose for local run', 'Document run instructions'] },
@@ -27,7 +28,7 @@ export default function Week5Lecture2() {
                 week={5}
                 session="Lecture 2"
                 title="Backlog Design & Issue Writing"
-                description="How to write issues that map to real deliverables: Containers, Backend, Testing, Frontend, Auth, Deployment. One sprint per theme — you create the full roadmap now so execution is just 'pull the next issue.'"
+                description="How to write issues that map to real deliverables: Containers, Backend, Testing, Frontend, Auth, Deployment. One sprint per theme. You create the full roadmap now so execution is just 'pull the next issue.'"
                 icon={<Workflow className="h-4 w-4" />}
             />
 
@@ -35,7 +36,7 @@ export default function Week5Lecture2() {
             <LectureSectionHeading number="01" title="One Sprint Per Week, One Theme Per Sprint" />
 
             <LectureP>
-                In this course, each week after Sprint Planning is a <LectureTerm>sprint</LectureTerm>: a single theme (Containers, Backend, Testing, Frontend, Auth, Deployment). You are not doing "Sprint 1" then "Sprint 2" as separate review ceremonies — you set up <strong className="text-foreground">all</strong> sprint issues in advance. When you start Week 6, you pull the Containers issues; when you start Week 7, you pull the Backend issues; and so on. The board is your roadmap.
+                In this course, each week after Sprint Planning is a <LectureTerm>sprint</LectureTerm>: a single theme (Containers, Backend, Testing, Frontend, Auth, Deployment). You are not doing "Sprint 1" then "Sprint 2" as separate review ceremonies; you set up <strong className="text-foreground">all</strong> sprint issues in advance. When you start Week 6, you pull the Containers issues; when you start Week 7, you pull the Backend issues; and so on. The board is your roadmap.
             </LectureP>
             <LectureCallout type="info">
                 Writing the full backlog now means you never have to "plan the next sprint" mid-course. You already know what each week ships. Execution is just: open the board, pick an issue for this week's theme, build it, open a PR, close the issue.
@@ -45,7 +46,7 @@ export default function Week5Lecture2() {
             <LectureSectionHeading number="02" title="Map Issues to Course Weeks" />
 
             <LectureP>
-                Each of the next six weeks has a clear deliverable. Turn those deliverables into 2–4 GitHub issues per week. Use the table below as a template — adapt the issue titles and acceptance criteria to your project domain.
+                Each of the next six weeks has a clear deliverable. Turn those deliverables into 2 to 4 GitHub issues per week. Use the table below as a template, and adapt the issue titles and acceptance criteria to your project domain.
             </LectureP>
 
             <div className="my-6 space-y-3">
@@ -74,12 +75,12 @@ export default function Week5Lecture2() {
             <LectureSectionHeading number="03" title="Anatomy of a Great Issue" />
 
             <LectureP>
-                The one-liner examples above are starting points — not finished issues. A real issue needs enough context that anyone on the team (including future-you, three weeks from now) can pick it up and know exactly what "done" looks like. Here is what a complete issue looks like in Markdown — the format GitHub uses for issue bodies.
+                The one-liner examples above are starting points, not finished issues. A real issue needs enough context that anyone on the team (including future-you, three weeks from now) can pick it up and know exactly what "done" looks like. Here is what a complete issue looks like in Markdown, the format GitHub uses for issue bodies.
             </LectureP>
 
             <CodeBlock
                 language="markdown"
-                title="GitHub Issue — example body"
+                title="GitHub Issue: example body"
                 lines={[
                     '## User Story',
                     'As a user, I want to run the backend locally with one command',
@@ -100,20 +101,33 @@ export default function Week5Lecture2() {
                     'feature, week-6, containers',
                     '',
                     '## Milestone',
-                    'Week 6 — Containers',
+                    'Week 6: Containers',
                 ]}
             />
 
             <LectureP>
-                Notice the structure: a user story gives the <em className="text-foreground">why</em>, context gives the <em className="text-foreground">how</em> (enough to start, not a full spec), and acceptance criteria are checkboxes — GitHub renders them as a clickable checklist inside the issue. When all boxes are checked, the issue is done.
+                Notice the structure: a user story gives the <em className="text-foreground">why</em>, context gives the <em className="text-foreground">how</em> (enough to start, not a full spec), and acceptance criteria are checkboxes, which GitHub renders as a clickable checklist inside the issue. When all boxes are checked, the issue is done.
             </LectureP>
 
             <LectureCallout type="tip">
-                GitHub Markdown checkboxes (<code className="text-xs bg-muted px-1.5 py-0.5 rounded border">- [ ]</code>) are interactive — you can check them off directly in the issue without editing the body. The issue list even shows a progress bar like "2/4 tasks complete."
+                GitHub Markdown checkboxes (<code className="text-xs bg-muted px-1.5 py-0.5 rounded border">- [ ]</code>) are interactive: you can check them off directly in the issue without editing the body. The issue list even shows a progress bar like "2/4 tasks complete."
             </LectureCallout>
 
+            <LectureP>
+                Try it yourself before moving on. This is the exact syntax you'll use in every issue body you write this semester.
+            </LectureP>
+
+            <InteractiveExercise
+                runtime="check"
+                language="markdown"
+                title="Exercise 1: Write a checklist item"
+                prompt={<>Write the single line of GitHub Markdown for an <strong>unchecked</strong> acceptance-criteria checkbox with the text <code>Write tests</code>.</>}
+                expected={["- [ ] write tests", "* [ ] write tests"]}
+                hint="A checkbox line starts with a dash, then square brackets containing a space, then the text."
+            />
+
             {/* ── 04 ACCEPTANCE CRITERIA ────────────────────────────────────────── */}
-            <LectureSectionHeading number="04" title="Acceptance Criteria — Vague vs. Testable" />
+            <LectureSectionHeading number="04" title="Acceptance Criteria: Vague vs. Testable" />
 
             <LectureP>
                 Every issue should have <LectureTip tip="Concrete, testable conditions that must be true for an issue to be considered done. Written as checkboxes in the issue body. Without them, 'done' is a matter of opinion.">acceptance criteria</LectureTip>: a short list of conditions that must be true for the issue to be "done." The difference between a useful issue and a useless one almost always comes down to whether the criteria are testable.
@@ -155,7 +169,7 @@ export default function Week5Lecture2() {
             </div>
 
             <LectureP>
-                The testable versions can be verified by running a command or opening a URL — there is no ambiguity about whether they pass. Write 2–4 criteria per issue so you (and anyone reviewing your PR) know when to close it.
+                The testable versions can be verified by running a command or opening a URL, so there is no ambiguity about whether they pass. Write 2 to 4 criteria per issue so you (and anyone reviewing your PR) know when to close it.
             </LectureP>
 
             <LectureSubHeading title="Link PRs to issues" />
@@ -163,14 +177,23 @@ export default function Week5Lecture2() {
                 When you open a pull request, put <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">Closes #42</code> in the PR description (replace 42 with the issue number). When the PR merges, GitHub will close the issue and move the card on your board automatically. Your board stays in sync with reality.
             </LectureP>
             <LectureCallout type="tip">
-                You can create a Milestone per week (e.g. "Week 6 — Containers") and assign issues to it. The milestone progress bar becomes a quick view of how much of that week's work is done.
+                You can create a Milestone per week (e.g. "Week 6: Containers") and assign issues to it. The milestone progress bar becomes a quick view of how much of that week's work is done.
             </LectureCallout>
+
+            <InteractiveExercise
+                runtime="check"
+                language="markdown"
+                title="Exercise 2: Link a PR to an issue"
+                prompt={<>Your pull request implements issue number <strong>42</strong>. Write the line you put in the PR description so GitHub automatically closes that issue when the PR merges.</>}
+                expected={["closes #42", "close #42", "closed #42", "fixes #42", "fix #42", "fixed #42", "resolves #42", "resolve #42", "resolved #42"]}
+                hint="Use one of GitHub's closing keywords (closes, fixes, resolves) followed by the issue number with a # in front."
+            />
 
             {/* ── 05 ESTIMATION IN PRACTICE ─────────────────────────────────────── */}
             <LectureSectionHeading number="05" title="Estimation in Practice" />
 
             <LectureP>
-                In Lecture 1 you learned about story points. Now connect that to the issues you're about to create. The goal is not precision — it's relative sizing so you know roughly how much fits in a week.
+                In Lecture 1 you learned about story points. Now connect that to the issues you're about to create. The goal is not precision; it's relative sizing so you know roughly how much fits in a week.
             </LectureP>
 
             <div className="my-6 rounded-xl border border-border overflow-hidden">
@@ -195,7 +218,7 @@ export default function Week5Lecture2() {
             </div>
 
             <LectureP>
-                Add a point estimate to each issue you create — either in the issue title (e.g. "[3pt] Dockerfile for backend") or as a custom field in GitHub Projects. After a few weeks you'll see whether you're consistently finishing 8 points per week or 15, and you can plan accordingly.
+                Add a point estimate to each issue you create, either in the issue title (e.g. "[3pt] Dockerfile for backend") or as a custom field in GitHub Projects. After a few weeks you'll see whether you're consistently finishing 8 points per week or 15, and you can plan accordingly.
             </LectureP>
 
             <LectureCallout type="info">
@@ -206,7 +229,7 @@ export default function Week5Lecture2() {
             <LectureSectionHeading number="06" title="Issue Templates" />
 
             <LectureP>
-                Writing the same structure (user story, context, acceptance criteria, labels) for every issue gets repetitive. GitHub lets you create <LectureTerm>issue templates</LectureTerm> — Markdown files stored in your repo that pre-fill the body when someone opens a new issue. You set it up once and every issue starts with the right structure.
+                Writing the same structure (user story, context, acceptance criteria, labels) for every issue gets repetitive. GitHub lets you create <LectureTerm>issue templates</LectureTerm>: Markdown files stored in your repo that pre-fill the body when someone opens a new issue. You set it up once and every issue starts with the right structure.
             </LectureP>
             <LectureP>
                 Create a folder <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">.github/ISSUE_TEMPLATE/</code> in your repo root and add a file like this:
@@ -239,7 +262,7 @@ export default function Week5Lecture2() {
             />
 
             <LectureP>
-                Once this file is committed, anyone clicking "New Issue" on your repo will see a "Feature" template option. The body is pre-filled with the headings and placeholders — they just fill in the blanks. You can create additional templates for bug reports, chores, or any other issue type your project needs.
+                Once this file is committed, anyone clicking "New Issue" on your repo will see a "Feature" template option. The body is pre-filled with the headings and placeholders, so they just fill in the blanks. You can create additional templates for bug reports, chores, or any other issue type your project needs.
             </LectureP>
 
             <LectureCallout type="tip">

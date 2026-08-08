@@ -11,6 +11,7 @@ import { CodeBlock } from '@/components/ui/code-block';
 import { ActivityHint } from '@/components/ui/activity-hint';
 import { ActivityChallenge } from '@/components/ui/activity-challenge';
 import { ActivityTask, ActivityTaskListProvider } from '@/components/ui/activity-task';
+import InteractiveExercise from '@/components/ui/interactive-exercise';
 
 export default function Week7Activity() {
     return (
@@ -20,7 +21,7 @@ export default function Week7Activity() {
                     week={7}
                     session="Activity"
                     title="Build Your Backend"
-                    description="The Dockerfile exists. Now fill it in — a real FastAPI backend with SQLite storage and Redis caching, all running via Docker Compose. By the end you have a documented API you can hand off to your frontend next week."
+                    description="The Dockerfile exists. Now fill it in: a real FastAPI backend with SQLite storage and Redis caching, all running via Docker Compose. By the end you have a documented API you can hand off to your frontend next week."
                     icon={<Server className="h-4 w-4" />}
                 />
 
@@ -39,7 +40,7 @@ export default function Week7Activity() {
                 {[
                     '3 or more REST endpoints (at minimum: create one resource, list all resources, get one resource by ID)',
                     'SQLite database using SQLAlchemy for all persistent data',
-                    'At least one Redis-cached endpoint — a read that is expensive enough to be worth caching (e.g., aggregate, filtered list, recommendation computation)',
+                    'At least one Redis-cached endpoint: a read that is expensive enough to be worth caching (e.g., aggregate, filtered list, recommendation computation)',
                     'Docker Compose file that starts FastAPI + Redis with one command: docker compose up',
                     'FastAPI /docs page fully documents all endpoints with correct schemas',
                 ].map((req, i) => (
@@ -72,14 +73,14 @@ export default function Week7Activity() {
                 </div>
 
                 <TerminalBlock
-                    title="bash — backend"
+                    title="bash · backend"
                     lines={[
                         { cmd: 'docker compose up --build' },
                     ]}
                 />
 
                 <LectureCallout type="info">
-                    <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">depends_on</code> ensures Redis starts first, but doesn't wait for it to be ready — just for the container to start. Your code should handle the case where Redis is temporarily unavailable.
+                    <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">depends_on</code> ensures Redis starts first, but doesn't wait for it to be ready, only for the container to start. Your code should handle the case where Redis is temporarily unavailable.
                 </LectureCallout>
             </ActivityChallenge>
 
@@ -99,7 +100,7 @@ export default function Week7Activity() {
                 </div>
 
                 <ActivityHint label="SQLAlchemy quickstart">
-                    <code className="bg-muted px-1 rounded text-xs">from sqlalchemy import create_engine; from sqlalchemy.orm import sessionmaker, DeclarativeBase</code> — then define your Base class and models that inherit from it. For Pydantic schemas, use <code className="bg-muted px-1 rounded text-xs">model_config = ConfigDict(from_attributes=True)</code> so Pydantic can read SQLAlchemy objects directly.
+                    <code className="bg-muted px-1 rounded text-xs">from sqlalchemy import create_engine; from sqlalchemy.orm import sessionmaker, DeclarativeBase</code>, then define your Base class and models that inherit from it. For Pydantic schemas, use <code className="bg-muted px-1 rounded text-xs">model_config = ConfigDict(from_attributes=True)</code> so Pydantic can read SQLAlchemy objects directly.
                 </ActivityHint>
             </ActivityChallenge>
 
@@ -114,7 +115,7 @@ export default function Week7Activity() {
                 </div>
 
                 <LectureCallout type="tip">
-                    Write one endpoint, test it in <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">/docs</code>, then write the next. Do not write all three and then test — you will not know which one is broken.
+                    Write one endpoint, test it in <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">/docs</code>, then write the next. Do not write all three and then test, because you will not know which one is broken.
                 </LectureCallout>
             </ActivityChallenge>
 
@@ -125,7 +126,7 @@ export default function Week7Activity() {
             >
                 <div className="space-y-1">
                     <ActivityTask>Connect to Redis: <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">r = redis.Redis(host="redis", port=6379, decode_responses=True)</code></ActivityTask>
-                    <ActivityTask>Pick the most read-heavy endpoint — the one that does the most computation or hits the most rows</ActivityTask>
+                    <ActivityTask>Pick the most read-heavy endpoint, the one that does the most computation or hits the most rows</ActivityTask>
                     <ActivityTask>Cache its result in Redis with a 60-second TTL using <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">r.setex()</code></ActivityTask>
                     <ActivityTask>On each request: check Redis first (cache hit), fall back to SQLite if not found (cache miss), then store the result in Redis</ActivityTask>
                 </div>
@@ -146,13 +147,37 @@ export default function Week7Activity() {
                 />
 
                 <LectureCallout type="info">
-                    The host <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">"redis"</code> works because Docker Compose creates a network where each service name resolves to that container's IP. Your API connects to the Redis container by its service name — not <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">localhost</code>.
+                    The host <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">"redis"</code> works because Docker Compose creates a network where each service name resolves to that container's IP. Your API connects to the Redis container by its service name, not <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">localhost</code>.
                 </LectureCallout>
 
                 <LectureCallout type="tip">
                     TTL (Time To Live) is the expiration time in seconds. After 60 seconds the next request will recompute the value and re-cache it. Start with 60 seconds and adjust based on how stale your data can tolerate being.
                 </LectureCallout>
             </ActivityChallenge>
+
+            <LectureP>
+                Before you ship, prove to yourself that you understand the two core patterns from this week: shaping a response the way a FastAPI endpoint would, and the cache hit/miss logic you just wrote. Both exercises below run pure Python, no server needed.
+            </LectureP>
+
+            <InteractiveExercise
+                runtime="python"
+                language="python"
+                title="Exercise 1: Build the Response Body"
+                prompt={<>A FastAPI endpoint returns a dict that gets serialized to JSON. Complete <code>get_item</code> so it returns a dict with the keys <code>id</code> and <code>name</code>, where <code>name</code> is looked up from the <code>DB</code> dict by id. The final print must output exactly <code>{'{'}'id': 2, 'name': 'redis'{'}'}</code>.</>}
+                starter={"DB = {1: 'fastapi', 2: 'redis', 3: 'sqlite'}\n\ndef get_item(item_id):\n    # return a dict: {'id': item_id, 'name': <lookup in DB>}\n    return {}\n\nprint(get_item(2))"}
+                expected="{'id': 2, 'name': 'redis'}"
+                hint="return {'id': item_id, 'name': DB[item_id]}"
+            />
+
+            <InteractiveExercise
+                runtime="python"
+                language="python"
+                title="Exercise 2: Cache Hit or Miss"
+                prompt={<>Implement the cache hit/miss pattern from Challenge 3.3 with a plain dict standing in for Redis. Complete <code>get_report</code> so it returns a <code>(status, value)</code> tuple: if <code>key</code> is in <code>cache</code>, return <code>('HIT', cache[key])</code>; otherwise call <code>compute()</code>, store the result in <code>cache</code> under <code>key</code>, and return <code>('MISS', value)</code>. The two prints must output exactly <code>MISS 42</code> then <code>HIT 42</code> on separate lines.</>}
+                starter={"cache = {}\n\ndef compute():\n    return 42\n\ndef get_report(key):\n    # cache hit: return ('HIT', cached_value)\n    # cache miss: compute, store in cache, return ('MISS', value)\n    pass\n\nstatus, value = get_report('report')\nprint(status, value)\nstatus, value = get_report('report')\nprint(status, value)"}
+                expected={"MISS 42\nHIT 42"}
+                hint="Check `if key in cache:` first. On a miss, do cache[key] = compute() before returning."
+            />
 
             {/* ── 04 SHIP IT ──────────────────────────────────────────────────── */}
             <LectureSectionHeading number="04" title="Ship It" />

@@ -9,13 +9,14 @@ import {
     LectureP,
     LectureTerm,
 } from '@/components/ui/lecture-typography';
+import InteractiveExercise from '@/components/ui/interactive-exercise';
 
 // ── Waterfall vs Agile ────────────────────────────────────────────────────────
 const WaterfallVsAgile = () => (
     <div className="my-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="rounded-xl border border-border overflow-hidden">
             <div className="px-4 py-2.5 bg-rose-50 dark:bg-rose-950/20 border-b border-border">
-                <p className="text-xs font-bold text-rose-600 dark:text-rose-400">Waterfall — plan everything upfront</p>
+                <p className="text-xs font-bold text-rose-600 dark:text-rose-400">Waterfall: plan everything upfront</p>
             </div>
             <div className="p-4">
                 <div className="space-y-1.5">
@@ -32,14 +33,14 @@ const WaterfallVsAgile = () => (
                     ))}
                 </div>
                 <p className="text-xs text-muted-foreground mt-4 leading-relaxed">
-                    Each phase must complete before the next starts. Customer sees working software only at the very end — often a year later, often wrong.
+                    Each phase must complete before the next starts. Customer sees working software only at the very end, often a year later, often wrong.
                 </p>
             </div>
         </div>
 
         <div className="rounded-xl border border-border overflow-hidden">
             <div className="px-4 py-2.5 bg-emerald-50 dark:bg-emerald-950/20 border-b border-border">
-                <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400">Agile — ship small, learn fast</p>
+                <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400">Agile: ship small, learn fast</p>
             </div>
             <div className="p-4">
                 <div className="space-y-2">
@@ -58,7 +59,7 @@ const WaterfallVsAgile = () => (
                     ))}
                 </div>
                 <p className="text-xs text-muted-foreground mt-4 leading-relaxed">
-                    Working software ships every 1–2 weeks. Customer gives feedback after each sprint — the plan adapts to what's actually needed.
+                    Working software ships every 1 to 2 weeks. Customer gives feedback after each sprint, and the plan adapts to what's actually needed.
                 </p>
             </div>
         </div>
@@ -78,13 +79,13 @@ const SprintCycle = () => {
             title: 'Daily Standup',
             color: 'text-orange-600 dark:text-orange-400',
             bg: 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800',
-            desc: 'Three questions, 15 minutes max, every day: What did I do yesterday? What will I do today? Any blockers? Blockers get resolved offline — standup is synchronization, not problem solving.',
+            desc: 'Three questions, 15 minutes max, every day: What did I do yesterday? What will I do today? Any blockers? Blockers get resolved offline; standup is synchronization, not problem solving.',
         },
         {
             title: 'Development',
             color: 'text-emerald-600 dark:text-emerald-400',
             bg: 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800',
-            desc: 'Build, test, and review code. Stories move through the board: To Do → In Progress → In Review → Done. "Done" means tested, reviewed, and deployable — not just coded.',
+            desc: 'Build, test, and review code. Stories move through the board: To Do → In Progress → In Review → Done. "Done" means tested, reviewed, and deployable, not just coded.',
         },
         {
             title: 'Sprint Review',
@@ -96,7 +97,7 @@ const SprintCycle = () => {
             title: 'Retrospective',
             color: 'text-rose-600 dark:text-rose-400',
             bg: 'bg-rose-50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800',
-            desc: 'Internal team meeting: What went well? What didn\'t? What do we commit to changing next sprint? The retrospective is where teams improve — skip it and you stagnate.',
+            desc: 'Internal team meeting: What went well? What didn\'t? What do we commit to changing next sprint? The retrospective is where teams improve; skip it and you stagnate.',
         },
     ];
     return (
@@ -112,7 +113,7 @@ const SprintCycle = () => {
                     )}
                 </div>
             ))}
-            <p className="text-center text-xs text-muted-foreground pt-1 select-none">↺ &nbsp; repeat every 1–2 weeks</p>
+            <p className="text-center text-xs text-muted-foreground pt-1 select-none">↺ &nbsp; repeat every 1 to 2 weeks</p>
         </div>
     );
 };
@@ -162,7 +163,7 @@ export default function Week5Lecture1() {
                 week={5}
                 session="Lecture 1"
                 title="Scrum, Kanban & Sprint Cycles"
-                description="The ceremonies, artifacts, and mindset behind agile teams — user stories, sprint planning, standups, and retrospectives. You will plan the entire project in advance so every week maps to a clear set of issues."
+                description="The ceremonies, artifacts, and mindset behind agile teams: user stories, sprint planning, standups, and retrospectives. You will plan the entire project in advance so every week maps to a clear set of issues."
                 icon={<Workflow className="h-4 w-4" />}
             />
 
@@ -170,34 +171,34 @@ export default function Week5Lecture1() {
             <LectureSectionHeading number="01" title="Why Agile Exists" />
 
             <LectureP>
-                Software is uniquely hard to plan. Unlike building a bridge, you can't fully specify what you're building before you start — requirements change, users discover what they actually want only after using a prototype, and technology shifts under you mid-project. <LectureTerm>Waterfall</LectureTerm>, the dominant methodology before the 2000s, treated software like construction: plan everything, then execute. It failed constantly.
+                Software is uniquely hard to plan. Unlike building a bridge, you can't fully specify what you're building before you start. Requirements change, users discover what they actually want only after using a prototype, and technology shifts under you mid-project. <LectureTerm>Waterfall</LectureTerm>, the dominant methodology before the 2000s, treated software like construction: plan everything, then execute. It failed constantly.
             </LectureP>
             <LectureP>
-                In 2001, seventeen software practitioners wrote the <LectureTerm>Agile Manifesto</LectureTerm> — four values that reoriented the entire industry. The core insight: working software beats comprehensive documentation, customer collaboration beats contract negotiation, and responding to change beats following a plan.
+                In 2001, seventeen software practitioners wrote the <LectureTerm>Agile Manifesto</LectureTerm>, four values that reoriented the entire industry. The core insight: working software beats comprehensive documentation, customer collaboration beats contract negotiation, and responding to change beats following a plan.
             </LectureP>
 
             <WaterfallVsAgile />
 
             <LectureCallout type="info">
-                Agile isn't a specific process — it's a set of values. <LectureTerm>Scrum</LectureTerm> and <LectureTerm>Kanban</LectureTerm> are concrete frameworks that implement those values. Most real teams blend both, picking the ceremonies and artifacts that actually help them ship.
+                Agile isn't a specific process; it's a set of values. <LectureTerm>Scrum</LectureTerm> and <LectureTerm>Kanban</LectureTerm> are concrete frameworks that implement those values. Most real teams blend both, picking the ceremonies and artifacts that actually help them ship.
             </LectureCallout>
 
             {/* ── 02 SCRUM ────────────────────────────────────────────────────── */}
             <LectureSectionHeading number="02" title="Scrum" />
 
             <LectureP>
-                <LectureTerm>Scrum</LectureTerm> organizes work into fixed-length iterations called <LectureTip tip="A fixed-length iteration (usually 1–2 weeks) in which a team plans, builds, and ships a set of features. At the end of each sprint the team demos, reflects, and plans the next one.">sprints</LectureTip> — typically 1–2 weeks. Each sprint is a complete loop: plan, build, ship, learn, repeat. The three roles in Scrum are the <LectureTip tip="Owns the product backlog and decides what to build next. Represents the customer/stakeholder. Does not tell the team how to build — only what and in what priority order.">Product Owner</LectureTip> (decides what to build and in what order), the <LectureTip tip="Facilitates Scrum ceremonies, removes blockers, and shields the team from interruptions. Not a manager — a servant-leader who keeps the process healthy.">Scrum Master</LectureTip> (removes blockers, protects the team), and the <LectureTerm>Development Team</LectureTerm> (builds the thing).
+                <LectureTerm>Scrum</LectureTerm> organizes work into fixed-length iterations called <LectureTip tip="A fixed-length iteration (usually 1 to 2 weeks) in which a team plans, builds, and ships a set of features. At the end of each sprint the team demos, reflects, and plans the next one.">sprints</LectureTip>, typically 1 to 2 weeks. Each sprint is a complete loop: plan, build, ship, learn, repeat. The three roles in Scrum are the <LectureTip tip="Owns the product backlog and decides what to build next. Represents the customer/stakeholder. Does not tell the team how to build, only what and in what priority order.">Product Owner</LectureTip> (decides what to build and in what order), the <LectureTip tip="Facilitates Scrum ceremonies, removes blockers, and shields the team from interruptions. Not a manager but a servant-leader who keeps the process healthy.">Scrum Master</LectureTip> (removes blockers, protects the team), and the <LectureTerm>Development Team</LectureTerm> (builds the thing).
             </LectureP>
 
             <SprintCycle />
 
             <LectureP>
-                Every sprint starts with a <LectureTip tip="A single sentence describing what the team aims to achieve by the end of the sprint. Keeps work focused — if a task doesn't serve the sprint goal, it goes back to the backlog.">sprint goal</LectureTip> — one sentence that describes what the team will achieve. "Users can search and filter the catalog" is a sprint goal; "work on stuff" is not. The goal keeps the team focused: if a task doesn't serve the sprint goal, it goes back to the backlog.
+                Every sprint starts with a <LectureTip tip="A single sentence describing what the team aims to achieve by the end of the sprint. Keeps work focused: if a task doesn't serve the sprint goal, it goes back to the backlog.">sprint goal</LectureTip>, one sentence that describes what the team will achieve. "Users can search and filter the catalog" is a sprint goal; "work on stuff" is not. The goal keeps the team focused: if a task doesn't serve the sprint goal, it goes back to the backlog.
             </LectureP>
 
             <LectureSubHeading title="User Stories" />
             <LectureP>
-                Work in Scrum is expressed as <LectureTip tip="A short, plain-language description of a feature from the end-user's perspective. Format: 'As a [user], I want [goal] so that [reason].' Keeps the team focused on value, not just code.">user stories</LectureTip> — short, plain-language descriptions of a feature from the perspective of the person who needs it. The canonical format: <em className="text-foreground">As a [type of user], I want [some goal] so that [some reason].</em> This keeps the team focused on value delivered to real people, not technical tasks divorced from purpose.
+                Work in Scrum is expressed as <LectureTip tip="A short, plain-language description of a feature from the end-user's perspective. Format: 'As a [user], I want [goal] so that [reason].' Keeps the team focused on value, not just code.">user stories</LectureTip>: short, plain-language descriptions of a feature from the perspective of the person who needs it. The canonical format: <em className="text-foreground">As a [type of user], I want [some goal] so that [some reason].</em> This keeps the team focused on value delivered to real people, not technical tasks divorced from purpose.
             </LectureP>
 
             <div className="my-6 space-y-2">
@@ -234,7 +235,7 @@ export default function Week5Lecture1() {
             </div>
 
             <LectureCallout type="tip">
-                <LectureTip tip="A unit of relative effort used to estimate work. Fibonacci scale (1, 2, 3, 5, 8). A 2-point story is roughly twice the complexity of a 1 — the team calibrates its own scale over time.">Story points</LectureTip> measure relative effort, not hours. A 2-point story is roughly twice as complex as a 1-point story — the team calibrates their own scale. Common sequences: 1, 2, 3, 5, 8 (Fibonacci). The key insight: estimate in points, not time. Teams are bad at estimating hours; they're better at estimating relative complexity.
+                <LectureTip tip="A unit of relative effort used to estimate work. Fibonacci scale (1, 2, 3, 5, 8). A 2-point story is roughly twice the complexity of a 1, and the team calibrates its own scale over time.">Story points</LectureTip> measure relative effort, not hours. A 2-point story is roughly twice as complex as a 1-point story; the team calibrates their own scale. Common sequences: 1, 2, 3, 5, 8 (Fibonacci). The key insight: estimate in points, not time. Teams are bad at estimating hours; they're better at estimating relative complexity.
             </LectureCallout>
 
             {/* ── 03 AGILE ARTIFACTS ──────────────────────────────────────────── */}
@@ -250,22 +251,22 @@ export default function Week5Lecture1() {
                         name: 'Product Backlog',
                         color: 'text-blue-600 dark:text-blue-400',
                         bg: 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800',
-                        desc: 'The master ordered list of everything that might go into the product. Owned by the Product Owner. Constantly refined — stories at the top are detailed and ready; stories at the bottom are rough ideas. The backlog is never "done."',
-                        example: 'Everything from "add dark mode" to "rebuild the search engine" — all in one prioritized list.',
+                        desc: 'The master ordered list of everything that might go into the product. Owned by the Product Owner. Constantly refined: stories at the top are detailed and ready; stories at the bottom are rough ideas. The backlog is never "done."',
+                        example: 'Everything from "add dark mode" to "rebuild the search engine", all in one prioritized list.',
                     },
                     {
                         name: 'Sprint Backlog',
                         color: 'text-orange-600 dark:text-orange-400',
                         bg: 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800',
-                        desc: 'The subset of the product backlog the team commits to completing in the current sprint. Owned by the team. Once the sprint starts, scope is locked — new requests go to the product backlog for the next sprint.',
-                        example: 'The 5–8 stories the team pulled into Sprint 3, with tasks broken out under each.',
+                        desc: 'The subset of the product backlog the team commits to completing in the current sprint. Owned by the team. Once the sprint starts, scope is locked; new requests go to the product backlog for the next sprint.',
+                        example: 'The 5 to 8 stories the team pulled into Sprint 3, with tasks broken out under each.',
                     },
                     {
                         name: 'Burndown Chart',
                         color: 'text-emerald-600 dark:text-emerald-400',
                         bg: 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800',
                         desc: 'A graph showing remaining story points vs. days remaining in the sprint. The ideal line slopes from total points to zero. If the actual line is above the ideal, the team is behind. If below, they\'re ahead.',
-                        example: 'Sprint starts with 24 points. By day 5, ideal = 12 remaining; actual = 15 remaining. Slightly behind — worth discussing in standup.',
+                        example: 'Sprint starts with 24 points. By day 5, ideal = 12 remaining; actual = 15 remaining. Slightly behind, worth discussing in standup.',
                     },
                 ].map((a) => (
                     <div key={a.name} className={`rounded-xl border ${a.bg} overflow-hidden`}>
@@ -281,14 +282,23 @@ export default function Week5Lecture1() {
             </div>
 
             <LectureP>
-                After a few sprints, teams track their <LectureTip tip="The average number of story points a team completes per sprint. After 3–4 sprints the number stabilizes and becomes predictive — the team can forecast how much work fits in a future sprint.">velocity</LectureTip> — the average story points completed per sprint. After three or four sprints, velocity stabilizes and becomes predictive: if your velocity is 20, you should pull roughly 20 points into each sprint. Without velocity, sprint planning is guesswork.
+                After a few sprints, teams track their <LectureTip tip="The average number of story points a team completes per sprint. After 3 to 4 sprints the number stabilizes and becomes predictive, so the team can forecast how much work fits in a future sprint.">velocity</LectureTip>, the average story points completed per sprint. After three or four sprints, velocity stabilizes and becomes predictive: if your velocity is 20, you should pull roughly 20 points into each sprint. Without velocity, sprint planning is guesswork.
             </LectureP>
+
+            <InteractiveExercise
+                runtime="check"
+                language="text"
+                title="Exercise 1: Plan with velocity"
+                prompt={<>Your team completed 18 points in Sprint 1, 22 in Sprint 2, and 20 in Sprint 3. Using the team's average velocity, how many story points should you pull into Sprint 4? Answer with just the number.</>}
+                expected={["20", "20 points", "20 story points"]}
+                hint="Velocity is the average points completed per sprint: (18 + 22 + 20) / 3."
+            />
 
             {/* ── 04 KANBAN ───────────────────────────────────────────────────── */}
             <LectureSectionHeading number="04" title="Kanban" />
 
             <LectureP>
-                <LectureTerm>Kanban</LectureTerm> is a flow-based alternative to Scrum's sprints. Instead of time-boxed iterations, work flows continuously through a board of columns. The core principle is <LectureTip tip="Work In Progress limits — a cap on how many items can be in a board column at once. Forces the team to finish work before starting more. Prevents overload and exposes bottlenecks.">WIP limits</LectureTip> (Work In Progress limits) — you cap how many items can be in each column at once. If "In Progress" is full, you can't start something new until you finish something in progress. This forces the team to finish work rather than start more.
+                <LectureTerm>Kanban</LectureTerm> is a flow-based alternative to Scrum's sprints. Instead of time-boxed iterations, work flows continuously through a board of columns. The core principle is <LectureTip tip="Work In Progress limits: a cap on how many items can be in a board column at once. Forces the team to finish work before starting more. Prevents overload and exposes bottlenecks.">WIP limits</LectureTip> (Work In Progress limits). You cap how many items can be in each column at once. If "In Progress" is full, you can't start something new until you finish something in progress. This forces the team to finish work rather than start more.
             </LectureP>
 
             <KanbanBoard />
@@ -331,10 +341,10 @@ export default function Week5Lecture1() {
             </div>
 
             {/* ── 05 GITHUB PROJECTS ──────────────────────────────────────────── */}
-            <LectureSectionHeading number="05" title="GitHub Projects — Agile in Practice" />
+            <LectureSectionHeading number="05" title="GitHub Projects: Agile in Practice" />
 
             <LectureP>
-                GitHub Projects is where most engineering teams actually live — it combines issues, pull requests, and project boards in the same tool as your code. No context switching between Jira and GitHub. For the club's projects and for your own work, GitHub Projects is the right default.
+                GitHub Projects is where most engineering teams actually live. It combines issues, pull requests, and project boards in the same tool as your code. No context switching between Jira and GitHub. For the club's projects and for your own work, GitHub Projects is the right default.
             </LectureP>
 
             <div className="my-6 space-y-3">
@@ -352,12 +362,12 @@ export default function Week5Lecture1() {
                     {
                         step: '03',
                         title: 'Link PRs to Issues',
-                        desc: 'In your PR description, write "Closes #42" — GitHub auto-closes the issue and moves the card to Done when the PR merges. The board stays current with zero manual updates.',
+                        desc: 'In your PR description, write "Closes #42" and GitHub auto-closes the issue and moves the card to Done when the PR merges. The board stays current with zero manual updates.',
                     },
                     {
                         step: '04',
                         title: 'Use Milestones for Sprints',
-                        desc: 'Create a Milestone called "Sprint 1" with a due date. Assign issues to it. The milestone progress bar becomes your burndown chart — issues closed vs. total assigned.',
+                        desc: 'Create a Milestone called "Sprint 1" with a due date. Assign issues to it. The milestone progress bar becomes your burndown chart: issues closed vs. total assigned.',
                     },
                 ].map((item) => (
                     <div key={item.step} className="flex items-start gap-4 rounded-xl border border-border bg-card p-4">
@@ -370,14 +380,23 @@ export default function Week5Lecture1() {
                 ))}
             </div>
 
+            <InteractiveExercise
+                runtime="check"
+                language="text"
+                title="Exercise 2: Link a PR to its issue"
+                prompt={<>You just opened a pull request that finishes the work tracked in issue <code>#42</code>. What exact phrase do you put in the PR description so GitHub automatically closes the issue (and moves its card to Done) when the PR merges?</>}
+                expectedPattern={"^(?:[Cc]los(?:es|e|ed)|[Ff]ix(?:es|ed)?|[Rr]esolv(?:es|e|ed))\\s+#42$"}
+                hint={'Use one of GitHub\'s closing keywords followed by the issue number, e.g. "Closes #42".'}
+            />
+
             {/* ── 06 THE RETROSPECTIVE ────────────────────────────────────────── */}
-            <LectureSectionHeading number="06" title="The Retrospective — How Teams Actually Improve" />
+            <LectureSectionHeading number="06" title="The Retrospective: How Teams Actually Improve" />
 
             <LectureP>
-                The retrospective is the most skipped and most valuable ceremony in agile. Teams skip it when they feel busy — which is exactly when they need it most. Without retrospectives, teams repeat the same mistakes sprint after sprint.
+                The retrospective is the most skipped and most valuable ceremony in agile. Teams skip it when they feel busy, which is exactly when they need it most. Without retrospectives, teams repeat the same mistakes sprint after sprint.
             </LectureP>
             <LectureP>
-                The classic format is <LectureTerm>Start / Stop / Continue</LectureTerm>: what should we start doing that we aren't? What should we stop doing that isn't working? What's working well that we should keep? Each item leads to a concrete action with an owner — not just a vague intention to "communicate better."
+                The classic format is <LectureTerm>Start / Stop / Continue</LectureTerm>: what should we start doing that we aren't? What should we stop doing that isn't working? What's working well that we should keep? Each item leads to a concrete action with an owner, not just a vague intention to "communicate better."
             </LectureP>
 
             <div className="my-6 rounded-xl border border-border bg-muted/30 overflow-hidden">
@@ -402,7 +421,7 @@ export default function Week5Lecture1() {
             </div>
 
             <LectureCallout type="tip">
-                The best retrospectives are psychologically safe — team members can say what's actually wrong without fear of blame. If your retrospective only produces "good job everyone," something's wrong. The facilitator's job is to make it safe to say hard things.
+                The best retrospectives are psychologically safe: team members can say what's actually wrong without fear of blame. If your retrospective only produces "good job everyone," something's wrong. The facilitator's job is to make it safe to say hard things.
             </LectureCallout>
 
             

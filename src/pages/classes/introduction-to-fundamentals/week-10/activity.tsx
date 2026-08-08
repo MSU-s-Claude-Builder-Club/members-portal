@@ -11,6 +11,7 @@ import { ActivityChallenge } from '@/components/ui/activity-challenge';
 import { ActivityTask, ActivityTaskListProvider } from '@/components/ui/activity-task';
 import { TerminalBlock } from '@/components/ui/terminal-block';
 import { CodeBlock } from '@/components/ui/code-block';
+import InteractiveExercise from '@/components/ui/interactive-exercise';
 
 export default function Week10Activity() {
     return (
@@ -45,7 +46,7 @@ export default function Week10Activity() {
                     </ActivityHint>
                     <CodeBlock
                         language="python"
-                        title="seed_user.py — create a test user"
+                        title="seed_user.py · create a test user"
                         lines={[
                             'from passlib.context import CryptContext',
                             '',
@@ -71,7 +72,7 @@ export default function Week10Activity() {
                         <ActivityTask>Store JWT secret in an env var; document it in README (e.g. "Set JWT_SECRET for auth")</ActivityTask>
                     </div>
                     <ActivityHint label="JWT creation">
-                        Use <code className="bg-muted px-1 rounded text-xs">python-jose</code> to sign the token. Your <code className="bg-muted px-1 rounded text-xs">create_access_token</code> function from Lecture 1 is the exact pattern — copy it and adjust the payload to include your user's id and email.
+                        Use <code className="bg-muted px-1 rounded text-xs">python-jose</code> to sign the token. Your <code className="bg-muted px-1 rounded text-xs">create_access_token</code> function from Lecture 1 is the exact pattern. Copy it and adjust the payload to include your user's id and email.
                     </ActivityHint>
                 </ActivityChallenge>
 
@@ -90,13 +91,37 @@ export default function Week10Activity() {
                     Before moving to the frontend, verify the backend works from the terminal:
                 </LectureP>
                 <TerminalBlock
-                    title="bash — verify backend auth"
+                    title="bash · verify backend auth"
                     lines={[
                         { comment: 'register (if you added a register endpoint)', cmd: 'curl -X POST http://localhost:8000/register -H "Content-Type: application/json" -d \'{"email":"test@test.com","password":"secret"}\'' },
-                        { comment: 'login — copy the token from the response', cmd: 'curl -X POST http://localhost:8000/login -d "username=test@test.com&password=secret"' },
-                        { comment: 'test protected route without token — expect 401', cmd: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/me' },
-                        { comment: 'test with token — expect 200 + user data', cmd: 'curl -H "Authorization: Bearer YOUR_TOKEN" http://localhost:8000/me' },
+                        { comment: 'login, then copy the token from the response', cmd: 'curl -X POST http://localhost:8000/login -d "username=test@test.com&password=secret"' },
+                        { comment: 'test protected route without token: expect 401', cmd: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/me' },
+                        { comment: 'test with token: expect 200 + user data', cmd: 'curl -H "Authorization: Bearer YOUR_TOKEN" http://localhost:8000/me' },
                     ]}
+                />
+
+                <LectureP>
+                    Before you wire this into your project, warm up with the two core ideas behind backend auth: comparing password hashes and reading a token payload. Both run right here in the browser.
+                </LectureP>
+
+                <InteractiveExercise
+                    runtime="python"
+                    language="python"
+                    title="Exercise 1: Verify a password hash"
+                    prompt={<>The database stores the SHA-256 hash of a user's password, never the password itself. Complete <code>hash_password</code> so it returns the hex digest of the password. If the attempt hashes to the stored value, the script prints exactly <code>login ok</code>.</>}
+                    starter={"import hashlib\n\ndef hash_password(password):\n    # return the sha256 hex digest of the password string\n    # hint: encode the string first\n    return \"\"\n\nstored_hash = \"2bb80d537b1da3e38bd30361aa855686bde0eacd7162fef6a25fe97bf527a25b\"\nattempt = \"secret\"\n\nif hash_password(attempt) == stored_hash:\n    print(\"login ok\")\nelse:\n    print(\"login failed\")"}
+                    expected="login ok"
+                    hint='hashlib.sha256(password.encode()).hexdigest()'
+                />
+
+                <InteractiveExercise
+                    runtime="python"
+                    language="python"
+                    title="Exercise 2: Decode a token payload"
+                    prompt={<>A JWT's payload is just base64-encoded JSON. Decode the segment below, parse it, and print the value of its <code>sub</code> claim (the user id). The output should be exactly <code>42</code>.</>}
+                    starter={"import base64\nimport json\n\npayload_segment = \"eyJzdWIiOiA0MiwgInJvbGUiOiAibWVtYmVyIn0=\"\n\n# 1. base64-decode payload_segment\n# 2. parse the resulting bytes as JSON\n# 3. print the value stored under the \"sub\" key\n"}
+                    expected="42"
+                    hint='data = json.loads(base64.b64decode(payload_segment)); then print(data["sub"])'
                 />
 
                 <LectureSectionHeading number="02" title="Frontend: Login and Protected Page" />
@@ -131,7 +156,7 @@ export default function Week10Activity() {
                 <LectureSectionHeading number="03" title="Ship It" />
 
                 <LectureP>
-                    Auth is a feature — ship it like one. Create an issue, open a PR, and update your project board.
+                    Auth is a feature, so ship it like one. Create an issue, open a PR, and update your project board.
                 </LectureP>
 
                 <ActivityChallenge
@@ -156,7 +181,7 @@ export default function Week10Activity() {
                         <ActivityTask>Document how to register or seed a test user</ActivityTask>
                         <ActivityTask>Document how to get a token (endpoint, request body, response shape)</ActivityTask>
                         <ActivityTask>List which routes require authentication</ActivityTask>
-                        <ActivityTask>List required environment variables (e.g. <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">JWT_SECRET</code>) — names only, no values</ActivityTask>
+                        <ActivityTask>List required environment variables (e.g. <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">JWT_SECRET</code>), names only, no values</ActivityTask>
                     </div>
                     <ActivityHint label="README structure">
                         A simple "Authentication" section in your README is enough. Include a curl example so a reviewer can test login without spinning up the frontend.

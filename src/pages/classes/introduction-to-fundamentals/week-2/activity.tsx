@@ -9,6 +9,7 @@ import {
 import { ActivityHint } from '@/components/ui/activity-hint';
 import { ActivityChallenge } from '@/components/ui/activity-challenge';
 import { ActivityTask, ActivityTaskListProvider } from '@/components/ui/activity-task';
+import InteractiveExercise from '@/components/ui/interactive-exercise';
 
 export default function Week2Activity() {
     return (
@@ -18,7 +19,7 @@ export default function Week2Activity() {
                     week={2}
                     session="Activity"
                     title="Data Structures in Practice"
-                    description="Implement core data structures and patterns in Python — no new language, just the concepts from this week's lectures. BST, stack, and hash map; you'll use these in C++ next week (Week 3)."
+                    description="Implement core data structures and patterns in Python. No new language, just the concepts from this week's lectures. BST, stack, and hash map; you'll use these in C++ next week (Week 3)."
                     icon={<Binary className="h-4 w-4" />}
                 />
 
@@ -30,7 +31,7 @@ export default function Week2Activity() {
                 <LectureSectionHeading number="01" title="Binary Search Tree" />
 
                 <LectureP>
-                    Implement a BST that stores integers. You need insert and in-order traversal. No standard-library tree — build the nodes and links yourself so the structure is explicit.
+                    Implement a BST that stores integers. You need insert and in-order traversal. No standard-library tree; build the nodes and links yourself so the structure is explicit.
                 </LectureP>
 
                 <ActivityChallenge
@@ -69,7 +70,7 @@ export default function Week2Activity() {
                     <div className="space-y-1">
                         <ActivityTask>Implement <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">inorder(self)</code> that returns a list of values in ascending order</ActivityTask>
                         <ActivityTask>Use a helper <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">_inorder(node, result)</code>: if node is None return; recurse left; append node.val; recurse right</ActivityTask>
-                        <ActivityTask>Run <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">print(bst.inorder())</code> after inserts — you should see <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">[1, 2, 3, 5, 8]</code></ActivityTask>
+                        <ActivityTask>Run <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">print(bst.inorder())</code> after inserts; you should see <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">[1, 2, 3, 5, 8]</code></ActivityTask>
                     </div>
                 </ActivityChallenge>
 
@@ -77,7 +78,7 @@ export default function Week2Activity() {
                 <LectureSectionHeading number="02" title="Min Stack" />
 
                 <LectureP>
-                    A stack that supports <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">push</code>, <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">pop</code>, <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">top</code>, and <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">get_min</code> — all in O(1) time. The trick: a second stack (or list) that tracks the minimum at each level.
+                    A stack that supports <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">push</code>, <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">pop</code>, <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">top</code>, and <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">get_min</code>, all in O(1) time. The trick: a second stack (or list) that tracks the minimum at each level.
                 </LectureP>
 
                 <ActivityChallenge
@@ -98,6 +99,20 @@ export default function Week2Activity() {
                         When you pop, you need to know what the minimum was before the value you added. The mins stack mirrors the minimum at each stack level.
                     </ActivityHint>
                 </ActivityChallenge>
+
+                <LectureP>
+                    Before moving on, prove the MinStack logic works. This one runs right in the browser (JavaScript instead of Python, same idea).
+                </LectureP>
+
+                <InteractiveExercise
+                    runtime="js"
+                    language="javascript"
+                    title="Exercise 1: Min Stack, live"
+                    prompt={<>Complete <code>pop()</code> so the mins list stays in sync: when the popped value equals the current minimum, pop it from <code>mins</code> too. The script pushes 3, 1, 2, then pops twice. It must log exactly <code>3</code>.</>}
+                    starter={"const stack = [];\nconst mins = [];\n\nfunction push(val) {\n  stack.push(val);\n  if (mins.length === 0 || val <= mins[mins.length - 1]) {\n    mins.push(val);\n  }\n}\n\nfunction pop() {\n  const val = stack.pop();\n  // if val equals the current minimum, pop from mins too\n}\n\nfunction getMin() {\n  return mins[mins.length - 1];\n}\n\npush(3);\npush(1);\npush(2);\npop();\npop();\nconsole.log(getMin());"}
+                    expected="3"
+                    hint="Inside pop(): if (val === mins[mins.length - 1]) mins.pop();"
+                />
 
                 {/* ── 03 HASH MAP PATTERNS ────────────────────────────────────── */}
                 <LectureSectionHeading number="03" title="Hash Map Practice" />
@@ -132,6 +147,20 @@ export default function Week2Activity() {
                     </div>
                 </ActivityChallenge>
 
+                <LectureP>
+                    Now verify the hash map pattern itself. Same one-pass Two Sum idea, runnable here in JavaScript.
+                </LectureP>
+
+                <InteractiveExercise
+                    runtime="js"
+                    language="javascript"
+                    title="Exercise 2: Two Sum, live"
+                    prompt={<>Finish the loop body of <code>twoSum</code> using the one-pass dictionary approach. For <code>[2, 7, 11, 15]</code> with target <code>9</code> the answer is indices 0 and 1, so the script must log exactly <code>0,1</code>.</>}
+                    starter={"function twoSum(nums, target) {\n  const seen = {}; // value -> index\n  for (let i = 0; i < nums.length; i++) {\n    const need = target - nums[i];\n    // if need is in seen, return [seen[need], i]\n    // otherwise record nums[i] -> i in seen\n  }\n}\n\nconsole.log(twoSum([2, 7, 11, 15], 9).join(\",\"));"}
+                    expected="0,1"
+                    hint="if (need in seen) return [seen[need], i]; then seen[nums[i]] = i;"
+                />
+
                 <LectureCallout type="info">
                     You have completed the Activity when all six challenges produce correct output: (1) BST insert builds the correct tree shape, (2) in-order traversal prints <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">[1, 2, 3, 5, 8]</code>, (3) MinStack returns the correct minimum after each push/pop, (4) Two Sum returns valid index pairs, (5) First Repeating Character returns the correct character (or None), and (6) all edge cases pass (empty inputs, single elements, no solution).
                 </LectureCallout>
@@ -141,7 +170,7 @@ export default function Week2Activity() {
                 </LectureP>
 
                 <LectureCallout type="tip">
-                    These patterns — BST, stack-with-extra-invariant, and hash map for O(1) lookup — show up in Week 3 when you build the C++ Phonebook. Here you get the logic without the syntax; next week you apply the same ideas in C++.
+                    These patterns (BST, stack-with-extra-invariant, and hash map for O(1) lookup) show up in Week 3 when you build the C++ Phonebook. Here you get the logic without the syntax; next week you apply the same ideas in C++.
                 </LectureCallout>
 
                 

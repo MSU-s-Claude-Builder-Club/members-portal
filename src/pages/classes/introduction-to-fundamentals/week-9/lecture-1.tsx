@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/lecture-typography';
 import { TerminalBlock } from '@/components/ui/terminal-block';
 import { CodeBlock } from '@/components/ui/code-block';
+import InteractiveExercise from '@/components/ui/interactive-exercise';
 
 // ── Props flow diagram ────────────────────────────────────────────────────────
 const PropsFlowDiagram = () => (
@@ -81,14 +82,14 @@ export default function Week9Lecture1() {
             </LectureP>
 
             <LectureCallout type="info">
-                React doesn't update the real DOM directly — it maintains a <LectureTip tip="A lightweight copy of the DOM in memory. React compares the new virtual DOM to the previous one and updates only what changed in the real DOM.">Virtual DOM</LectureTip>, a lightweight in-memory representation of the UI. When state changes, React builds a new virtual DOM tree, compares it to the previous one (called <LectureTip tip="The algorithm that compares two virtual DOM trees and computes the minimal set of real DOM updates. Makes React efficient.">diffing</LectureTip>), and applies only the minimal set of real DOM changes needed. This is why React is fast even for complex UIs.
+                React doesn't update the real DOM directly. Instead, it maintains a <LectureTip tip="A lightweight copy of the DOM in memory. React compares the new virtual DOM to the previous one and updates only what changed in the real DOM.">Virtual DOM</LectureTip>, a lightweight in-memory representation of the UI. When state changes, React builds a new virtual DOM tree, compares it to the previous one (called <LectureTip tip="The algorithm that compares two virtual DOM trees and computes the minimal set of real DOM updates. Makes React efficient.">diffing</LectureTip>), and applies only the minimal set of real DOM changes needed. This is why React is fast even for complex UIs.
             </LectureCallout>
 
             {/* ── 02 COMPONENTS ───────────────────────────────────────────────── */}
             <LectureSectionHeading number="02" title="Components" />
 
             <LectureP>
-                A <LectureTip tip="A reusable piece of UI: a function that returns JSX. Components can receive props and hold state. You compose them to build the full interface.">component</LectureTip> is a JavaScript function that returns JSX — a syntax that looks like HTML but is actually JavaScript. Components are the building blocks of every React application. You compose them together like Lego pieces to build complex UIs.
+                A <LectureTip tip="A reusable piece of UI: a function that returns JSX. Components can receive props and hold state. You compose them to build the full interface.">component</LectureTip> is a JavaScript function that returns JSX, a syntax that looks like HTML but is actually JavaScript. Components are the building blocks of every React application. You compose them together like Lego pieces to build complex UIs.
             </LectureP>
             <LectureP>
                 Every React component follows two rules: the function name must start with a capital letter, and it must return something React can render (JSX, a string, a number, <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">null</code>).
@@ -96,7 +97,7 @@ export default function Week9Lecture1() {
 
             <CodeBlock
                 language="tsx"
-                title="Button.tsx — a minimal component"
+                title="Button.tsx · a minimal component"
                 lines={[
                     '// A component is just a function that returns JSX',
                     'export function Button() {',
@@ -120,7 +121,7 @@ export default function Week9Lecture1() {
 
             <CodeBlock
                 language="tsx"
-                title="JSX — key differences from HTML"
+                title="JSX · key differences from HTML"
                 lines={[
                     '// ✅ className, not class',
                     '<div className="container">',
@@ -142,12 +143,12 @@ export default function Week9Lecture1() {
             <LectureSectionHeading number="03" title="Props" />
 
             <LectureP>
-                <LectureTip tip="Inputs to a component, passed as attributes. Read-only; the parent owns the data. Props flow down the component tree.">Props</LectureTip> (short for properties) are how you pass data into a component. They're the arguments to your component function. A component with no props is a static piece of UI — the same every time. A component that accepts props is configurable and reusable.
+                <LectureTip tip="Inputs to a component, passed as attributes. Read-only; the parent owns the data. Props flow down the component tree.">Props</LectureTip> (short for properties) are how you pass data into a component. They're the arguments to your component function. A component with no props is a static piece of UI, the same every time. A component that accepts props is configurable and reusable.
             </LectureP>
 
             <CodeBlock
                 language="tsx"
-                title="Button.tsx — props make components reusable"
+                title="Button.tsx · props make components reusable"
                 lines={[
                     '// Define the shape of the props with a TypeScript interface',
                     'interface ButtonProps {',
@@ -173,13 +174,13 @@ export default function Week9Lecture1() {
 
             <LectureSubHeading title="The data flow rule" />
             <LectureP>
-                Props flow <strong className="text-foreground">down</strong> — from parent to child. A parent component owns its data and passes relevant pieces to its children. Children can never directly modify their parent's data. To communicate back up, the parent passes a <em>callback function</em> as a prop, and the child calls it when something happens.
+                Props flow <strong className="text-foreground">down</strong>, from parent to child. A parent component owns its data and passes relevant pieces to its children. Children can never directly modify their parent's data. To communicate back up, the parent passes a <em>callback function</em> as a prop, and the child calls it when something happens.
             </LectureP>
 
             <PropsFlowDiagram />
 
             <LectureCallout type="tip">
-                The "data down, events up" pattern is the foundation of React architecture. If you find yourself trying to pass data upward through props, that's a sign the state should be lifted to a common ancestor — or moved into a global state solution like Context.
+                The "data down, events up" pattern is the foundation of React architecture. If you find yourself trying to pass data upward through props, that's a sign the state should be lifted to a common ancestor, or moved into a global state solution like Context.
             </LectureCallout>
 
             {/* ── 04 STATE WITH USESTATE ──────────────────────────────────────── */}
@@ -193,7 +194,7 @@ export default function Week9Lecture1() {
 
             <CodeBlock
                 language="tsx"
-                title="Counter.tsx — useState in action"
+                title="Counter.tsx · useState in action"
                 lines={[
                     "import { useState } from 'react'",
                     'export function Counter() {',
@@ -220,53 +221,68 @@ export default function Week9Lecture1() {
 
             <LectureSubHeading title="State with arrays and objects" />
             <LectureP>
-                When your state is an array or object, you need to create a new one instead of modifying the existing one. React uses reference equality to detect changes — if the reference is the same object, it assumes nothing changed.
+                When your state is an array or object, you need to create a new one instead of modifying the existing one. React uses reference equality to detect changes: if the reference is the same object, it assumes nothing changed.
             </LectureP>
 
             <CodeBlock
                 language="javascript"
-                title="state mutations — right vs wrong"
+                title="state mutations · right vs wrong"
                 lines={[
-                    "// ❌ Wrong — mutates the existing array",
+                    "// ❌ Wrong: mutates the existing array",
                     "tasks.push(newTask)  // React doesn't see this change",
-                    "setTasks(tasks)      // same reference — no re-render",
+                    "setTasks(tasks)      // same reference, no re-render",
                     '',
-                    '// ✅ Right — creates a new array',
+                    '// ✅ Right: creates a new array',
                     'setTasks([...tasks, newTask])  // spread creates a new array',
                     '',
-                    '// ❌ Wrong — mutates the existing object',
+                    '// ❌ Wrong: mutates the existing object',
                     'user.name = "Alice"',
                     'setUser(user)',
                     '',
-                    '// ✅ Right — creates a new object',
+                    '// ✅ Right: creates a new object',
                     'setUser({ ...user, name: "Alice" })  // spread + override',
                 ]}
+            />
+
+            <LectureSubHeading title="Try it yourself" />
+            <LectureP>
+                This is exactly the JavaScript you would write inside a <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">setTasks</code> call. Practice the immutable update pattern:
+            </LectureP>
+
+            <InteractiveExercise
+                runtime="js"
+                language="javascript"
+                title="Exercise 1: immutable array update"
+                prompt={<>Using the spread operator (not <code>push</code>), create a <strong>new</strong> array called <code>updated</code> that contains everything in <code>tasks</code> plus the string <code>'Do laundry'</code> at the end. The code then logs the new length, so a correct solution logs exactly <code>3</code>.</>}
+                starter={"const tasks = ['Buy groceries', 'Walk the dog'];\n\n// Create a NEW array with 'Do laundry' added to the end.\n// Do not use push. Fix the line below using the spread operator.\nconst updated = tasks;\n\nconsole.log(updated.length);"}
+                expected="3"
+                hint="const updated = [...tasks, 'Do laundry']"
             />
 
             {/* ── 05 USEEFFECT ────────────────────────────────────────────────── */}
             <LectureSectionHeading number="05" title="Side Effects with useEffect" />
 
             <LectureP>
-                <LectureTip code tip="useEffect — runs code after React renders the component. Used for anything that needs to happen 'outside' of rendering: fetching data, setting up subscriptions, updating the document title, timers. Takes a function and a dependency array.">useEffect</LectureTip> runs code after a component renders. It's how you handle <LectureTip tip="Anything that affects the outside world: API calls, timers, subscriptions, DOM updates. Not part of the render; run after render via useEffect.">side effects</LectureTip> — anything that reaches outside the component: fetching data from an API, setting up a timer, syncing with localStorage.
+                <LectureTip code tip="useEffect — runs code after React renders the component. Used for anything that needs to happen 'outside' of rendering: fetching data, setting up subscriptions, updating the document title, timers. Takes a function and a dependency array.">useEffect</LectureTip> runs code after a component renders. It's how you handle <LectureTip tip="Anything that affects the outside world: API calls, timers, subscriptions, DOM updates. Not part of the render; run after render via useEffect.">side effects</LectureTip>, meaning anything that reaches outside the component: fetching data from an API, setting up a timer, syncing with localStorage.
             </LectureP>
 
             <CodeBlock
                 language="tsx"
-                title="useEffect — three forms"
+                title="useEffect · three forms"
                 lines={[
-                    '// 1. No dependency array — runs after every render',
+                    '// 1. No dependency array: runs after every render',
                     'useEffect(() => {',
                     "    console.log('rendered')",
                     '})',
-                    '// 2. Empty array — runs once, on mount only',
+                    '// 2. Empty array: runs once, on mount only',
                     'useEffect(() => {',
                     '    fetchData()  // like componentDidMount',
                     '}, [])',
-                    '// 3. Dependency array — runs when listed values change',
+                    '// 3. Dependency array: runs when listed values change',
                     'useEffect(() => {',
                     '    document.title = `Tasks: ${tasks.length}`',
                     '}, [tasks])  // re-runs whenever tasks changes',
-                    '// Cleanup — return a function to clean up when component unmounts',
+                    '// Cleanup: return a function to clean up when component unmounts',
                     'useEffect(() => {',
                     '    const timer = setInterval(tick, 1000)',
                     '    return () => clearInterval(timer)',
@@ -275,7 +291,7 @@ export default function Week9Lecture1() {
             />
 
             <LectureCallout type="warning">
-                The dependency array is not optional — it controls when the effect runs. Omitting it means the effect runs after every render (usually not what you want). An empty array <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">[]</code> means run once. Listing values means run when those values change. Getting this wrong is the most common source of infinite loops and stale data bugs in React.
+                The dependency array is not optional; it controls when the effect runs. Omitting it means the effect runs after every render (usually not what you want). An empty array <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">[]</code> means run once. Listing values means run when those values change. Getting this wrong is the most common source of infinite loops and stale data bugs in React.
             </LectureCallout>
 
             {/* ── 06 CUSTOM HOOKS ─────────────────────────────────────────────── */}
@@ -290,7 +306,7 @@ export default function Week9Lecture1() {
 
             <CodeBlock
                 language="typescript"
-                title="useLocalStorage.ts — a practical custom hook"
+                title="useLocalStorage.ts · a practical custom hook"
                 lines={[
                     "import { useState } from 'react'",
                     'export function useLocalStorage<T>(key: string, initialValue: T) {',
@@ -310,7 +326,7 @@ export default function Week9Lecture1() {
             />
 
             <LectureCallout type="tip">
-                You'll use <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">useLocalStorage</code> exactly like this in the Task Tracker activity. It's one of the most practical custom hooks you can write — persist state with zero extra effort.
+                You'll use <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">useLocalStorage</code> exactly like this in the Task Tracker activity. It's one of the most practical custom hooks you can write: persist state with zero extra effort.
             </LectureCallout>
 
             {/* ── 07 CONDITIONAL RENDERING AND LISTS ──────────────────────────── */}
@@ -325,9 +341,9 @@ export default function Week9Lecture1() {
                 language="tsx"
                 title="conditional rendering patterns"
                 lines={[
-                    '// Ternary — when you need to show one thing OR another',
+                    '// Ternary: when you need to show one thing OR another',
                     '{isLoggedIn ? <Dashboard /> : <LoginPage />}',
-                    '// && operator — when you only need to show something OR nothing',
+                    '// && operator: when you only need to show something OR nothing',
                     '{error && <ErrorMessage message={error} />}',
                 ]}
             />
@@ -348,7 +364,7 @@ export default function Week9Lecture1() {
                     'return (',
                     '    <ul>',
                     '        {tasks.map(task => (',
-                    '            // key must be unique and stable — use an id, not an index',
+                    '            // key must be unique and stable: use an id, not an index',
                     "            <li key={task.id} className={task.done ? 'line-through' : ''}>",
                     '                {task.title}',
                     '            </li>',
@@ -359,14 +375,28 @@ export default function Week9Lecture1() {
             />
 
             <LectureCallout type="warning">
-                Don't use array index as the <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">key</code> prop if the list can be reordered or filtered. If the item at index 0 changes, React gets confused. Always use a stable, unique identifier from your data — like an <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">id</code> field.
+                The same <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">.map()</code> you use in JSX is plain JavaScript. Prove it to yourself:
             </LectureCallout>
+
+            <InteractiveExercise
+                runtime="js"
+                language="javascript"
+                title="Exercise 2: map data to output"
+                prompt={<>Use <code>.map()</code> to turn the <code>tasks</code> array into an array of just the <code>title</code> strings, stored in <code>titles</code>. The code then logs the titles joined with a comma and a space, so a correct solution logs exactly <code>Buy groceries, Walk the dog</code>.</>}
+                starter={"const tasks = [\n  { id: 1, title: 'Buy groceries', done: false },\n  { id: 2, title: 'Walk the dog', done: true },\n];\n\n// Use .map() to build an array of just the titles.\n// Fix the line below.\nconst titles = [];\n\nconsole.log(titles.join(', '));"}
+                expected="Buy groceries, Walk the dog"
+                hint="tasks.map(task => task.title)"
+            />
+
+            <LectureP>
+                Don't use array index as the <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">key</code> prop if the list can be reordered or filtered. If the item at index 0 changes, React gets confused. Always use a stable, unique identifier from your data, like an <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">id</code> field.
+            </LectureP>
 
             {/* ── 08 SHARING STATE WITH USECONTEXT ──────────────────────────── */}
             <LectureSectionHeading number="08" title="Sharing State with useContext" />
 
             <LectureP>
-                As your app grows, you'll find some data — like the logged-in user, a theme preference, or a language setting — needs to be accessed by many components at different levels of the tree. Passing it through every intermediate component via props is tedious and fragile. This is called <LectureTerm>prop drilling</LectureTerm>, and React's answer to it is <LectureTip code tip="useContext — a React hook that reads a value from a Context. Any component wrapped in a Provider can call useContext to access the shared value without prop drilling.">useContext</LectureTip>.
+                As your app grows, you'll find some data (like the logged-in user, a theme preference, or a language setting) needs to be accessed by many components at different levels of the tree. Passing it through every intermediate component via props is tedious and fragile. This is called <LectureTerm>prop drilling</LectureTerm>, and React's answer to it is <LectureTip code tip="useContext — a React hook that reads a value from a Context. Any component wrapped in a Provider can call useContext to access the shared value without prop drilling.">useContext</LectureTip>.
             </LectureP>
             <LectureP>
                 A <LectureTip tip="A React mechanism for sharing values across the component tree without passing props at every level. You create a Context, wrap a subtree in a Provider, and any descendant can read the value with useContext.">Context</LectureTip> is a way to broadcast data to an entire subtree. You create the context, wrap your app (or a section of it) in a <LectureTerm>Provider</LectureTerm> that supplies the value, and any descendant component can read it with <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">useContext</code>.
@@ -374,7 +404,7 @@ export default function Week9Lecture1() {
 
             <CodeBlock
                 language="tsx"
-                title="auth-context.tsx — creating and providing context"
+                title="auth-context.tsx · creating and providing context"
                 lines={[
                     "import { createContext, useContext, useState, ReactNode } from 'react'",
                     '',
@@ -415,7 +445,7 @@ export default function Week9Lecture1() {
                 language="tsx"
                 title="using the AuthContext"
                 lines={[
-                    '// main.tsx — wrap the app',
+                    '// main.tsx: wrap the app',
                     '<AuthProvider>',
                     '    <App />',
                     '</AuthProvider>',
@@ -447,7 +477,7 @@ export default function Week9Lecture1() {
             <LectureSectionHeading number="09" title="Component Composition" />
 
             <LectureP>
-                The most important skill in React isn't knowing the APIs — it's knowing how to break a UI into the right components. A good rule of thumb: a component should do one thing. If it's getting long or complex, split it up.
+                The most important skill in React isn't knowing the APIs. It's knowing how to break a UI into the right components. A good rule of thumb: a component should do one thing. If it's getting long or complex, split it up.
             </LectureP>
 
             <TerminalBlock

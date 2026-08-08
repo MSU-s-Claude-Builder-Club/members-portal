@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/lecture-typography';
 import { TerminalBlock } from '@/components/ui/terminal-block';
 import { CodeBlock } from '@/components/ui/code-block';
+import InteractiveExercise from '@/components/ui/interactive-exercise';
 
 // ── VM vs Container diagram ───────────────────────────────────────────────────
 const VmVsContainerDiagram = () => (
@@ -64,7 +65,7 @@ export default function Week6Lecture2() {
             />
 
             <LectureCallout type="warning">
-                This lecture requires Docker. If you haven't installed it yet, follow the instructions at the end of Lecture 1 — on macOS run <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">brew install --cask docker</code> and open Docker Desktop. Verify with <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">docker --version</code> before continuing.
+                This lecture requires Docker. If you haven't installed it yet, follow the instructions at the end of Lecture 1. On macOS run <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">brew install --cask docker</code> and open Docker Desktop. Verify with <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">docker --version</code> before continuing.
             </LectureCallout>
 
             {/* ── 01 THE PROBLEM ──────────────────────────────────────────────── */}
@@ -74,26 +75,26 @@ export default function Week6Lecture2() {
                 Imagine you build a web app on your MacBook. It uses Node.js 20, a specific version of a library, and a config file that lives at a certain path. You deploy it to a Ubuntu server running Node.js 18. The library version is slightly different. The config path doesn't exist. It crashes.
             </LectureP>
             <LectureP>
-                This is the environment problem. Software doesn't run in isolation — it depends on the OS, the runtime version, installed libraries, environment variables, and dozens of other things. Getting all of those to match between development, staging, and production is hard. Doing it reliably across a team is even harder.
+                This is the environment problem. Software doesn't run in isolation. It depends on the OS, the runtime version, installed libraries, environment variables, and dozens of other things. Getting all of those to match between development, staging, and production is hard. Doing it reliably across a team is even harder.
             </LectureP>
             <LectureP>
-                Docker solves this by bundling your application together with its entire environment into a <LectureTip tip="A runnable instance of a Docker image. Isolated from the host and other containers; shares the host kernel. Start with docker run.">container</LectureTip>. The container includes the OS libraries, the runtime, the dependencies, the config — everything. You ship the container, and it runs identically on any machine that has Docker installed.
+                Docker solves this by bundling your application together with its entire environment into a <LectureTip tip="A runnable instance of a Docker image. Isolated from the host and other containers; shares the host kernel. Start with docker run.">container</LectureTip>. The container includes the OS libraries, the runtime, the dependencies, the config: everything. You ship the container, and it runs identically on any machine that has Docker installed.
             </LectureP>
 
             {/* ── 02 CONTAINERS VS VMs ────────────────────────────────────────── */}
             <LectureSectionHeading number="02" title="Containers vs. Virtual Machines" />
 
             <LectureP>
-                Before Docker, the standard solution to the environment problem was <LectureTip tip="Software that emulates a full computer and runs a complete guest OS. Heavier than containers; each VM has its own kernel and boot process.">virtual machines</LectureTip>. A VM emulates an entire computer — including a full operating system — on top of your physical hardware. This works, but it's expensive: each VM needs gigabytes of disk space and takes minutes to start.
+                Before Docker, the standard solution to the environment problem was <LectureTip tip="Software that emulates a full computer and runs a complete guest OS. Heavier than containers; each VM has its own kernel and boot process.">virtual machines</LectureTip>. A VM emulates an entire computer, including a full operating system, on top of your physical hardware. This works, but it's expensive: each VM needs gigabytes of disk space and takes minutes to start.
             </LectureP>
             <LectureP>
-                Containers take a different approach. Instead of emulating hardware and running a full OS, containers share the host machine's OS kernel and isolate only the application and its dependencies. They're faster to start (milliseconds instead of minutes), use far less memory, and you can run dozens on a single machine where you might only run 3–4 VMs.
+                Containers take a different approach. Instead of emulating hardware and running a full OS, containers share the host machine's OS kernel and isolate only the application and its dependencies. They're faster to start (milliseconds instead of minutes), use far less memory, and you can run dozens on a single machine where you might only run 3 or 4 VMs.
             </LectureP>
 
             <VmVsContainerDiagram />
 
             <LectureCallout type="info">
-                Containers aren't completely isolated the way VMs are — they share the host kernel. This means a Linux container can't run natively on a Mac or Windows machine without a Linux VM underneath. Docker Desktop handles this transparently by running a lightweight Linux VM in the background.
+                Containers aren't completely isolated the way VMs are, because they share the host kernel. This means a Linux container can't run natively on a Mac or Windows machine without a Linux VM underneath. Docker Desktop handles this transparently by running a lightweight Linux VM in the background.
             </LectureCallout>
 
             {/* ── 03 IMAGES AND CONTAINERS ────────────────────────────────────── */}
@@ -103,7 +104,7 @@ export default function Week6Lecture2() {
                 Two terms you need to keep straight:
             </LectureP>
             <LectureP>
-                A <LectureTip tip="A read-only template built from a Dockerfile. Contains the filesystem and metadata needed to run an app. You build images, then run containers from them.">Docker image</LectureTip> is a read-only template — a snapshot of a filesystem with all the software and files needed to run an application. It's like a class definition or a blueprint. It doesn't run. It just describes what a running container should look like. Images are built from a <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">Dockerfile</code> and stored in a registry like Docker Hub.
+                A <LectureTip tip="A read-only template built from a Dockerfile. Contains the filesystem and metadata needed to run an app. You build images, then run containers from them.">Docker image</LectureTip> is a read-only template: a snapshot of a filesystem with all the software and files needed to run an application. It's like a class definition or a blueprint. It doesn't run. It just describes what a running container should look like. Images are built from a <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">Dockerfile</code> and stored in a registry like Docker Hub.
             </LectureP>
             <LectureP>
                 A <LectureTerm>container</LectureTerm> is a running instance of an image. You can run many containers from the same image simultaneously, each isolated from the others. It's like instantiating multiple objects from a class.
@@ -132,7 +133,7 @@ export default function Week6Lecture2() {
             />
 
             <LectureP>
-                The <LectureTip code tip="-t flag for docker build: tag. Assigns a name and optional version tag to the built image. Format is name:tag. Without a tag, Docker defaults to 'latest'.">-t</LectureTip> flag in <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">docker build</code> assigns a name and tag to the image. The <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">.</code> at the end tells Docker where to find the <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">Dockerfile</code> — the current directory. The tag format is <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">name:version</code>. If you omit the version, Docker uses <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">latest</code>.
+                The <LectureTip code tip="-t flag for docker build: tag. Assigns a name and optional version tag to the built image. Format is name:tag. Without a tag, Docker defaults to 'latest'.">-t</LectureTip> flag in <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">docker build</code> assigns a name and tag to the image. The <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">.</code> at the end tells Docker where to find the <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">Dockerfile</code>: the current directory. The tag format is <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">name:version</code>. If you omit the version, Docker uses <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">latest</code>.
             </LectureP>
 
             <LectureSubHeading title="Running containers" />
@@ -148,10 +149,10 @@ export default function Week6Lecture2() {
             />
 
             <LectureP>
-                The <LectureTip code tip="-p flag for docker run: publish ports. Format is host_port:container_port. Without this, the container's ports are completely isolated and unreachable from your machine — even if your app listens on port 3000 inside the container.">-p</LectureTip> flag is critical to understand. Containers are isolated by default — their ports are invisible to the outside world. <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">-p 3000:3000</code> punches a hole: requests to your machine's port 3000 get forwarded to the container's port 3000. Without this, your app runs but you can't reach it.
+                The <LectureTip code tip="-p flag for docker run: publish ports. Format is host_port:container_port. Without this, the container's ports are completely isolated and unreachable from your machine — even if your app listens on port 3000 inside the container.">-p</LectureTip> flag is critical to understand. Containers are isolated by default, so their ports are invisible to the outside world. <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">-p 3000:3000</code> punches a hole: requests to your machine's port 3000 get forwarded to the container's port 3000. Without this, your app runs but you can't reach it.
             </LectureP>
             <LectureP>
-                The <LectureTip code tip="-d flag for docker run: detached mode. Runs the container in the background and returns your terminal. Without -d, the container runs in the foreground and you can't use your terminal until it stops.">-d</LectureTip> flag runs the container in the background so your terminal isn't held hostage. The <LectureTip code tip="-v flag for docker run: volume mount. Maps a directory from your host machine into the container. Changes to files in that directory are immediately visible inside the container — essential for development workflows.">-v</LectureTip> flag mounts a local directory into the container, which is essential for development — it means the container sees your local code changes in real time.
+                The <LectureTip code tip="-d flag for docker run: detached mode. Runs the container in the background and returns your terminal. Without -d, the container runs in the foreground and you can't use your terminal until it stops.">-d</LectureTip> flag runs the container in the background so your terminal isn't held hostage. The <LectureTip code tip="-v flag for docker run: volume mount. Maps a directory from your host machine into the container. Changes to files in that directory are immediately visible inside the container — essential for development workflows.">-v</LectureTip> flag mounts a local directory into the container, which is essential for development because it means the container sees your local code changes in real time.
             </LectureP>
 
             <LectureSubHeading title="Managing running containers" />
@@ -169,8 +170,32 @@ export default function Week6Lecture2() {
             />
 
             <LectureP>
-                <LectureTip code tip="docker exec -it: execute a command inside a running container. -i keeps stdin open, -t allocates a pseudo-TTY (terminal). Together they give you an interactive shell. Use /bin/bash if bash is available, /bin/sh otherwise.">docker exec -it</LectureTip> is your debugging lifeline. When a container is misbehaving, you open a shell inside it and poke around exactly as you would on a regular Linux machine — check files, run commands, inspect environment variables.
+                <LectureTip code tip="docker exec -it: execute a command inside a running container. -i keeps stdin open, -t allocates a pseudo-TTY (terminal). Together they give you an interactive shell. Use /bin/bash if bash is available, /bin/sh otherwise.">docker exec -it</LectureTip> is your debugging lifeline. When a container is misbehaving, you open a shell inside it and poke around exactly as you would on a regular Linux machine: check files, run commands, inspect environment variables.
             </LectureP>
+
+            <LectureSubHeading title="Check yourself" />
+            <LectureP>
+                Before moving on, make sure the core commands are in muscle memory. Type each answer exactly as you would in a terminal.
+            </LectureP>
+
+            <InteractiveExercise
+                runtime="check"
+                language="bash"
+                title="Exercise 1"
+                prompt={<>Write the command that lists <strong>all</strong> containers, including the ones that have stopped.</>}
+                expected={["docker ps -a", "docker ps --all", "docker container ls -a", "docker container ls --all", "docker container ps -a"]}
+                hint="docker ps only shows running containers. Add the flag that means 'all'."
+            />
+
+            <InteractiveExercise
+                runtime="check"
+                language="bash"
+                title="Exercise 2"
+                prompt={<>Run the image <code>my-app:latest</code> in detached mode, mapping port <code>8080</code> on your machine to port <code>3000</code> inside the container.</>}
+                expectedPattern="^docker\s+run\s+(-d\s+-p\s+8080:3000|-p\s+8080:3000\s+-d)\s+my-app:latest$"
+                normalize="trim"
+                hint="You need -d for detached mode and -p host_port:container_port. The image name goes last."
+            />
 
             {/* ── 05 THE DOCKERFILE ───────────────────────────────────────────── */}
             <LectureSectionHeading number="05" title="The Dockerfile" />
@@ -190,7 +215,7 @@ export default function Week6Lecture2() {
                     'FROM node:20-alpine',
                     '# Set the working directory inside the container',
                     'WORKDIR /app',
-                    '# Copy package files first (for layer caching — explained below)',
+                    '# Copy package files first (for layer caching, explained below)',
                     'COPY package*.json ./',
                     '# Install dependencies',
                     'RUN npm ci --only=production',
@@ -215,7 +240,7 @@ export default function Week6Lecture2() {
                     { instruction: 'COPY', desc: 'Copies files from your host machine into the image. Format: COPY source destination. The source is relative to the build context (usually your project folder).' },
                     { instruction: 'RUN', desc: 'Executes a shell command during the build. Use this to install packages, compile code, or set up config. Each RUN creates a new layer.' },
                     { instruction: 'ENV', desc: 'Sets environment variables that will be available inside the container at runtime.' },
-                    { instruction: 'EXPOSE', desc: 'Documents which port the container listens on. Informational only — you still need -p when running the container.' },
+                    { instruction: 'EXPOSE', desc: 'Documents which port the container listens on. Informational only; you still need -p when running the container.' },
                     { instruction: 'CMD', desc: 'The default command to run when the container starts. Only the last CMD in a Dockerfile takes effect. Can be overridden at runtime.' },
                     { instruction: 'ENTRYPOINT', desc: 'Like CMD, but harder to override. Used when the container is meant to behave as a single executable.' },
                 ].map((item, i) => (
@@ -232,7 +257,7 @@ export default function Week6Lecture2() {
             <LectureSectionHeading number="06" title="Image Layers and Caching" />
 
             <LectureP>
-                Every instruction in a Dockerfile creates an immutable <LectureTerm>layer</LectureTerm>. Docker caches each layer and reuses it on subsequent builds if neither that instruction nor anything before it has changed. This makes rebuilds fast — if your dependencies haven't changed, Docker skips the <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">npm install</code> step entirely.
+                Every instruction in a Dockerfile creates an immutable <LectureTerm>layer</LectureTerm>. Docker caches each layer and reuses it on subsequent builds if neither that instruction nor anything before it has changed. This makes rebuilds fast: if your dependencies haven't changed, Docker skips the <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">npm install</code> step entirely.
             </LectureP>
             <LectureP>
                 This is why the Dockerfile above copies <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">package*.json</code> before copying the rest of the code. <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">package.json</code> changes rarely. Your application code changes constantly. By copying them separately, Docker can cache the expensive <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">npm install</code> layer and only re-run it when dependencies actually change.
@@ -244,7 +269,7 @@ export default function Week6Lecture2() {
 
             <LectureSubHeading title="The .dockerignore file" />
             <LectureP>
-                Just like <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">.gitignore</code>, a <LectureTerm>.dockerignore</LectureTerm> file tells Docker which files to exclude from the build context — the files sent to the Docker engine when you run <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">docker build</code>. Always exclude <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">node_modules</code>, <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">.git</code>, and any secrets.
+                Just like <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">.gitignore</code>, a <LectureTerm>.dockerignore</LectureTerm> file tells Docker which files to exclude from the build context, meaning the files sent to the Docker engine when you run <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">docker build</code>. Always exclude <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">node_modules</code>, <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">.git</code>, and any secrets.
             </LectureP>
 
             <CodeBlock
@@ -313,7 +338,7 @@ export default function Week6Lecture2() {
             />
 
             <LectureP>
-                The <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">depends_on</code> key in the compose file tells Docker to start the <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">db</code> service before the <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">app</code> service. Services on the same Compose network can reach each other by their service name — so the app connects to the database at <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">db:5432</code> rather than <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">localhost:5432</code>.
+                The <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">depends_on</code> key in the compose file tells Docker to start the <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">db</code> service before the <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">app</code> service. Services on the same Compose network can reach each other by their service name, so the app connects to the database at <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">db:5432</code> rather than <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">localhost:5432</code>.
             </LectureP>
 
             <LectureCallout type="warning">
@@ -328,7 +353,7 @@ export default function Week6Lecture2() {
             </LectureP>
 
             <TerminalBlock
-                title="bash — ~/my-app"
+                title="bash · ~/my-app"
                 lines={[
                     { comment: 'create the project', cmd: 'mkdir my-app && cd my-app && npm init -y' },
                     { comment: 'install express', cmd: 'npm install express' },

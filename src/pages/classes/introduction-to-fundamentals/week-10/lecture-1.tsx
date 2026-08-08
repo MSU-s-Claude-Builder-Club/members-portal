@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/lecture-typography';
 import { TerminalBlock } from '@/components/ui/terminal-block';
 import { CodeBlock } from '@/components/ui/code-block';
+import InteractiveExercise from '@/components/ui/interactive-exercise';
 
 export default function Week10Lecture1() {
     return (
@@ -26,7 +27,7 @@ export default function Week10Lecture1() {
             <LectureSectionHeading number="01" title="Why Authentication?" />
 
             <LectureP>
-                So far your app has been open — anyone can read or change data. Real apps need to know <em>who</em> is making the request. <LectureTerm>Authentication</LectureTerm> answers "who are you?" (login). <LectureTerm>Authorization</LectureTerm> answers "what are you allowed to do?" (permissions). The backend issues a credential after login; the frontend sends it on every request; the backend validates it before responding.
+                So far your app has been open: anyone can read or change data. Real apps need to know <em>who</em> is making the request. <LectureTerm>Authentication</LectureTerm> answers "who are you?" (login). <LectureTerm>Authorization</LectureTerm> answers "what are you allowed to do?" (permissions). The backend issues a credential after login; the frontend sends it on every request; the backend validates it before responding.
             </LectureP>
 
             <LectureCallout type="info">
@@ -36,7 +37,7 @@ export default function Week10Lecture1() {
             <LectureSectionHeading number="02" title="How JWTs Work" />
 
             <LectureP>
-                A JWT has three parts separated by dots: <strong className="text-foreground">header.payload.signature</strong>. The <LectureTerm>payload</LectureTerm> is a JSON object that can hold user id, email, roles, and an <LectureTip code tip="Expiration time — Unix timestamp. Tokens should have a short lifetime (e.g. 15 min–1 hour) to limit damage if one is stolen.">exp</LectureTip> (expiration) claim. The server signs it with a secret so it can later verify the token wasn't tampered with.
+                A JWT has three parts separated by dots: <strong className="text-foreground">header.payload.signature</strong>. The <LectureTerm>payload</LectureTerm> is a JSON object that can hold user id, email, roles, and an <LectureTip code tip="Expiration time as a Unix timestamp. Tokens should have a short lifetime (e.g. 15 minutes to 1 hour) to limit damage if one is stolen.">exp</LectureTip> (expiration) claim. The server signs it with a secret so it can later verify the token wasn't tampered with.
             </LectureP>
 
             <LectureCallout type="info">
@@ -45,13 +46,26 @@ export default function Week10Lecture1() {
 
             <LectureSubHeading title="Never put secrets in the payload" />
             <LectureP>
-                The payload is <LectureTip tip="Base64-encoded — anyone can decode it and read the contents. So never put passwords or secrets inside. Only put non-sensitive identifiers and claims.">base64-encoded</LectureTip>, not encrypted — anyone can decode it. Only put non-sensitive data there (user id, email, roles). Never passwords or API keys.
+                The payload is <LectureTip tip="Base64 encoding is reversible: anyone can decode it and read the contents. So never put passwords or secrets inside. Only put non-sensitive identifiers and claims.">base64-encoded</LectureTip>, not encrypted, so anyone can decode it. Only put non-sensitive data there (user id, email, roles). Never passwords or API keys.
             </LectureP>
+
+            <LectureP>
+                Prove it to yourself. The exercise below encodes a JWT-style payload with base64, exactly like the middle part of a real token. Your job is to decode it back, showing that anyone holding the token can read the payload without knowing any secret.
+            </LectureP>
+            <InteractiveExercise
+                runtime="python"
+                language="python"
+                title="Exercise 1"
+                prompt={<>The payload of a JWT is just base64. Decode <code>encoded</code> back to the original string and print it. The exact output must be <code>{'{"sub": "42"}'}</code>.</>}
+                starter={'import base64\n\npayload = \'{"sub": "42"}\'\nencoded = base64.urlsafe_b64encode(payload.encode())\n\n# Decode `encoded` back to a string and print it.\n# Use base64.urlsafe_b64decode(...) and .decode()\n'}
+                expected={'{"sub": "42"}'}
+                hint="print(base64.urlsafe_b64decode(encoded).decode())"
+            />
 
             <LectureSectionHeading number="03" title="Backend: Login and Token Issuance" />
 
             <TerminalBlock
-                title="bash — install JWT and password hashing libs"
+                title="bash · install JWT and password hashing libs"
                 lines={[
                     { cmd: 'pip install python-jose[cryptography] passlib[bcrypt]' },
                 ]}
@@ -59,11 +73,11 @@ export default function Week10Lecture1() {
 
             <LectureSubHeading title="Login endpoint" />
             <LectureP>
-                The login endpoint receives credentials, verifies the password hash with <LectureTip code tip="A password hashing library for Python. bcrypt is the recommended scheme — it's slow by design, making brute-force attacks impractical. Never store plain-text passwords.">bcrypt</LectureTip>, and returns a signed JWT. Store your JWT secret in an environment variable — never in code.
+                The login endpoint receives credentials, verifies the password hash with <LectureTip code tip="A password hashing library for Python. bcrypt is the recommended scheme: it's slow by design, making brute-force attacks impractical. Never store plain-text passwords.">bcrypt</LectureTip>, and returns a signed JWT. Store your JWT secret in an environment variable, never in code.
             </LectureP>
             <CodeBlock
                 language="python"
-                title="auth.py — login and create token"
+                title="auth.py · login and create token"
                 lines={[
                     'import os',
                     'from datetime import datetime, timedelta',
@@ -96,13 +110,13 @@ export default function Week10Lecture1() {
                 Use <LectureTip code tip="Python: python-jose or PyJWT. Never roll your own crypto.">python-jose</LectureTip> or <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">PyJWT</code> to create and verify tokens. <LectureTip code tip="A FastAPI convenience class that extracts username and password from form data (application/x-www-form-urlencoded). Use it as a dependency in your login endpoint.">OAuth2PasswordRequestForm</LectureTip> is a FastAPI convenience that extracts <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">username</code> and <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">password</code> from form data.
             </LectureP>
 
-            <LectureSubHeading title="Registration — creating test users" />
+            <LectureSubHeading title="Registration: creating test users" />
             <LectureCallout type="info">
                 Before you can log in, you need at least one user. Add a registration endpoint or a seed script:
             </LectureCallout>
             <CodeBlock
                 language="python"
-                title="POST /register — minimal user creation"
+                title="POST /register · minimal user creation"
                 lines={[
                     'from pydantic import BaseModel',
                     '',
@@ -123,7 +137,7 @@ export default function Week10Lecture1() {
 
             <LectureSubHeading title="Verify with curl" />
             <TerminalBlock
-                title="bash — test registration and login"
+                title="bash · test registration and login"
                 lines={[
                     { comment: 'register a test user', cmd: 'curl -X POST http://localhost:8000/register -H "Content-Type: application/json" -d \'{"email":"test@test.com","password":"secret"}\''},
                     { comment: 'login and get a token', cmd: 'curl -X POST http://localhost:8000/login -d "username=test@test.com&password=secret"' },
@@ -138,7 +152,7 @@ export default function Week10Lecture1() {
             </LectureP>
             <CodeBlock
                 language="python"
-                title="get_current_user dependency — use on any protected route"
+                title="get_current_user dependency · use on any protected route"
                 lines={[
                     'from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials',
                     '',
@@ -166,7 +180,7 @@ export default function Week10Lecture1() {
                 ]}
             />
             <LectureCallout type="tip">
-                Keep a clear separation: <strong>authentication</strong> = "is this a valid user?" — <strong>authorization</strong> = "is this user allowed to do this action?" Implement auth first; add role or resource checks (Lecture 2) where needed.
+                Keep a clear separation: <strong>authentication</strong> = "is this a valid user?" and <strong>authorization</strong> = "is this user allowed to do this action?" Implement auth first; add role or resource checks (Lecture 2) where needed.
             </LectureCallout>
 
             <LectureSectionHeading number="05" title="Frontend: Storing and Sending the Token" />
@@ -195,7 +209,7 @@ export default function Week10Lecture1() {
                 ]}
             />
             <LectureCallout type="info">
-                You built an <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">AuthContext</code> in Week 9 — this is where you'll use it. It holds the token and user info, exposes <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">login</code>/<code className="text-xs bg-muted px-1.5 py-0.5 rounded border">logout</code>, and a helper that attaches the token to <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">fetch</code> requests.
+                You built an <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">AuthContext</code> in Week 9, and this is where you'll use it. It holds the token and user info, exposes <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">login</code>/<code className="text-xs bg-muted px-1.5 py-0.5 rounded border">logout</code>, and a helper that attaches the token to <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">fetch</code> requests.
             </LectureCallout>
 
             <LectureCallout type="warning">
@@ -229,7 +243,7 @@ export default function Week10Lecture1() {
                 ]}
             />
             <LectureCallout type="warning">
-                Protecting the frontend route only hides the UI — it does <strong>not</strong> secure the API. Always enforce auth on the backend. Anyone can call your API directly and bypass the frontend.
+                Protecting the frontend route only hides the UI; it does <strong>not</strong> secure the API. Always enforce auth on the backend. Anyone can call your API directly and bypass the frontend.
             </LectureCallout>
 
             

@@ -1,6 +1,7 @@
 import { Terminal } from 'lucide-react';
 import { TerminalBlock } from '@/components/ui/terminal-block';
 import { CodeBlock } from '@/components/ui/code-block';
+import InteractiveExercise from '@/components/ui/interactive-exercise';
 import {
     LectureLayout,
     LectureHeader,
@@ -27,14 +28,14 @@ export default function Week1Lecture2() {
             <LectureSectionHeading number="01" title="Why Shell Scripts?" />
 
             <LectureP>
-                You already run commands one at a time in the terminal. A <LectureTerm>shell script</LectureTerm> is a text file full of those same commands, run in sequence. No new syntax to learn — just the commands you already know, saved in a file. Scripts turn one-off tasks into repeatable automation: deploy a server, run tests, back up a folder, or set up a new project.
+                You already run commands one at a time in the terminal. A <LectureTerm>shell script</LectureTerm> is a text file full of those same commands, run in sequence. There is no new syntax to learn: just the commands you already know, saved in a file. Scripts turn one-off tasks into repeatable automation: deploy a server, run tests, back up a folder, or set up a new project.
             </LectureP>
             <LectureP>
                 On Linux servers and in CI/CD pipelines, shell scripts are everywhere. They're the glue that ties tools together. Learning to write clear, safe scripts will save you hours and make you at home in any Unix environment.
             </LectureP>
 
             <LectureCallout type="info">
-                On servers, scripts often run without a human at the keyboard — via <LectureTip tip="Scheduled tasks. cron runs commands at fixed times (e.g. every night at 2am).">cron</LectureTip>, init systems, or deployment pipelines. That's why making scripts <strong className="text-foreground">fail fast</strong> and use clear paths matters: there's no one there to notice a typo.
+                On servers, scripts often run without a human at the keyboard, launched via <LectureTip tip="Scheduled tasks. cron runs commands at fixed times (e.g. every night at 2am).">cron</LectureTip>, init systems, or deployment pipelines. That's why making scripts <strong className="text-foreground">fail fast</strong> and use clear paths matters: there's no one there to notice a typo.
             </LectureCallout>
 
             {/* ── 02 THE SHEBANG AND EXECUTING SCRIPTS ───────────────────────── */}
@@ -70,6 +71,19 @@ export default function Week1Lecture2() {
             <LectureCallout type="tip">
                 <LectureTip code tip="Make a file executable. Required before you can run ./script.sh.">chmod +x</LectureTip> is required before <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">./backup.sh</code> works. Without execute permission, the shell will refuse to run the file. You only need to run <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">chmod +x</code> once per script.
             </LectureCallout>
+
+            <LectureP>
+                Try it yourself before moving on. You just created a script named <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">backup.sh</code>, but running <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">./backup.sh</code> fails with "Permission denied".
+            </LectureP>
+
+            <InteractiveExercise
+                runtime="check"
+                language="bash"
+                title="Exercise 1: Make it runnable"
+                prompt={<>Write the single command that adds execute permission to <code>backup.sh</code> so that <code>./backup.sh</code> works.</>}
+                expected={["chmod +x backup.sh", "chmod u+x backup.sh", "chmod a+x backup.sh", "chmod +x ./backup.sh", "chmod u+x ./backup.sh", "chmod 755 backup.sh", "chmod 700 backup.sh"]}
+                hint="The command that changes file modes, with the +x flag, then the filename."
+            />
 
             {/* ── 03 VARIABLES AND QUOTING ─────────────────────────────────────── */}
             <LectureSectionHeading number="03" title="Variables and Quoting" />
@@ -120,7 +134,7 @@ export default function Week1Lecture2() {
             />
 
             <LectureCallout type="info">
-                Always quote <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">{'"$1"'}</code> in scripts — if the user passes a path with spaces (like <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">./deploy.sh "my project"</code>), unquoted <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">$1</code> splits it into two words. The same quoting rule from variables applies to all arguments.
+                Always quote <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">{'"$1"'}</code> in scripts. If the user passes a path with spaces (like <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">./deploy.sh "my project"</code>), unquoted <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">$1</code> splits it into two words. The same quoting rule from variables applies to all arguments.
             </LectureCallout>
 
             {/* ── 04 CONDITIONALS AND EXIT CODES ─────────────────────────────── */}
@@ -143,7 +157,7 @@ export default function Week1Lecture2() {
             />
 
             <LectureP>
-                <LectureTip code tip="Quiet mode — no output, only exit code. Perfect for scripts.">grep -q</LectureTip> succeeds (exit 0) if it finds a match and fails otherwise. <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">exit 1</code> tells the rest of the system "this script failed."
+                <LectureTip code tip="Quiet mode: no output, only exit code. Perfect for scripts.">grep -q</LectureTip> succeeds (exit 0) if it finds a match and fails otherwise. <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">exit 1</code> tells the rest of the system "this script failed."
             </LectureP>
 
             <LectureCallout type="tip">
@@ -161,7 +175,7 @@ export default function Week1Lecture2() {
                 lines={[
                     '#!/bin/bash',
                     'if [ "$1" = "prod" ]; then',
-                    '  echo "Deploying to PRODUCTION — are you sure?"',
+                    '  echo "Deploying to PRODUCTION. Are you sure?"',
                     'elif [ "$1" = "staging" ]; then',
                     '  echo "Deploying to staging"',
                     'elif [ "$1" = "dev" ]; then',
@@ -175,7 +189,7 @@ export default function Week1Lecture2() {
             />
 
             <LectureP>
-                Notice: <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">elif</code> is just "else if" compressed. You can chain as many as needed. The <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">else</code> at the bottom catches anything that didn't match — always include one for unexpected inputs.
+                Notice: <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">elif</code> is just "else if" compressed. You can chain as many as needed. The <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">else</code> at the bottom catches anything that didn't match, so always include one for unexpected inputs.
             </LectureP>
 
             <LectureSubHeading title="Test operators" />
@@ -185,7 +199,7 @@ export default function Week1Lecture2() {
 
             <CodeBlock
                 language="bash"
-                title="test-operators.sh — string, number, and file tests"
+                title="test-operators.sh · string, number, and file tests"
                 lines={[
                     '#!/bin/bash',
                     '',
@@ -215,7 +229,7 @@ export default function Week1Lecture2() {
 
             <CodeBlock
                 language="bash"
-                title="validate.sh — practical argument validation"
+                title="validate.sh · practical argument validation"
                 lines={[
                     '#!/bin/bash',
                     'if [ $# -eq 0 ]; then',
@@ -229,7 +243,7 @@ export default function Week1Lecture2() {
                     '  exit 1',
                     'fi',
                     '',
-                    'echo "File $1 is valid — $(wc -l < "$1") lines"',
+                    'echo "File $1 is valid: $(wc -l < "$1") lines"',
                 ]}
             />
 
@@ -241,7 +255,7 @@ export default function Week1Lecture2() {
             </LectureP>
 
             <TerminalBlock
-                title="bash — loop over files"
+                title="bash · loop over files"
                 lines={[
                     { comment: 'run a command once per .txt file', cmd: 'for f in *.txt; do echo "Processing $f"; done' },
                     { comment: 'loop over a list', cmd: 'for env in dev staging prod; do echo "Deploy $env"; done' },
@@ -249,7 +263,7 @@ export default function Week1Lecture2() {
             />
 
             <LectureP>
-                You can also loop over the output of a command: <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">for f in $(ls *.sh); do ...</code>. Be careful with filenames that contain spaces — they'll be split. Prefer <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">find</code> with <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">-exec</code> for complex cases.
+                You can also loop over the output of a command: <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">for f in $(ls *.sh); do ...</code>. Be careful with filenames that contain spaces, because they'll be split. Prefer <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">find</code> with <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">-exec</code> for complex cases.
             </LectureP>
 
             <LectureCallout type="info">
@@ -331,12 +345,12 @@ export default function Week1Lecture2() {
             />
 
             <LectureP>
-                <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">return</code> sets the exit code of the function — not the script. <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">return 1</code> means the function failed; the script continues unless you check it with <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">set -e</code> or an explicit <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">if</code>.
+                <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">return</code> sets the exit code of the function, not the script. <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">return 1</code> means the function failed; the script continues unless you check it with <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">set -e</code> or an explicit <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">if</code>.
             </LectureP>
 
             <LectureSubHeading title="Local variables" />
             <LectureP>
-                By default, variables inside a function are <strong className="text-foreground">global</strong> — they leak into the rest of the script. Use <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">local</code> to scope a variable to the function.
+                By default, variables inside a function are <strong className="text-foreground">global</strong>, meaning they leak into the rest of the script. Use <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">local</code> to scope a variable to the function.
             </LectureP>
 
             <CodeBlock
@@ -363,7 +377,7 @@ export default function Week1Lecture2() {
             <LectureSectionHeading number="07" title="Permissions in Depth" />
 
             <LectureP>
-                Recall the permission string from Lecture 1: <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">-rwxr-xr--</code> — the first character is the type (<code className="text-xs bg-muted px-1.5 py-0.5 rounded border">-</code> file, <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">d</code> directory), then three groups of <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">rwx</code> for <LectureTerm>owner</LectureTerm>, <LectureTerm>group</LectureTerm>, and <LectureTerm>others</LectureTerm>. Here we go deeper: numeric permissions, ownership commands, and the special role of execute on directories.
+                Recall the permission string from Lecture 1: <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">-rwxr-xr--</code>. The first character is the type (<code className="text-xs bg-muted px-1.5 py-0.5 rounded border">-</code> file, <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">d</code> directory), then three groups of <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">rwx</code> for <LectureTerm>owner</LectureTerm>, <LectureTerm>group</LectureTerm>, and <LectureTerm>others</LectureTerm>. Here we go deeper: numeric permissions, ownership commands, and the special role of execute on directories.
             </LectureP>
 
             <LectureSubHeading title="Numeric permissions" />
@@ -380,8 +394,23 @@ export default function Week1Lecture2() {
             />
 
             <LectureCallout type="warning">
-                On a shared server, scripts that contain secrets (API keys, passwords) should be <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">chmod 700</code> so only the owner can read or run them. <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">chmod 755</code> lets anyone on the system read the file — fine for non-sensitive scripts, dangerous for anything that touches credentials.
+                On a shared server, scripts that contain secrets (API keys, passwords) should be <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">chmod 700</code> so only the owner can read or run them. <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">chmod 755</code> lets anyone on the system read the file, which is fine for non-sensitive scripts but dangerous for anything that touches credentials.
             </LectureCallout>
+
+            <LectureP>
+                Check your understanding of numeric permissions with the digits r=4, w=2, x=1.
+            </LectureP>
+
+            <InteractiveExercise
+                runtime="check"
+                language="bash"
+                title="Exercise 2: Lock down a secret script"
+                prompt={<>Write the command that sets <code>secret.sh</code> so the <strong>owner</strong> has read, write, and execute, and <strong>group and others have no access at all</strong>. Use the numeric (octal) form.</>}
+                expectedPattern={"^chmod\\s+0?700\\s+(\\./)?secret\\.sh$"}
+                normalize="trim"
+                hint="Owner rwx is 4+2+1=7, and no access is 0. So the three digits are 7, 0, 0."
+            />
+
 
             <LectureSubHeading title="chown and chgrp" />
             <LectureP>
@@ -389,7 +418,7 @@ export default function Week1Lecture2() {
             </LectureP>
 
             <LectureCallout type="info">
-                Directories need execute (<code className="text-xs bg-muted px-1.5 py-0.5 rounded border">x</code>) for you to <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">cd</code> into them. So directory permissions are often <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">755</code> (owner full, others can enter and list) or <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">711</code> (others can enter but not list contents — useful for restricted areas).
+                Directories need execute (<code className="text-xs bg-muted px-1.5 py-0.5 rounded border">x</code>) for you to <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">cd</code> into them. So directory permissions are often <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">755</code> (owner full, others can enter and list) or <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">711</code> (others can enter but not list contents, useful for restricted areas).
             </LectureCallout>
 
             {/* ── 08 CRON ────────────────────────────────────────────────────── */}
@@ -403,16 +432,16 @@ export default function Week1Lecture2() {
                 language="bash"
                 title="crontab example"
                 lines={[
-                    '# Every day at 2:30 AM — backup',
+                    '# Every day at 2:30 AM: backup',
                     '30 2 * * * /home/you/scripts/backup.sh',
                     '',
-                    '# Every 15 minutes — health check',
+                    '# Every 15 minutes: health check',
                     '*/15 * * * * /home/you/scripts/health-check.sh',
                 ]}
             />
 
             <LectureP>
-                Use absolute paths in cron jobs. Cron runs with a minimal environment — your <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">PATH</code> and current directory are not what you expect. Scripts started by cron also don't see your terminal; redirect output to a log file if you want to debug.
+                Use absolute paths in cron jobs. Cron runs with a minimal environment, so your <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">PATH</code> and current directory are not what you expect. Scripts started by cron also don't see your terminal; redirect output to a log file if you want to debug.
             </LectureP>
 
             <LectureCallout type="tip">
@@ -428,7 +457,7 @@ export default function Week1Lecture2() {
 
             <CodeBlock
                 language="bash"
-                title="deploy.sh — production-style pattern"
+                title="deploy.sh · production-style pattern"
                 lines={[
                     '#!/bin/bash',
                     'set -e',
@@ -468,7 +497,7 @@ export default function Week1Lecture2() {
             />
 
             <LectureP>
-                This script validates its input, checks dependencies, branches on the environment, and logs every step. Compare it to the three-line <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">backup.sh</code> from section 02 — same language, dramatically more capable.
+                This script validates its input, checks dependencies, branches on the environment, and logs every step. Compare it to the three-line <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">backup.sh</code> from section 02: same language, dramatically more capable.
             </LectureP>
 
             <LectureCallout type="warning">

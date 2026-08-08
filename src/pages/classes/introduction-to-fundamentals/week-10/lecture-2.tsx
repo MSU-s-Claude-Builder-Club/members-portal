@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/lecture-typography';
 import { TerminalBlock } from '@/components/ui/terminal-block';
 import { CodeBlock } from '@/components/ui/code-block';
+import InteractiveExercise from '@/components/ui/interactive-exercise';
 
 export default function Week10Lecture2() {
     return (
@@ -26,7 +27,7 @@ export default function Week10Lecture2() {
             <LectureSectionHeading number="01" title="User Context Across the Stack" />
 
             <LectureP>
-                Once authenticated, the user's identity flows through the whole app. The backend reads it from the validated JWT (user id, email, roles). The frontend gets it from auth state — typically by calling <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">GET /me</code> after login and storing the result in React context so any component can access it.
+                Once authenticated, the user's identity flows through the whole app. The backend reads it from the validated JWT (user id, email, roles). The frontend gets it from auth state, typically by calling <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">GET /me</code> after login and storing the result in React context so any component can access it.
             </LectureP>
 
             <LectureCallout type="info">
@@ -36,17 +37,17 @@ export default function Week10Lecture2() {
             <LectureSectionHeading number="02" title="Role-Based Access" />
 
             <LectureP>
-                <LectureTip tip="Restricting actions by role — e.g. only admins can delete users; only the owner can edit a resource. Implement after authentication.">Role-based access control</LectureTip> (RBAC) means different users have different permissions: <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">admin</code> can do everything, <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">user</code> can only edit their own data, <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">guest</code> can only read. Store the role in both the user record and the JWT payload.
+                <LectureTip tip="Restricting actions by role. For example, only admins can delete users; only the owner can edit a resource. Implement after authentication.">Role-based access control</LectureTip> (RBAC) means different users have different permissions: <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">admin</code> can do everything, <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">user</code> can only edit their own data, <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">guest</code> can only read. Store the role in both the user record and the JWT payload.
             </LectureP>
 
             <LectureCallout type="warning">
-                On the frontend you can hide or disable buttons based on role, but the <strong>backend must enforce it</strong>. Never trust the client — always check the role server-side before performing the action.
+                On the frontend you can hide or disable buttons based on role, but the <strong>backend must enforce it</strong>. Never trust the client. Always check the role server-side before performing the action.
             </LectureCallout>
 
             <LectureSubHeading title="Backend: auth dependencies" />
             <CodeBlock
                 language="python"
-                title="auth.py — get current user and require admin"
+                title="auth.py · get current user and require admin"
                 lines={[
                     'from fastapi import Depends, HTTPException, status',
                     'from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials',
@@ -84,7 +85,7 @@ export default function Week10Lecture2() {
             <LectureSubHeading title="Using the dependencies in routes" />
             <CodeBlock
                 language="python"
-                title="main.py — protected routes"
+                title="main.py · protected routes"
                 lines={[
                     '@app.get("/me")',
                     'def get_me(user: dict = Depends(get_current_user)):',
@@ -108,7 +109,7 @@ export default function Week10Lecture2() {
             />
 
             <LectureCallout type="info">
-                For resource-level permissions ("only the owner can edit this note"), compare <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">user["id"]</code> to the resource's <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">owner_id</code>. Return 403 if they don't match. This is finer-grained than RBAC — both patterns work together.
+                For resource-level permissions ("only the owner can edit this note"), compare <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">user["id"]</code> to the resource's <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">owner_id</code>. Return 403 if they don't match. This is finer-grained than RBAC, and both patterns work together.
             </LectureCallout>
 
             <LectureSubHeading title="Frontend: user context" />
@@ -117,7 +118,7 @@ export default function Week10Lecture2() {
             </LectureP>
             <CodeBlock
                 language="tsx"
-                title="AuthContext.tsx — minimal pattern"
+                title="AuthContext.tsx · minimal pattern"
                 lines={[
                     'const [user, setUser] = useState(null);',
                     'const [token, setToken] = useState(localStorage.getItem("token"));',
@@ -149,7 +150,7 @@ export default function Week10Lecture2() {
             </LectureP>
 
             <LectureCallout type="info">
-                Use <strong>short-lived access tokens</strong> (15–30 minutes). When the token expires the API returns 401 and the frontend redirects to login — this limits the damage window if a token is stolen. In production, you'll often pair short-lived access tokens with a <LectureTip tip="A longer-lived token stored in an HTTP-only cookie. The server uses it to silently issue new access tokens without forcing the user to re-login. Keeps the access token short-lived while avoiding constant re-authentication.">refresh token</LectureTip> that silently issues new access tokens — that's beyond this course, but know the pattern exists.
+                Use <strong>short-lived access tokens</strong> (15 to 30 minutes). When the token expires the API returns 401 and the frontend redirects to login. This limits the damage window if a token is stolen. In production, you'll often pair short-lived access tokens with a <LectureTip tip="A longer-lived token stored in an HTTP-only cookie. The server uses it to silently issue new access tokens without forcing the user to re-login. Keeps the access token short-lived while avoiding constant re-authentication.">refresh token</LectureTip> that silently issues new access tokens. That's beyond this course, but know the pattern exists.
             </LectureCallout>
 
             <LectureSectionHeading number="04" title="Keeping Secrets Safe" />
@@ -169,17 +170,17 @@ export default function Week10Lecture2() {
 
             <LectureSubHeading title="Testing protected routes" />
             <TerminalBlock
-                title="bash — verify auth from the terminal"
+                title="bash · verify auth from the terminal"
                 lines={[
-                    { comment: 'no token — should get 401', cmd: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/me' },
-                    { comment: 'with token — replace YOUR_JWT with a real token', cmd: 'curl -s -H "Authorization: Bearer YOUR_JWT" http://localhost:8000/me' },
+                    { comment: 'no token, should get 401', cmd: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/me' },
+                    { comment: 'with token, replace YOUR_JWT with a real token', cmd: 'curl -s -H "Authorization: Bearer YOUR_JWT" http://localhost:8000/me' },
                 ]}
             />
 
             <LectureSectionHeading number="05" title="Scaling Auth as You Add Features" />
 
             <LectureP>
-                Keep one place that validates the JWT and loads the user (a FastAPI dependency or Express middleware). Every route that needs auth declares that dependency. If you later add OAuth (Google, GitHub login), the only change is how you create the user and issue the first token — the rest of the pipeline stays the same.
+                Keep one place that validates the JWT and loads the user (a FastAPI dependency or Express middleware). Every route that needs auth declares that dependency. If you later add OAuth (Google, GitHub login), the only change is how you create the user and issue the first token. The rest of the pipeline stays the same.
             </LectureP>
             <LectureCallout type="tip">
                 Document your auth flow in the README: how to get a token (endpoint, body params), how to send it (header format), and which routes require it. That helps you and reviewers when debugging.

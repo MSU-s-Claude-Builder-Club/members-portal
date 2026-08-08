@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/lecture-typography';
 import { TerminalBlock } from '@/components/ui/terminal-block';
 import { CodeBlock } from '@/components/ui/code-block';
+import InteractiveExercise from '@/components/ui/interactive-exercise';
 
 export default function Week8Lecture2() {
     return (
@@ -29,7 +30,7 @@ export default function Week8Lecture2() {
                 <LectureTip tip="Continuous Integration: every time someone pushes code, the project is built and tested automatically. Catches breakage before it reaches production.">CI</LectureTip> (Continuous Integration) means your tests and build run automatically on every push or pull request. <LectureTip tip="Continuous Deployment/Delivery: automatically deploy when tests pass. For this course we focus on CI; deployment comes later.">CD</LectureTip> can mean automatically deploying when tests pass. For now we'll focus on CI: run tests and report results so no one merges broken code.
             </LectureP>
             <LectureP>
-                <LectureTip tip="GitHub's built-in CI/CD platform. Runs workflows in disposable VMs triggered by repo events (push, PR, schedule). Free for public repos; generous free tier for private.">GitHub Actions</LectureTip> is GitHub's built-in CI. You add a <LectureTerm>workflow</LectureTerm> file (YAML) to your repo that defines when to run (e.g. on push to main, on every PR) and what steps to execute (checkout code, install deps, run tests). Each run happens in a fresh virtual machine — you see pass/fail and logs directly on the PR.
+                <LectureTip tip="GitHub's built-in CI/CD platform. Runs workflows in disposable VMs triggered by repo events (push, PR, schedule). Free for public repos; generous free tier for private.">GitHub Actions</LectureTip> is GitHub's built-in CI. You add a <LectureTerm>workflow</LectureTerm> file (YAML) to your repo that defines when to run (e.g. on push to main, on every PR) and what steps to execute (checkout code, install deps, run tests). Each run happens in a fresh virtual machine, and you see pass/fail and logs directly on the PR.
             </LectureP>
 
             <LectureCallout type="info">
@@ -78,7 +79,7 @@ export default function Week8Lecture2() {
                 ]}
             />
             <TerminalBlock
-                title="bash — create the workflow file"
+                title="bash · create the workflow file"
                 lines={[
                     { comment: 'create the workflows directory', cmd: 'mkdir -p .github/workflows' },
                     { comment: 'create test.yml (paste the YAML above), then commit and push', cmd: 'git add .github/workflows/test.yml && git commit -m "Add CI workflow" && git push' },
@@ -86,25 +87,37 @@ export default function Week8Lecture2() {
             />
 
             <LectureCallout type="info">
-                The <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">cache: "npm"</code> line tells GitHub to save the <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">node_modules</code> cache between runs. On the first run GitHub installs everything from scratch. On subsequent runs it restores the cache, making <LectureTip code tip="npm ci — installs exactly what's in package-lock.json. Faster and more reproducible than npm install. Use in CI for deterministic builds.">npm ci</LectureTip> near-instant. Always use <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">npm ci</code> (not <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">npm install</code>) in CI so the install is deterministic and matches your lockfile.
+                The <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">cache: "npm"</code> line tells GitHub to save the <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">node_modules</code> cache between runs. On the first run GitHub installs everything from scratch. On subsequent runs it restores the cache, making <LectureTip code tip="npm ci installs exactly what's in package-lock.json. Faster and more reproducible than npm install. Use in CI for deterministic builds.">npm ci</LectureTip> near-instant. Always use <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">npm ci</code> (not <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">npm install</code>) in CI so the install is deterministic and matches your lockfile.
             </LectureCallout>
+
+            <LectureP>
+                Quick check before we move on. Look back at the workflow file above and answer without scrolling if you can.
+            </LectureP>
+            <InteractiveExercise
+                runtime="check"
+                language="yaml"
+                title="Exercise 1"
+                prompt={<>In a GitHub Actions workflow file, which <strong>top-level YAML key</strong> defines the events (like <code>push</code> or <code>pull_request</code>) that trigger the workflow? Type just the key name.</>}
+                expected={["on", "on:"]}
+                hint="It's the shortest key in the whole file, sitting right under name:."
+            />
 
             <LectureSectionHeading number="03" title="Coverage" />
 
             <LectureP>
-                <LectureTerm>Coverage</LectureTerm> measures which lines (or branches) of your code were actually executed during tests. High coverage doesn't guarantee good tests, but low coverage means large chunks of code are never exercised — and untested code is where bugs hide.
+                <LectureTerm>Coverage</LectureTerm> measures which lines (or branches) of your code were actually executed during tests. High coverage doesn't guarantee good tests, but low coverage means large chunks of code are never exercised, and untested code is where bugs hide.
             </LectureP>
 
             <LectureSubHeading title="Running coverage locally" />
             <TerminalBlock
-                title="bash — frontend coverage with Vitest"
+                title="bash · frontend coverage with Vitest"
                 lines={[
                     { comment: 'install the coverage provider', cmd: 'npm install -D @vitest/coverage-v8' },
                     { comment: 'run tests with coverage report', cmd: 'npx vitest run --coverage' },
                 ]}
             />
             <TerminalBlock
-                title="bash — backend coverage with pytest"
+                title="bash · backend coverage with pytest"
                 lines={[
                     { comment: 'install pytest-cov', cmd: 'pip install pytest-cov' },
                     { comment: 'run with coverage, show missing lines', cmd: 'pytest --cov=app --cov-report=term-missing' },
@@ -115,8 +128,20 @@ export default function Week8Lecture2() {
             </LectureP>
 
             <LectureCallout type="tip">
-                Aim for 70–80% coverage as a starting point. 100% coverage is a trap — it incentivizes writing meaningless tests for getters and configuration code. The goal is to cover behavior that matters, not to hit a number.
+                Aim for 70 to 80% coverage as a starting point. 100% coverage is a trap: it incentivizes writing meaningless tests for getters and configuration code. The goal is to cover behavior that matters, not to hit a number.
             </LectureCallout>
+
+            <InteractiveExercise
+                runtime="check"
+                language="bash"
+                title="Exercise 2"
+                prompt={<>Write the full pytest command that measures coverage for the <code>app</code> package <strong>and</strong> shows which lines are missing in the terminal output. (It's the same command the backend job runs in CI.)</>}
+                expected={[
+                    "pytest --cov=app --cov-report=term-missing",
+                    "pytest --cov-report=term-missing --cov=app",
+                ]}
+                hint="Combine the --cov=<package> flag with --cov-report=term-missing."
+            />
 
             <LectureSectionHeading number="04" title="Multi-Job Workflows" />
 
@@ -125,7 +150,7 @@ export default function Week8Lecture2() {
             </LectureP>
             <CodeBlock
                 language="yaml"
-                title=".github/workflows/test.yml — multi-job"
+                title=".github/workflows/test.yml (multi-job)"
                 lines={[
                     'name: Test',
                     '',
@@ -173,7 +198,7 @@ export default function Week8Lecture2() {
             <LectureSectionHeading number="05" title="Secrets in CI" />
 
             <LectureP>
-                Use <LectureTerm>GitHub Secrets</LectureTerm> for any environment variables your tests need — a test database URL, a test JWT secret, or API keys for third-party services. Never commit real secrets to your code.
+                Use <LectureTerm>GitHub Secrets</LectureTerm> for any environment variables your tests need: a test database URL, a test JWT secret, or API keys for third-party services. Never commit real secrets to your code.
             </LectureP>
             <CodeBlock
                 language="yaml"
@@ -187,13 +212,13 @@ export default function Week8Lecture2() {
                 ]}
             />
             <LectureP>
-                Add secrets in your repo's Settings → Secrets and variables → Actions → New repository secret. They're encrypted at rest and masked in logs. For public repos, never use production secrets — only use test/demo values in Actions.
+                Add secrets in your repo's Settings → Secrets and variables → Actions → New repository secret. They're encrypted at rest and masked in logs. For public repos, never use production secrets; only use test/demo values in Actions.
             </LectureP>
 
             <LectureSectionHeading number="06" title="Branch Protection Rules" />
 
             <LectureP>
-                Having CI is only half the story. Without <LectureTip tip="A GitHub repository setting that prevents direct pushes to a branch and requires conditions (passing CI, code review, etc.) before a PR can be merged. The strongest guard against broken main.">branch protection</LectureTip>, anyone can still merge a PR with failing tests — or push directly to main. Branch protection rules enforce that CI must pass before a PR can be merged.
+                Having CI is only half the story. Without <LectureTip tip="A GitHub repository setting that prevents direct pushes to a branch and requires conditions (passing CI, code review, etc.) before a PR can be merged. The strongest guard against broken main.">branch protection</LectureTip>, anyone can still merge a PR with failing tests, or even push directly to main. Branch protection rules enforce that CI must pass before a PR can be merged.
             </LectureP>
 
             <LectureCallout type="info">
@@ -211,15 +236,15 @@ export default function Week8Lecture2() {
             <LectureSectionHeading number="07" title="When a Workflow Fails" />
 
             <LectureP>
-                Your first few CI runs will probably fail. That's normal — the point of CI is to catch problems early. Here's how to debug a failed workflow.
+                Your first few CI runs will probably fail. That's normal; the point of CI is to catch problems early. Here's how to debug a failed workflow.
             </LectureP>
 
             <LectureCallout type="warning">
-                <strong>Common first-run failures:</strong> (1) wrong Node or Python version — match what you use locally; (2) missing environment variable — check if your app reads from <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">.env</code> which isn't committed; (3) test that passes locally but fails in CI because it depends on local data, a running server, or a different OS; (4) wrong <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">working-directory</code> — make sure the job runs from the right folder.
+                <strong>Common first-run failures:</strong> (1) wrong Node or Python version, so match what you use locally; (2) missing environment variable, so check if your app reads from <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">.env</code> which isn't committed; (3) test that passes locally but fails in CI because it depends on local data, a running server, or a different OS; (4) wrong <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">working-directory</code>, so make sure the job runs from the right folder.
             </LectureCallout>
 
             <LectureP>
-                Click the failed job in the Actions tab to see the full log. Each step has expandable output — find the red X and read the error. Most failures are one-line fixes: a missing dependency, a typo in the test command, or a version mismatch.
+                Click the failed job in the Actions tab to see the full log. Each step has expandable output: find the red X and read the error. Most failures are one-line fixes: a missing dependency, a typo in the test command, or a version mismatch.
             </LectureP>
 
             <LectureCallout type="tip">

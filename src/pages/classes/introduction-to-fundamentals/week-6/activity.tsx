@@ -11,6 +11,7 @@ import { CodeBlock } from '@/components/ui/code-block';
 import { ActivityHint } from '@/components/ui/activity-hint';
 import { ActivityChallenge } from '@/components/ui/activity-challenge';
 import { ActivityTask, ActivityTaskListProvider } from '@/components/ui/activity-task';
+import InteractiveExercise from '@/components/ui/interactive-exercise';
 
 export default function Week6Activity() {
     return (
@@ -25,11 +26,11 @@ export default function Week6Activity() {
                 />
 
                 <LectureCallout type="info">
-                    The stub app goes in <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">backend/main.py</code> in your project repo. Your current file is a comment placeholder from the Week 4 project kickoff — you'll replace it with the Flask stub below.
+                    The stub app goes in <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">backend/main.py</code> in your project repo. Your current file is a comment placeholder from the Week 4 project kickoff. You'll replace it with the Flask stub below.
                 </LectureCallout>
 
                 <LectureCallout type="warning">
-                    This stub uses Flask because it's the simplest way to get a working endpoint with zero setup. In Week 7 you'll replace it with a full FastAPI backend — the Dockerfile structure stays the same, only the framework and the CMD change.
+                    This stub uses Flask because it's the simplest way to get a working endpoint with zero setup. In Week 7 you'll replace it with a full FastAPI backend. The Dockerfile structure stays the same, only the framework and the CMD change.
                 </LectureCallout>
 
                 {/* ── 01 WRITE THE DOCKERFILE ─────────────────────────────────────── */}
@@ -41,7 +42,7 @@ export default function Week6Activity() {
 
                 <CodeBlock
                     language="python"
-                    title="backend/main.py — Flask stub"
+                    title="backend/main.py · Flask stub"
                     lines={[
                         'from flask import Flask, jsonify',
                         'import datetime',
@@ -52,7 +53,7 @@ export default function Week6Activity() {
                         '@app.get("/health")',
                         'def health():',
                         '    with open(LOG_FILE, "a") as f:',
-                        '        f.write(f"{datetime.datetime.now()} — health check\\n")',
+                        '        f.write(f"{datetime.datetime.now()} - health check\\n")',
                         '    return jsonify({"status": "ok"})',
                         '',
                         'if __name__ == "__main__":',
@@ -72,7 +73,7 @@ export default function Week6Activity() {
                     </div>
 
                     <TerminalBlock
-                        title="bash — backend"
+                        title="bash · backend"
                         lines={[
                             { cmd: 'echo "flask" > requirements.txt' },
                             { cmd: 'printf "__pycache__\\n.venv\\n*.pyc\\n.git\\n" > .dockerignore' },
@@ -97,7 +98,7 @@ export default function Week6Activity() {
                     </div>
 
                     <ActivityHint label="Dockerfile structure">
-                        Copy requirements.txt before copying the full app — this lets Docker cache the pip install layer. The skeleton: FROM → WORKDIR → COPY requirements.txt → RUN pip install → COPY . . → RUN mkdir → EXPOSE → CMD.
+                        Copy requirements.txt before copying the full app, which lets Docker cache the pip install layer. The skeleton: FROM → WORKDIR → COPY requirements.txt → RUN pip install → COPY . . → RUN mkdir → EXPOSE → CMD.
                     </ActivityHint>
                 </ActivityChallenge>
 
@@ -114,7 +115,7 @@ export default function Week6Activity() {
                     </div>
 
                     <TerminalBlock
-                        title="bash — backend"
+                        title="bash · backend"
                         lines={[
                             { cmd: 'docker build -t my-stub .' },
                             { cmd: 'docker run -p 8000:8000 my-stub' },
@@ -122,7 +123,7 @@ export default function Week6Activity() {
                     />
 
                     <TerminalBlock
-                        title="bash — another terminal"
+                        title="bash · another terminal"
                         lines={[
                             { cmd: 'curl http://localhost:8000/health' },
                         ]}
@@ -132,6 +133,24 @@ export default function Week6Activity() {
                         <code className="text-xs bg-muted px-1.5 py-0.5 rounded border">-p 8000:8000</code> tells Docker to map your machine's port 8000 to the container's port 8000. Without this flag, the container runs but you can't reach it.
                     </LectureCallout>
                 </ActivityChallenge>
+
+                <LectureP>
+                    Quick check before you move on. Type the exact command from memory, no peeking at the terminal blocks above.
+                </LectureP>
+
+                <InteractiveExercise
+                    runtime="check"
+                    language="bash"
+                    title="Exercise 1: Build the Image"
+                    prompt={<>Write the command that builds an image from the Dockerfile in the current directory and tags it <code>api:v1</code>.</>}
+                    expected={[
+                        "docker build -t api:v1 .",
+                        "docker build . -t api:v1",
+                        "docker build --tag api:v1 .",
+                        "docker build . --tag api:v1",
+                    ]}
+                    hint="docker build takes a tag flag (-t) and a build context path. The current directory is just a dot."
+                />
 
                 {/* ── 02 PERSIST DATA WITH A VOLUME ───────────────────────────────── */}
                 <LectureSectionHeading number="02" title="Persist Data with a Volume" />
@@ -154,14 +173,14 @@ export default function Week6Activity() {
                     </div>
 
                     <TerminalBlock
-                        title="bash — backend"
+                        title="bash · backend"
                         lines={[
                             { cmd: 'docker run -p 8000:8000 -v $(pwd)/data:/data my-stub' },
                         ]}
                     />
 
                     <TerminalBlock
-                        title="bash — another terminal"
+                        title="bash · another terminal"
                         lines={[
                             { cmd: 'curl http://localhost:8000/health' },
                             { cmd: 'curl http://localhost:8000/health' },
@@ -175,6 +194,15 @@ export default function Week6Activity() {
                     </LectureCallout>
                 </ActivityChallenge>
 
+                <InteractiveExercise
+                    runtime="check"
+                    language="bash"
+                    title="Exercise 2: Run with a Port and a Volume"
+                    prompt={<>From memory: write the command that runs the <code>my-stub</code> image, maps host port 8000 to container port 8000, and bind mounts <code>$(pwd)/data</code> on your machine to <code>/data</code> in the container.</>}
+                    expectedPattern={"^docker\\s+run\\s+(?=.*-p\\s+8000:8000)(?=.*-v\\s+\\$\\(pwd\\)/data:/data)\\S.*\\bmy-stub$"}
+                    hint="Combine the -p host:container flag and the -v host_path:container_path flag, then end with the image name."
+                />
+
                 <ActivityChallenge
                     number="2.2"
                     title="Prove It Survives a Restart"
@@ -184,7 +212,7 @@ export default function Week6Activity() {
                         <ActivityTask>Stop the container</ActivityTask>
                         <ActivityTask>Start it again with the same volume flag</ActivityTask>
                         <ActivityTask>Hit the endpoint 2 more times</ActivityTask>
-                        <ActivityTask>Cat the log file again — it should now have 5 entries, not 2</ActivityTask>
+                        <ActivityTask>Cat the log file again; it should now have 5 entries, not 2</ActivityTask>
                     </div>
 
                     <ActivityHint label="if your count resets">
@@ -212,7 +240,7 @@ export default function Week6Activity() {
                     </div>
 
                     <LectureCallout type="info">
-                        Alpine Linux is built for containers — it strips out everything unnecessary and keeps the OS as tiny as possible. The trade-off is that some Python packages that rely on C extensions need extra build dependencies to compile on Alpine.
+                        Alpine Linux is built for containers: it strips out everything unnecessary and keeps the OS as tiny as possible. The trade-off is that some Python packages that rely on C extensions need extra build dependencies to compile on Alpine.
                     </LectureCallout>
                 </ActivityChallenge>
 
