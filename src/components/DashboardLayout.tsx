@@ -158,14 +158,6 @@ const getInitials = (name: string) => {
     .slice(0, 2);
 };
 
-// Print-production registration mark: two crossed 1px arms, ~10px, in primary
-const RegistrationMark = ({ className }: { className: string }) => (
-  <span aria-hidden="true" className={`pointer-events-none absolute h-2.5 w-2.5 ${className}`}>
-    <span className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-primary" />
-    <span className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-primary" />
-  </span>
-);
-
 // --- Sidebar Component ---
 interface AppSidebarProps {
   user: User;
@@ -199,10 +191,6 @@ const AppSidebar = ({
       <SidebarContent className="gap-0">
         {/* Brand block */}
         <div className="relative border-b border-sidebar-border p-3">
-          <RegistrationMark className="left-1 top-1" />
-          <RegistrationMark className="right-1 top-1" />
-          <RegistrationMark className="bottom-1 left-1" />
-          <RegistrationMark className="bottom-1 right-1" />
           <button
             onClick={() => navigate('/')}
             className="flex w-full cursor-pointer items-center gap-3 px-2 py-3 text-left transition-colors hover:bg-tint"
