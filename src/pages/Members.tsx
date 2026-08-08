@@ -17,7 +17,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Search, Mail } from 'lucide-react';
+import { Search, Mail, X } from 'lucide-react';
 import { escapeCsv } from '@/lib/utils';
 
 /** True if current time is 7:00pm–8:30pm EST on a Thursday. */
@@ -181,6 +181,13 @@ const Members = () => {
     setSearchParams({ id: member.id });
   };
 
+  const closeProfile = () => {
+    isClosingProfileRef.current = true;
+    setIsProfileModalOpen(false);
+    setSelectedMember(null);
+    setSearchParams({});
+  };
+
   const canManageRoles = role === 'admin';
   const canManageActions = role === 'board' || role === 'admin';
 
@@ -307,48 +314,64 @@ const Members = () => {
         </div>
       </div>
 
-      {/* Card grid */}
-      <div className="mt-6 grid gap-4 grid-cols-[repeat(auto-fill,minmax(280px,1fr))]">
-        {processedMembers.map(member => (
-          <PersonCard
-            key={member.id}
-            person={member}
-            onViewProfile={handleViewProfile}
-            onRoleChange={handleRoleChange}
-            onKick={handleKickMember}
-            onBan={handleBanMember}
-            canManage={canManageActions}
-            canChangeRoles={canManageRoles}
-            isMobile={isMobile}
-            currentUserId={user?.id}
-            currentUserRole={role}
-            type="member"
-          />
-        ))}
+      {/* Content: members grid shrinks to the left; profile docks on the right (desktop) */}
+      <div className="mt-6 flex gap-6">
+        <div className="min-w-0 flex-1">
+          <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(260px,1fr))]">
+            {processedMembers.map(member => (
+              <PersonCard
+                key={member.id}
+                person={member}
+                onViewProfile={handleViewProfile}
+                onRoleChange={handleRoleChange}
+                onKick={handleKickMember}
+                onBan={handleBanMember}
+                canManage={canManageActions}
+                canChangeRoles={canManageRoles}
+                isMobile={isMobile}
+                currentUserId={user?.id}
+                currentUserRole={role}
+                type="member"
+              />
+            ))}
+          </div>
+
+          {members.length === 0 ? (
+            <div className="mt-6 border border-dashed border-grey-3 p-8 text-center">
+              <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">Empty</p>
+              <p className="mt-2 text-sm text-muted-foreground">No members found.</p>
+            </div>
+          ) : processedMembers.length === 0 ? (
+            <div className="mt-6 border border-dashed border-grey-3 p-8 text-center">
+              <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">No results</p>
+              <p className="mt-2 text-sm text-muted-foreground">No members match your search criteria.</p>
+            </div>
+          ) : null}
+        </div>
+
+        {/* Desktop: docked, sticky profile panel. The grid above reflows to fewer
+            columns as this claims space, and the list stays scrollable. */}
+        {selectedMember && !isMobile && (
+          <aside className="sticky top-0 hidden max-h-[calc(100vh-3rem)] w-[22rem] shrink-0 self-start overflow-y-auto md:block lg:w-[24rem]">
+            <div className="relative">
+              <button
+                type="button"
+                onClick={closeProfile}
+                aria-label="Close profile"
+                className="absolute right-2 top-2 z-10 rounded-none p-1 text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+              <ProfileModal member={selectedMember} embedded />
+            </div>
+          </aside>
+        )}
       </div>
 
-      {members.length === 0 ? (
-        <div className="mt-6 border border-dashed border-grey-3 p-8 text-center">
-          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">Empty</p>
-          <p className="mt-2 text-sm text-muted-foreground">No members found.</p>
-        </div>
-      ) : processedMembers.length === 0 ? (
-        <div className="mt-6 border border-dashed border-grey-3 p-8 text-center">
-          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">No results</p>
-          <p className="mt-2 text-sm text-muted-foreground">No members match your search criteria.</p>
-        </div>
-      ) : null}
-
-      <ProfileModal
-        open={isProfileModalOpen}
-        onClose={() => {
-          isClosingProfileRef.current = true;
-          setIsProfileModalOpen(false);
-          setSelectedMember(null);
-          setSearchParams({});
-        }}
-        member={selectedMember}
-      />
+      {/* Mobile: fall back to an overlay sheet (a docked panel won't fit on phones) */}
+      {isMobile && (
+        <ProfileModal open={isProfileModalOpen} onClose={closeProfile} member={selectedMember} />
+      )}
       <JotFormModal open={isJotFormModalOpen} onClose={() => setIsJotFormModalOpen(false)} />
     </div>
   );
