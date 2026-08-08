@@ -1,6 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
 import type { MetadataItem, CardAction, MembershipInfo } from '@/types/modal.types';
 
 interface ItemCardProps {
@@ -43,82 +43,89 @@ export const ItemCard = ({
     const mainActions = actions?.filter(a => a.size !== 'icon') ?? [];
 
     return (
-        <Card className={`flex flex-col h-full w-full ${className}`}>
-            <CardHeader className="pb-0">
-                <div className="flex items-center justify-between gap-4">
-                    <CardTitle className="text-lg flex-1 min-w-0">{title}</CardTitle>
-                    {(badges?.length ?? 0) > 0 || iconActions.length > 0 ? (
-                        <div className="flex flex-row items-center gap-3 shrink-0">
-                            {badges && badges.length > 0 && (
-                                <>
-                                    {badges.map((badge, index) => (
-                                        <div key={index}>{badge}</div>
-                                    ))}
-                                </>
-                            )}
-                            {iconActions.length > 0 && (
-                                <>
-                                    {iconActions.map((action, index) => (
-                                        <button
-                                            key={index}
-                                            type="button"
-                                            onClick={action.onClick}
-                                            disabled={action.disabled || action.loading}
-                                            title={action.label}
-                                            className="inline-flex items-center justify-center h-8 w-8 rounded-md text-muted-foreground hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 transition-colors duration-150 [&_svg]:h-4 [&_svg]:w-4"
-                                        >
-                                            {action.icon}
-                                        </button>
-                                    ))}
-                                </>
-                            )}
-                        </div>
-                    ) : null}
-                </div>
-            </CardHeader>
-
-            <CardContent className="flex flex-col flex-1 min-h-0">
-                {/* Metadata */}
-                {metadata && metadata.length > 0 && (
-                    <div className="space-y-3 text-sm text-muted-foreground pt-1">
-                        {metadata.map((item, index) => (
-                            item.render ? (
-                                item.render(item)
-                            ) : (
-                                <div
-                                    key={index}
-                                    className={`flex items-center gap-2 ${item.interactive
-                                        ? 'cursor-pointer group w-fit'
-                                        : ''
-                                        }`}
-                                    onClick={item.onClick}
-                                >
-                                    <div className={item.interactive ? 'group-hover:text-orange-600 transition-colors' : ''}>
-                                        {item.icon}
-                                    </div>
-                                    <span
-                                        className={
-                                            item.interactive
-                                                ? 'underline decoration-transparent group-hover:decoration-orange-600 group-hover:text-orange-600 transition-all'
-                                                : ''
-                                        }
+        <div
+            className={cn(
+                'group flex h-full w-full flex-col border border-border bg-page p-5 transition-colors duration-200 hover:bg-foreground hover:text-page',
+                className
+            )}
+        >
+            {/* Title row */}
+            <div className="flex items-start justify-between gap-4">
+                <h3 className="min-w-0 flex-1 font-sans text-lg font-bold leading-snug tracking-[-0.01em]">
+                    {title}
+                </h3>
+                {(badges?.length ?? 0) > 0 || iconActions.length > 0 ? (
+                    <div className="flex shrink-0 flex-row items-center gap-2">
+                        {badges && badges.length > 0 && (
+                            <>
+                                {badges.map((badge, index) => (
+                                    <div key={index}>{badge}</div>
+                                ))}
+                            </>
+                        )}
+                        {iconActions.length > 0 && (
+                            <>
+                                {iconActions.map((action, index) => (
+                                    <button
+                                        key={index}
+                                        type="button"
+                                        onClick={action.onClick}
+                                        disabled={action.disabled || action.loading}
+                                        title={action.label}
+                                        className="inline-flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors duration-150 hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 group-hover:text-page/60 group-hover:hover:text-primary [&_svg]:h-4 [&_svg]:w-4"
                                     >
-                                        {item.text}
-                                    </span>
-                                </div>
-                            )
+                                        {action.icon}
+                                    </button>
+                                ))}
+                            </>
+                        )}
+                    </div>
+                ) : null}
+            </div>
+
+            <div className="flex min-h-0 flex-1 flex-col">
+                {/* Metadata — mono meta rows */}
+                {metadata && metadata.length > 0 && (
+                    <div className="space-y-2 pt-3 font-mono text-xs text-muted-foreground transition-colors group-hover:text-page/60">
+                        {metadata.map((item, index) => (
+                            <div key={index}>
+                                {item.render ? (
+                                    item.render(item)
+                                ) : (
+                                    <div
+                                        className={`flex items-center gap-2 ${item.interactive
+                                            ? 'w-fit cursor-pointer transition-colors hover:text-primary'
+                                            : ''
+                                            }`}
+                                        onClick={item.onClick}
+                                    >
+                                        <span className="shrink-0">{item.icon}</span>
+                                        <span
+                                            className={`min-w-0 tabular-nums ${item.interactive
+                                                ? 'underline decoration-transparent underline-offset-4 transition-all hover:decoration-primary'
+                                                : ''
+                                                }`}
+                                        >
+                                            {item.text}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
                         ))}
                     </div>
                 )}
 
-                {/* Members Preview */}
+                {/* Members — square-avatar hairline filmstrip */}
                 {members && members.data.length > 0 && (
-                    <div className="space-y-3 text-sm text-muted-foreground mt-3">
-                        <div className="flex -space-x-2">
+                    <div className="pt-3">
+                        <div className="flex">
                             {displayedMembers.map((member) => (
-                                <Avatar key={member.id} className="h-8 w-8 border-2 border-page">
+                                <Avatar
+                                    key={member.id}
+                                    className="-ml-px h-8 w-8 shrink-0 rounded-none border border-border transition-colors first:ml-0 group-hover:border-page/40"
+                                >
                                     <AvatarImage src={member.profile.profile_picture_url || undefined} />
-                                    <AvatarFallback className="text-xs">
+                                    <AvatarFallback className="rounded-none bg-page font-mono text-[10px] text-foreground">
                                         {member.profile.full_name
                                             ? getInitials(member.profile.full_name)
                                             : member.profile.email.charAt(0).toUpperCase()}
@@ -126,7 +133,7 @@ export const ItemCard = ({
                                 </Avatar>
                             ))}
                             {remainingCount > 0 && (
-                                <div className="h-8 w-8 rounded-full border-2 border-page bg-muted flex items-center justify-center text-xs">
+                                <div className="-ml-px flex h-8 w-8 shrink-0 items-center justify-center border border-border font-mono text-[10px] tabular-nums transition-colors group-hover:border-page/40">
                                     +{remainingCount}
                                 </div>
                             )}
@@ -134,16 +141,16 @@ export const ItemCard = ({
                     </div>
                 )}
 
-                {/* Description */}
+                {/* Description — reading voice */}
                 {description && (
-                    <div className="text-sm line-clamp-3 text-muted-foreground flex-1 space-y-3 break-words pt-3 whitespace-pre-line">
+                    <div className="min-h-0 flex-1 space-y-3 whitespace-pre-line break-words pt-3 text-sm leading-relaxed text-ink-soft line-clamp-3 transition-colors group-hover:text-page/80">
                         {description}
                     </div>
                 )}
 
                 {/* Actions: main actions only (icon actions are in header) */}
                 {mainActions.length > 0 && (
-                    <div className="flex flex-col gap-2 mt-4">
+                    <div className="mt-4 flex flex-col gap-2">
                         {mainActions.map((action, index) => (
                             <Button
                                 key={index}
@@ -158,7 +165,7 @@ export const ItemCard = ({
                         ))}
                     </div>
                 )}
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 };

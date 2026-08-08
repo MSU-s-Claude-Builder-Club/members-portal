@@ -1,7 +1,7 @@
 /**
  * TerminalBlock
  *
- * A styled macOS-style terminal window for displaying commands in lecture pages.
+ * A styled terminal window for displaying commands in lecture pages.
  * Commands and comments are intentionally non-selectable to encourage students to type.
  *
  * Usage:
@@ -17,7 +17,7 @@
 interface TerminalLine {
     /** Optional grey comment shown above the command (like a # bash comment) */
     comment?: string;
-    /** The command itself — shown in green, non-selectable */
+    /** The command itself — shown in ink after the orange prompt, non-selectable */
     cmd: string;
 }
 
@@ -28,26 +28,28 @@ interface TerminalBlockProps {
 }
 
 export const TerminalBlock = ({ lines, title = 'bash — ~' }: TerminalBlockProps) => (
-    <div className="rounded-xl overflow-hidden border border-zinc-700 shadow-xl my-6 font-mono text-sm">
+    <div className="my-6 border border-border bg-page font-mono">
         {/* Title bar */}
-        <div className="bg-zinc-800 px-4 py-2.5 flex items-center gap-2 border-b border-zinc-700">
-            <span className="w-3 h-3 rounded-full bg-rose-500" />
-            <span className="w-3 h-3 rounded-full bg-amber-400" />
-            <span className="w-3 h-3 rounded-full bg-emerald-500" />
-            <span className="ml-3 text-xs text-zinc-400 tracking-wide select-none">{title}</span>
+        <div className="hatch h-[38px] px-4 flex items-center gap-2 border-b border-border select-none">
+            <span className="w-[9px] h-[9px] rounded-full bg-grey-3 shrink-0" />
+            <span className="w-[9px] h-[9px] rounded-full bg-grey-3 shrink-0" />
+            <span className="w-[9px] h-[9px] rounded-full bg-grey-3 shrink-0" />
+            <span className="ml-3 font-mono text-[10.5px] font-medium uppercase tracking-[0.1em] text-muted-foreground truncate">
+                {title}
+            </span>
         </div>
         {/* Body */}
-        <div className="bg-zinc-950 px-5 py-4 space-y-1">
+        <div className="px-5 py-4 space-y-1 text-[12.5px] leading-[1.6] overflow-x-auto">
             {lines.map((line, i) => (
                 <div key={i}>
                     {line.comment && (
-                        <p className="text-zinc-500 text-xs mb-1 mt-3 select-none"># {line.comment}</p>
+                        <p className="text-grey-2 italic mb-1 mt-3 first:mt-0 select-none whitespace-pre"># {line.comment}</p>
                     )}
                     <p
-                        className="text-emerald-400 select-none"
+                        className="text-foreground font-medium select-none whitespace-pre"
                         style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
                     >
-                        <span className="text-zinc-500 mr-2">$</span>
+                        <span className="text-primary font-semibold mr-2">$</span>
                         {line.cmd}
                     </p>
                 </div>

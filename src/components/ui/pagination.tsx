@@ -1,10 +1,8 @@
 import * as React from "react";
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 
-import { cn, createButtonVariants, InterfaceVariant, InterfaceSize } from "@/lib/utils";
-
-// Button-like variant system, just like dropdown-menu.tsx
-const buttonVariants = createButtonVariants();
+import { cn, InterfaceVariant, InterfaceSize } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 
 const Pagination = ({ className, ...props }: React.ComponentProps<"nav">) => (
   <nav

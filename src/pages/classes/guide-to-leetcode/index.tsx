@@ -27,20 +27,25 @@ import { Badge } from '@/components/ui/badge';
 import { WEEKS, getCurrent, type Question } from './weeks';
 import { getActiveSemesterStartIso, getNextDropDeadline } from '@/lib/semester';
 
+/** Difficulty reads as weight, not hue: easy = faint outline, medium = ink outline, hard = ink flood. */
 const DIFFICULTY_CONFIG = {
     easy: {
         label: 'Easy',
-        className: 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-400 dark:border-emerald-500/30',
+        className: 'border-grey-3 text-grey-2',
     },
     medium: {
         label: 'Medium',
-        className: 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-400 dark:border-amber-500/30',
+        className: 'border-border text-foreground',
     },
     hard: {
         label: 'Hard',
-        className: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-500/15 dark:text-red-400 dark:border-red-500/30',
+        className: 'bg-foreground text-page border-foreground',
     },
 };
+
+/** Mono status-chip base (DESIGN.md §5). */
+const CHIP_BASE =
+    'inline-flex items-center rounded-none font-mono text-[10px] uppercase tracking-[0.08em] font-semibold px-2 py-0.5 border';
 
 // ─── Countdown Hook ──────────────────────────────────────────────────────────
 
@@ -92,9 +97,9 @@ function CountdownInline() {
 
     if (countdown.done) {
         return (
-            <div className="flex items-center gap-2 px-2 py-1 rounded-lg bg-primary/10 border border-primary/20">
-                <Zap className="h-3.5 w-3.5 text-primary" />
-                <span className="text-xs font-semibold text-primary">Live now</span>
+            <div className="flex items-center gap-2 px-2.5 py-1 border border-primary text-primary">
+                <Zap className="h-3.5 w-3.5" />
+                <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em]">Live now</span>
             </div>
         );
     }
@@ -112,7 +117,7 @@ function CountdownInline() {
                 <div key={unit.label} className="flex items-center gap-0.5">
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <div className="w-9 h-8 rounded-lg bg-page border border-border flex items-center justify-center cursor-default shadow-sm font-mono tabular-nums min-w-[2.25rem]">
+                            <div className="w-9 h-8 bg-page border border-border flex items-center justify-center cursor-default font-mono tabular-nums min-w-[2.25rem]">
                                 <span className="text-sm font-bold text-foreground">
                                     {unit.pad ? String(unit.value).padStart(2, '0') : String(unit.value)}
                                 </span>
@@ -123,7 +128,7 @@ function CountdownInline() {
                         </TooltipContent>
                     </Tooltip>
                     {i < units.length - 1 && (
-                        <span className="text-sm font-bold text-muted-foreground/50">:</span>
+                        <span className="font-mono text-sm font-bold text-grey-3 select-none">:</span>
                     )}
                 </div>
             ))}
@@ -145,7 +150,7 @@ function SimpleMarkdown({ content }: { content: string }) {
         return parts.map((part, idx) => {
             if (part.startsWith('`') && part.endsWith('`')) {
                 return (
-                    <code key={idx} className="px-1.5 py-0.5 rounded bg-primary/10 text-primary font-mono text-[13px] border border-primary/20">
+                    <code key={idx} className="px-1.5 py-0.5 font-mono text-[0.85em] border border-hairline-faint bg-tint text-foreground rounded-none">
                         {part.slice(1, -1)}
                     </code>
                 );
@@ -168,8 +173,8 @@ function SimpleMarkdown({ content }: { content: string }) {
                 i++;
             }
             elements.push(
-                <pre key={key()} className="mb-4 mt-1 p-4 rounded-xl bg-muted border border-border overflow-x-auto">
-                    <code className="text-sm font-mono text-foreground whitespace-pre leading-relaxed">
+                <pre key={key()} className="mb-4 mt-1 p-4 border border-border bg-page overflow-x-auto">
+                    <code className="font-mono text-[12.5px] leading-[1.6] text-foreground whitespace-pre">
                         {codeLines.join('\n')}
                     </code>
                 </pre>
@@ -180,7 +185,7 @@ function SimpleMarkdown({ content }: { content: string }) {
 
         if (line.startsWith('## ')) {
             elements.push(
-                <p key={key()} className="text-sm font-bold text-foreground mb-1.5">
+                <p key={key()} className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-foreground mb-1.5 mt-2">
                     {line.slice(3)}
                 </p>
             );
@@ -189,14 +194,14 @@ function SimpleMarkdown({ content }: { content: string }) {
         }
 
         if (line.startsWith('---')) {
-            elements.push(<hr key={key()} className="border-border my-4" />);
+            elements.push(<hr key={key()} className="border-hairline-faint my-4" />);
             i++;
             continue;
         }
 
         if (line.startsWith('- ')) {
             elements.push(
-                <li key={key()} className="text-sm text-muted-foreground leading-loose ml-4 list-disc">
+                <li key={key()} className="text-sm font-light text-ink-soft leading-loose ml-4 list-disc marker:text-grey-3">
                     {renderInline(line.slice(2))}
                 </li>
             );
@@ -210,7 +215,7 @@ function SimpleMarkdown({ content }: { content: string }) {
         }
 
         elements.push(
-            <p key={key()} className="text-sm text-muted-foreground leading-loose">
+            <p key={key()} className="text-sm font-light text-ink-soft leading-loose">
                 {renderInline(line)}
             </p>
         );
@@ -220,7 +225,7 @@ function SimpleMarkdown({ content }: { content: string }) {
     return <div>{elements}</div>;
 }
 
-// ─── Question Card ───────────────────────────────────────────────────────────
+// ─── Question Row ────────────────────────────────────────────────────────────
 
 function QuestionCard({ question, index, onClick }: { question: Question; index: number; onClick: () => void }) {
     const diff = DIFFICULTY_CONFIG[question.difficulty];
@@ -231,36 +236,37 @@ function QuestionCard({ question, index, onClick }: { question: Question; index:
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: index * 0.055 }}
             onClick={onClick}
-            className="w-full text-left group"
+            className="w-full text-left group -mt-px first:mt-0"
         >
-            <div className="rounded-xl border border-border bg-card p-4 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-200 relative overflow-hidden">
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary/0 group-hover:bg-primary rounded-r transition-colors duration-200" />
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-primary/[0.06] to-transparent pointer-events-none" />
-                <div className="flex items-start justify-between gap-3 relative">
-                    <div className="flex items-start gap-3 min-w-0 flex-1">
-                        <span className="shrink-0 w-9 h-9 rounded-xl bg-muted border border-border flex items-center justify-center text-sm font-bold text-foreground group-hover:bg-primary/10 group-hover:border-primary/30 group-hover:text-primary transition-all duration-200 self-center">
-                            {index + 1}
+            <div className="border border-border bg-page px-4 py-3.5 flex items-center gap-4 hover:bg-tint transition-colors duration-200">
+                <span className="font-mono text-sm font-extrabold tabular-nums text-grey-3 w-7 shrink-0 text-right select-none group-hover:text-primary transition-colors">
+                    {String(index + 1).padStart(2, '0')}
+                </span>
+                <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="font-mono text-sm font-bold tracking-[-0.01em] text-foreground leading-snug">
+                            {question.title}
+                        </h4>
+                        <span className={`${CHIP_BASE} ${diff.className}`}>
+                            {diff.label}
                         </span>
-                        <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                                <h4 className="font-semibold text-foreground leading-snug mb-0.5 group-hover:text-primary/90 transition-colors">{question.title}</h4>
-                                <span className={`inline-flex text-[11px] font-semibold px-2 py-0.5 rounded-md border ${diff.className}`}>
-                                    {diff.label}
-                                </span>
-                                {question.optional && (
-                                    <Badge variant="default" className="text-[11px] font-semibold px-2 py-0.5 rounded-md border border-border">
-                                        Optional
-                                    </Badge>
-                                )}
-                                {question.premium && (
-                                    <Crown className="h-3.5 w-3.5 text-amber-500 dark:text-amber-400 shrink-0" />
-                                )}
-                            </div>
-                            <p className="text-xs text-muted-foreground font-mono">{question.complexity}</p>
-                        </div>
+                        {question.optional && (
+                            <Badge variant="default" className={`${CHIP_BASE} border-border text-muted-foreground`}>
+                                Optional
+                            </Badge>
+                        )}
+                        {question.premium && (
+                            <Crown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        )}
                     </div>
-                    <ChevronRight className="shrink-0 h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all mt-1" />
+                    <p className="font-mono text-[11px] text-muted-foreground tabular-nums mt-1">{question.complexity}</p>
                 </div>
+                <span
+                    className="font-mono text-sm text-muted-foreground shrink-0 group-hover:text-primary group-hover:translate-x-0.5 transition-all motion-reduce:transition-none"
+                    aria-hidden="true"
+                >
+                    →
+                </span>
             </div>
         </motion.button>
     );
@@ -278,23 +284,23 @@ function ProblemModal({
 
     return (
         <Dialog open={true} onOpenChange={(open) => { if (!open) onClose(); }}>
-            <DialogContent className="max-w-2xl max-h-[95vh] flex flex-col p-0 gap-0 rounded-2xl overflow-hidden border-2 shadow-2xl">
+            <DialogContent className="max-w-2xl max-h-[95vh] flex flex-col p-0 gap-0 rounded-none overflow-hidden border border-border shadow-[8px_8px_0_0_hsl(var(--foreground))]">
 
-                {/* Header — tighter top padding */}
-                <div className="px-7 pt-5 pb-4 border-b border-border shrink-0 bg-gradient-to-b from-muted/30 to-transparent">
-                    {/* Context pill row */}
+                {/* Header */}
+                <div className="px-7 pt-5 pb-4 border-b border-border shrink-0">
+                    {/* Context row */}
                     <div className="flex items-center gap-2 mb-3">
-                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
+                        <span className={`${CHIP_BASE} gap-1.5 border-border text-muted-foreground`}>
                             <BookOpen className="h-3 w-3" />
                             {weekTitle}
                         </span>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="font-mono text-[11px] text-muted-foreground tabular-nums">
                             Problem {questionIndex + 1} of {totalCount}
                         </span>
                     </div>
 
                     <DialogHeader>
-                        <DialogTitle className="text-xl font-bold text-foreground leading-tight text-left">
+                        <DialogTitle className="font-mono text-xl font-extrabold tracking-[-0.02em] text-foreground leading-tight text-left">
                             {question.title}
                         </DialogTitle>
                         <DialogDescription className="sr-only">
@@ -303,18 +309,18 @@ function ProblemModal({
                     </DialogHeader>
 
                     <div className="flex flex-wrap items-center gap-3 mt-2.5">
-                        <span className={`inline-flex text-xs font-semibold px-2.5 py-0.5 rounded-full border ${diff.className}`}>
+                        <span className={`${CHIP_BASE} ${diff.className}`}>
                             {diff.label}
                         </span>
                         {question.optional && (
-                            <Badge variant="default" className="text-xs font-semibold px-2.5 py-0.5 rounded-full border border-border">
+                            <Badge variant="default" className={`${CHIP_BASE} border-border text-muted-foreground`}>
                                 Optional
                             </Badge>
                         )}
                         {question.premium && (
-                            <Crown className="h-4 w-4 text-amber-500 dark:text-amber-400 shrink-0" />
+                            <Crown className="h-4 w-4 text-muted-foreground shrink-0" />
                         )}
-                        <span className="text-xs text-muted-foreground font-mono">{question.complexity}</span>
+                        <span className="font-mono text-[11px] text-muted-foreground tabular-nums">{question.complexity}</span>
                     </div>
                 </div>
 
@@ -324,25 +330,25 @@ function ProblemModal({
                 </div>
 
                 {/* Footer */}
-                <div className="px-7 py-4 border-t border-border bg-muted/20 shrink-0">
+                <div className="px-7 py-4 border-t border-border shrink-0">
                     <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={onPrev}
                                 disabled={!hasPrev}
-                                className="text-xs font-medium text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors px-3 py-1.5 rounded-lg border border-border hover:border-primary/30 disabled:hover:border-border"
+                                className="font-mono text-[11px] font-semibold uppercase tracking-[0.08em] px-3 py-1.5 border border-border text-foreground hover:bg-foreground hover:text-page transition-colors duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-foreground"
                             >
                                 ← Previous
                             </button>
                             <button
                                 onClick={onNext}
                                 disabled={!hasNext}
-                                className="text-xs font-medium text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors px-3 py-1.5 rounded-lg border border-border hover:border-primary/30 disabled:hover:border-border"
+                                className="font-mono text-[11px] font-semibold uppercase tracking-[0.08em] px-3 py-1.5 border border-border text-foreground hover:bg-foreground hover:text-page transition-colors duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-foreground"
                             >
                                 Next →
                             </button>
                         </div>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="font-mono text-[11px] text-muted-foreground text-right">
                             Bring your solution to Thursday's Coworking
                         </p>
                     </div>
@@ -384,10 +390,9 @@ export default function GuideToLeetCode() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
             >
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(var(--primary)/0.08),transparent)] pointer-events-none" />
                 <div className="relative">
-                    <div className="flex items-center justify-between mb-5">
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
+                        <div className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
                             <BookOpen className="h-3.5 w-3.5" />
                             <button
                                 onClick={() => navigate('/classes')}
@@ -397,60 +402,66 @@ export default function GuideToLeetCode() {
                                 Classes
                             </button>
                             <ChevronRight className="h-3 w-3" />
-                            <span className="text-foreground font-medium">Guide to LeetCode</span>
+                            <span className="text-foreground font-semibold">Guide to LeetCode</span>
                         </div>
 
                         <div className="flex items-center gap-2.5">
                             <Timer className="h-4 w-4 text-primary" />
-                            <span className="text-xs text-muted-foreground">Next drop</span>
+                            <span className="font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">Next drop</span>
                             <CountdownInline />
                         </div>
                     </div>
 
-                    <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+                    <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground mb-2">
+                        Course
+                    </p>
+                    <h1 className="font-mono text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-foreground">
                         Guide to LeetCode
                     </h1>
-                    <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                    <p className="mt-2 font-mono text-xs text-muted-foreground tabular-nums">
+                        {WEEKS.length} weeks · {displayQuestions.length} problems this week · drops Sunday
+                    </p>
+                    <p className="mt-4 text-[15px] leading-relaxed font-light text-ink-soft max-w-[68ch]">
                         Five hand-picked LeetCode Premium problems drop every Sunday. Solve them before Thursday's Coworking Session — that's when we peer review, share solutions, and learn new techniques together.
                     </p>
 
-                    <div className="mt-6 rounded-xl border border-border bg-muted/20 px-4 py-4 sm:px-5">
-                        <h2 className="text-base font-bold tracking-tight text-foreground">
+                    <div className="mt-6 border border-border px-5 py-4">
+                        <h2 className="font-mono text-base font-extrabold tracking-[-0.02em] text-foreground">
                             Required Submission for Every Problem
                         </h2>
-                        <p className="mt-1 text-sm text-muted-foreground">
+                        <p className="mt-1 text-sm font-light text-muted-foreground">
                             Bring all four required elements to the weekly Coworking Session.
                         </p>
-                        <ol className="mt-3 space-y-3 text-sm text-foreground">
+                        <ol className="mt-4 space-y-3 text-sm text-foreground">
                             <li>
-                                <span className="font-semibold">1. Plan (before coding):</span>
-                                <ul className="ml-4 mt-1 list-disc space-y-0.5 text-muted-foreground">
+                                <span className="font-mono text-xs font-bold">1. Plan (before coding):</span>
+                                <ul className="ml-4 mt-1 list-disc marker:text-grey-3 space-y-0.5 font-light text-muted-foreground">
                                     <li>Pattern name</li>
                                     <li>Invariant</li>
                                     <li>Target time and space complexity</li>
                                 </ul>
                             </li>
                             <li>
-                                <span className="font-semibold">2. Implementation:</span>
-                                <ul className="ml-4 mt-1 list-disc space-y-0.5 text-muted-foreground">
+                                <span className="font-mono text-xs font-bold">2. Implementation:</span>
+                                <ul className="ml-4 mt-1 list-disc marker:text-grey-3 space-y-0.5 font-light text-muted-foreground">
                                     <li>Clean code</li>
                                     <li>Only minimal comments for non obvious logic</li>
                                 </ul>
                             </li>
                             <li>
-                                <span className="font-semibold">3. Postmortem:</span>
-                                <ul className="ml-4 mt-1 list-disc space-y-0.5 text-muted-foreground">
+                                <span className="font-mono text-xs font-bold">3. Postmortem:</span>
+                                <ul className="ml-4 mt-1 list-disc marker:text-grey-3 space-y-0.5 font-light text-muted-foreground">
                                     <li>First point of failure</li>
                                     <li>What earlier signal indicated the correct pattern</li>
                                     <li>One future rule written as: Next time I will _____</li>
                                 </ul>
                             </li>
                             <li>
-                                <span className="font-semibold">4. Flashcard:</span>
-                                <span className="ml-1 text-muted-foreground">1 to 3 bullets capturing the key takeaway in under 10 seconds of reading.</span>
+                                <span className="font-mono text-xs font-bold">4. Flashcard:</span>
+                                <span className="ml-1 font-light text-muted-foreground">1 to 3 bullets capturing the key takeaway in under 10 seconds of reading.</span>
                             </li>
                         </ol>
-                        <p className="mt-2 text-sm text-muted-foreground italic">
+                        <p className="mt-3 text-sm font-light text-muted-foreground italic">
                             This forces reasoning to be explicit and prevents passive solving.
                         </p>
                     </div>
@@ -461,16 +472,20 @@ export default function GuideToLeetCode() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, delay: 0.05 }}
-                className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm"
+                className="border border-border bg-page"
             >
-                <div className="border-l-4 border-primary bg-muted/30 px-5 py-4">
-                    <h2 className="text-lg font-bold tracking-tight text-foreground">{displayWeek.title}</h2>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                        <span className="font-semibold text-foreground">Goal:</span> {displayWeek.goal}
+                <div className="hatch px-5 py-4 border-b border-border">
+                    <p className="font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground mb-1 select-none">
+                        This week
                     </p>
+                    <h2 className="font-mono text-lg font-extrabold tracking-[-0.02em] text-foreground">{displayWeek.title}</h2>
                 </div>
-                <div className="p-5 sm:p-6 space-y-5">
-                    <ul className="text-sm text-muted-foreground leading-relaxed space-y-1.5 pl-4 list-disc">
+                <div className="p-5 space-y-4">
+                    <p className="text-sm font-light text-ink-soft leading-relaxed">
+                        <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-primary mr-2">Goal</span>
+                        {displayWeek.goal}
+                    </p>
+                    <ul className="text-sm font-light text-ink-soft leading-relaxed space-y-1.5 pl-4 list-disc marker:text-grey-3">
                         {displayWeek.rules.map((rule, i) => (
                             <li key={i}>{rule}</li>
                         ))}
@@ -480,21 +495,23 @@ export default function GuideToLeetCode() {
 
             {/* ── Problems section ── */}
             <div className="space-y-4">
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                    <h2 className="text-base font-semibold text-foreground">This week's problems</h2>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/60 border border-border/80">
-                            <Trophy className="h-3.5 w-3.5 text-primary/80" />
+                <div className="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-border">
+                    <h2 className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                        This week's problems
+                    </h2>
+                    <div className="flex items-center gap-4 font-mono text-[11px] text-muted-foreground">
+                        <span className="flex items-center gap-1.5">
+                            <Trophy className="h-3.5 w-3.5" />
                             {displayWeek.title}
                         </span>
-                        <span className="flex items-center gap-1.5">
+                        <span className="flex items-center gap-1.5 tabular-nums">
                             <FileText className="h-3.5 w-3.5" />
                             {displayQuestions.length} problems
                         </span>
                     </div>
                 </div>
 
-                <div className="space-y-3">
+                <div className="flex flex-col">
                     {displayQuestions.map((q, i) => (
                         <QuestionCard key={q.id} question={q} index={i} onClick={() => openQuestion(q)} />
                     ))}

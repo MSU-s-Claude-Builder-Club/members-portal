@@ -2,9 +2,6 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { CheckCircle, XCircle, Trophy } from 'lucide-react';
 
 const Checkin = () => {
     const { token } = useParams<{ token: string }>();
@@ -74,69 +71,98 @@ const Checkin = () => {
 
     if (loading || checking) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-page via-orange-50/20 to-page dark:from-page dark:via-orange-950/10 dark:to-page">
-                <div className="text-center space-y-4">
-                    <div className="w-12 h-12 border-4 border-orange-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                    <p className="text-muted-foreground">Checking you in...</p>
+            <div className="flex min-h-screen items-center justify-center bg-page p-4">
+                <div className="w-full max-w-md border border-border bg-page shadow-[8px_8px_0_0_hsl(var(--foreground))]">
+                    <div className="hatch flex items-center justify-between border-b border-border px-5 py-2.5">
+                        <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                            Check-in receipt
+                        </span>
+                        <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-grey-3">
+                            CBC·MSU
+                        </span>
+                    </div>
+                    <div className="p-8 text-center">
+                        <div
+                            className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent motion-reduce:animate-none"
+                            aria-hidden="true"
+                        />
+                        <p className="mt-5 font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                            Checking you in...
+                        </p>
+                    </div>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-page via-orange-50/20 to-page dark:from-page dark:via-orange-950/10 dark:to-page p-4">
-            <Card className="w-full max-w-md">
-                <CardHeader className="text-center">
-                    <div className="flex justify-center mb-4">
-                        {result?.success ? (
-                            <div className="w-20 h-20 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-                                <CheckCircle className="h-12 w-12 text-green-600 dark:text-green-400" />
-                            </div>
-                        ) : (
-                            <div className="w-20 h-20 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
-                                <XCircle className="h-12 w-12 text-red-600 dark:text-red-400" />
-                            </div>
-                        )}
-                    </div>
-                    <CardTitle className="text-2xl">
-                        {result?.success ? 'Check-in Successful!' : 'Check-in Failed'}
-                    </CardTitle>
-                    <CardDescription>{result?.message}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    {result?.points_awarded !== undefined && (
-                        <div className={`rounded-lg p-4 text-center ${result.points_awarded >= 0
-                                ? 'bg-orange-50 dark:bg-orange-950'
-                                : 'bg-red-50 dark:bg-red-950'
-                            }`}>
-                            <div className="flex items-center justify-center gap-2 mb-2">
-                                <Trophy className={`h-6 w-6 ${result.points_awarded >= 0
-                                        ? 'text-orange-600'
-                                        : 'text-red-600'
-                                    }`} />
-                                <span className={`text-3xl font-bold ${result.points_awarded >= 0
-                                        ? 'text-orange-600'
-                                        : 'text-red-600'
-                                    }`}>
-                                    {result.points_awarded >= 0 ? '+' : ''}{result.points_awarded}
-                                </span>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                                {result.points_awarded >= 0 ? 'Points Awarded' : 'Points Deducted'}
+        <div className="flex min-h-screen items-center justify-center bg-page p-4">
+            <div className="w-full max-w-md border border-border bg-page shadow-[8px_8px_0_0_hsl(var(--foreground))]">
+                {/* Chrome strip */}
+                <div className="hatch flex items-center justify-between border-b border-border px-5 py-2.5">
+                    <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                        Check-in receipt
+                    </span>
+                    <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-grey-3">
+                        CBC·MSU
+                    </span>
+                </div>
+
+                <div className="p-6 md:p-8">
+                    {result?.success ? (
+                        <>
+                            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                                Status
                             </p>
-                            {result.event_name && (
-                                <p className="text-sm font-medium mt-2">{result.event_name}</p>
+                            <p className="mt-2 font-mono text-4xl font-extrabold uppercase tracking-[-0.03em] text-foreground">
+                                Checked in
+                            </p>
+                            <div className="mt-4 h-0.5 w-full bg-primary" aria-hidden="true" />
+                            {result?.message && (
+                                <p className="mt-4 text-sm leading-relaxed text-ink-soft">
+                                    {result.message}
+                                </p>
                             )}
+                        </>
+                    ) : (
+                        <>
+                            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
+                                Check-in failed
+                            </p>
+                            <div className="mt-3 h-px w-full bg-border" aria-hidden="true" />
+                            <p className="mt-4 text-sm leading-relaxed text-ink-soft">
+                                {result?.message}
+                            </p>
+                        </>
+                    )}
+
+                    {result?.points_awarded !== undefined && (
+                        <div className="mt-6 border border-border">
+                            <div className="flex items-center justify-between gap-3 border-b border-hairline-faint px-4 py-2">
+                                <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                                    {result.points_awarded >= 0 ? 'Points awarded' : 'Points deducted'}
+                                </span>
+                                {result.event_name && (
+                                    <span className="min-w-0 truncate font-mono text-[10px] uppercase tracking-[0.08em] text-grey-2">
+                                        {result.event_name}
+                                    </span>
+                                )}
+                            </div>
+                            <p className={`px-4 py-3 font-sans text-4xl font-bold tracking-[-0.02em] tabular-nums ${result.points_awarded >= 0 ? 'text-primary' : 'text-destructive'}`}>
+                                {result.points_awarded >= 0 ? '+' : ''}{result.points_awarded}
+                            </p>
                         </div>
                     )}
-                    <Button
-                        className="w-full"
+
+                    <button
+                        type="button"
                         onClick={() => navigate('/events')}
+                        className="mt-6 flex min-h-[44px] w-full items-center justify-center gap-2 border-2 border-border bg-page px-5 py-2.5 font-mono text-sm font-semibold uppercase tracking-[0.1em] text-foreground transition-colors duration-200 hover:border-primary hover:bg-primary hover:text-primary-foreground motion-reduce:transition-none"
                     >
-                        Go to Dashboard
-                    </Button>
-                </CardContent>
-            </Card>
+                        Back to events
+                    </button>
+                </div>
+            </div>
         </div>
     );
 };

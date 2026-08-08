@@ -95,19 +95,27 @@ export const ActivityTask = ({ children }: ActivityTaskProps) => {
     };
 
     return (
-        <label className="flex items-center gap-3 py-2.5 border-b border-border last:border-b-0 cursor-pointer group">
+        <label className="flex items-center gap-3 py-2.5 border-b border-hairline-faint last:border-b-0 cursor-pointer group">
             <Checkbox
                 checked={checked}
                 onCheckedChange={handleCheckedChange}
                 indicatorClassName="size-full [&_svg]:stroke-[2.5]"
                 className={cn(
-                    'rounded border-2 border-muted-foreground/30',
+                    'rounded-none border border-border bg-page transition-colors duration-200',
                     'data-[state=checked]:bg-foreground data-[state=checked]:border-foreground data-[state=checked]:text-page',
-                    'focus-visible:ring-2 focus-visible:ring-foreground/20 focus-visible:ring-offset-0',
-                    'group-hover:border-muted-foreground/50',
+                    'focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0',
+                    'group-hover:border-foreground',
                 )}
             />
-            <p className="text-sm text-foreground leading-relaxed">
+            <p
+                className={cn(
+                    'text-[15px] leading-relaxed font-light transition-colors duration-200',
+                    '[&_code]:font-mono [&_code]:text-[0.85em] [&_code]:border [&_code]:border-hairline-faint [&_code]:bg-tint [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded-none',
+                    checked
+                        ? 'text-muted-foreground line-through decoration-primary decoration-2'
+                        : 'text-ink-soft',
+                )}
+            >
                 {children}
             </p>
         </label>

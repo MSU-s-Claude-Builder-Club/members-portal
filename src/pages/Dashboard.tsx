@@ -17,7 +17,6 @@ import {
   Users,
   Award,
   MapPin,
-  TrendingUp,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
@@ -49,6 +48,10 @@ const getStatus = (
   }
   return { variant: 'blue', label: 'Current' };
 }
+
+// Derived term label for the page-header meta line (receipts, not adjectives)
+const getTermLabel = (d: Date) =>
+  `${d.getMonth() >= 7 ? 'FALL' : d.getMonth() >= 4 ? 'SUMMER' : 'SPRING'} ${d.getFullYear()}`;
 
 // Dashboard data is now sourced from AuthContext and separate admin queries
 
@@ -137,62 +140,15 @@ export default function Dashboard() {
   // --- Sub-Components ---
 
 
-  const WelcomeCard = () => (
-    <div className={`relative rounded-xl border border-primary/20 dark:border-primary/30 overflow-hidden ${isMobile ? 'p-6' : 'p-8'} opacity-80 hover:opacity-90 dark:opacity-90 dark:hover:opacity-95 transition-all duration-500 bg-gradient-to-br from-orange-100 to-orange-200 dark:from-slate-800 dark:to-slate-900`}>
-      <div className="absolute inset-0 flex items-center justify-center opacity-25 dark:opacity-30 pointer-events-none animate-pulse">
-        <svg viewBox="0 0 200 200" className="w-96 h-96 text-primary/80 dark:text-primary/60 drop-shadow-lg dark:drop-shadow-2xl animate-pulse" fill="currentColor" style={{
-          filter: 'drop-shadow(0 0 10px rgba(0,0,0,0.1))'
-        }}>
-          <defs>
-            <filter id="keyboardGlow">
-              <feGaussianBlur stdDeviation="2" result="coloredBlur" />
-              <feMerge>
-                <feMergeNode in="coloredBlur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-          <rect x="20" y="60" width="160" height="80" rx="8" fill="none" stroke="currentColor" strokeWidth="2" className="animate-pulse" filter="url(#keyboardGlow)" />
-          <rect x="30" y="70" width="12" height="12" rx="2" className="animate-pulse" style={{ animationDelay: '0.1s' }} />
-          <rect x="46" y="70" width="12" height="12" rx="2" className="animate-pulse" style={{ animationDelay: '0.2s' }} />
-          <rect x="62" y="70" width="12" height="12" rx="2" className="animate-pulse" style={{ animationDelay: '0.3s' }} />
-          <rect x="78" y="70" width="12" height="12" rx="2" className="animate-pulse" style={{ animationDelay: '0.4s' }} />
-          <rect x="94" y="70" width="12" height="12" rx="2" className="animate-pulse" style={{ animationDelay: '0.5s' }} />
-          <rect x="110" y="70" width="12" height="12" rx="2" className="animate-pulse" style={{ animationDelay: '0.6s' }} />
-          <rect x="126" y="70" width="12" height="12" rx="2" className="animate-pulse" style={{ animationDelay: '0.7s' }} />
-          <rect x="142" y="70" width="12" height="12" rx="2" className="animate-pulse" style={{ animationDelay: '0.8s' }} />
-          <rect x="158" y="70" width="12" height="12" rx="2" className="animate-pulse" style={{ animationDelay: '0.9s' }} />
-          <rect x="30" y="88" width="12" height="12" rx="2" className="animate-pulse" style={{ animationDelay: '1.0s' }} />
-          <rect x="46" y="88" width="12" height="12" rx="2" className="animate-pulse" style={{ animationDelay: '1.1s' }} />
-          <rect x="62" y="88" width="12" height="12" rx="2" className="animate-pulse" style={{ animationDelay: '1.2s' }} />
-          <rect x="78" y="88" width="12" height="12" rx="2" className="animate-pulse" style={{ animationDelay: '1.3s' }} />
-          <rect x="94" y="88" width="12" height="12" rx="2" className="animate-pulse" style={{ animationDelay: '1.4s' }} />
-          <rect x="110" y="88" width="12" height="12" rx="2" className="animate-pulse" style={{ animationDelay: '1.5s' }} />
-          <rect x="126" y="88" width="12" height="12" rx="2" className="animate-pulse" style={{ animationDelay: '1.6s' }} />
-          <rect x="142" y="88" width="12" height="12" rx="2" className="animate-pulse" style={{ animationDelay: '1.7s' }} />
-          <rect x="158" y="88" width="12" height="12" rx="2" className="animate-pulse" style={{ animationDelay: '1.8s' }} />
-          <rect x="30" y="106" width="12" height="12" rx="2" className="animate-pulse" style={{ animationDelay: '1.9s' }} />
-          <rect x="46" y="106" width="12" height="12" rx="2" className="animate-pulse" style={{ animationDelay: '2.0s' }} />
-          <rect x="62" y="106" width="12" height="12" rx="2" className="animate-pulse" style={{ animationDelay: '2.1s' }} />
-          <rect x="78" y="106" width="60" height="12" rx="2" className="animate-pulse" style={{ animationDelay: '2.2s' }} />
-          <rect x="142" y="106" width="12" height="12" rx="2" className="animate-pulse" style={{ animationDelay: '2.3s' }} />
-          <rect x="158" y="106" width="12" height="12" rx="2" className="animate-pulse" style={{ animationDelay: '2.4s' }} />
-        </svg>
-      </div>
-      <div className="relative z-10 text-center">
-        <h1
-          className={`
-            ${isMobile ? 'text-3xl' : 'text-4xl'}
-            font-black
-            text-primary
-            dark:text-primary
-            drop-shadow-lg
-            dark:drop-shadow-2xl
-            tracking-tight
-            flex items-center justify-center
-          `}
-          style={{ fontFamily: `'Roboto Mono', monospace`, letterSpacing: '0.05em', fontWeight: 800 }}>
+  const PageHeader = () => {
+    const now = new Date();
 
+    return (
+      <header className="border-b border-border pb-6">
+        <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+          Dashboard
+        </p>
+        <h1 className="mt-2 font-mono text-3xl font-extrabold tracking-[-0.03em] text-foreground md:text-4xl">
           <TextType
             text={[`Welcome back, ${profile.full_name?.split(' ')[0] || ''}!`]}
             // cursorCharacter="|"
@@ -203,38 +159,49 @@ export default function Dashboard() {
             hideCursorWhileTyping={false}
           />
         </h1>
-      </div>
-    </div>
-  );
+        <p className="mt-3 font-mono text-xs tabular-nums text-muted-foreground">
+          {getTermLabel(now)} · {format(now, 'EEE MMM d, yyyy').toUpperCase()}
+        </p>
+      </header>
+    );
+  };
 
   type StatItemProps = {
     icon: React.ElementType,
-    color: string,
-    bg: string,
     value: number | string,
     label: string,
-    link?: string
+    link?: string,
+    emphasis?: boolean,
   };
 
-  const StatItem = ({ icon: Icon, color, bg, value, label, link }: StatItemProps) => (
-    <Card
-      className={`relative overflow-hidden hover:shadow-lg transition-all group${link ? ' cursor-pointer' : ''}`}
+  const StatItem = ({ icon: Icon, value, label, link, emphasis }: StatItemProps) => (
+    <div
+      className={`group relative -ml-px -mt-px flex flex-col border border-border bg-page p-5${link ? ' cursor-pointer transition-colors hover:bg-tint' : ''}`}
       onClick={() => link && navigate(link)}
     >
-      <div className={`absolute top-0 right-0 w-32 h-32 ${bg} rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110`} />
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className={`p-2 ${bg} rounded-lg`}>
-            <Icon className={`h-5 w-5 ${color}`} />
-          </div>
-          <TrendingUp className="h-4 w-4 text-muted-foreground" />
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className={`text-3xl font-bold mb-1 ${typeof value === 'string' ? 'capitalize' : ''}`}>{value}</div>
-        <p className="text-sm text-muted-foreground">{label}</p>
-      </CardContent>
-    </Card>
+      <div className="flex items-start justify-between gap-2">
+        <span className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+          {label}
+        </span>
+        <Icon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+      </div>
+      <div
+        className={`mt-4 font-sans font-bold tracking-[-0.02em] ${typeof value === 'string' ? 'text-2xl capitalize' : 'text-4xl tabular-nums'} ${emphasis ? 'text-primary' : 'text-foreground'}`}
+      >
+        {value}
+      </div>
+      {link && (
+        <p className="mt-3 font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+          View{' '}
+          <span
+            aria-hidden="true"
+            className="inline-block transition-transform group-hover:translate-x-0.5 motion-reduce:transform-none"
+          >
+            →
+          </span>
+        </p>
+      )}
+    </div>
   );
 
   const StatsGrid = () => {
@@ -242,35 +209,28 @@ export default function Dashboard() {
     if (isEBoard && adminStats) {
 
       return (
-        <div className={`grid gap-4 ${isMobile ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-4 lg:grid-cols-4'}`}>
+        <div className="grid grid-cols-2 pl-px pt-px lg:grid-cols-4">
           <StatItem
             icon={Users}
-            color="text-green-600 dark:text-green-500"
-            bg="bg-green-500/10"
             value={adminStats.members}
             label={adminStats.members === 1 ? "Active Member" : "Active Members"}
             link="/members"
           />
           <StatItem
             icon={FileText}
-            color="text-primary dark:text-primary/80"
-            bg="bg-primary/10"
+            emphasis
             value={userApplications?.review.pending.length ?? 0}
             label={(userApplications?.review.pending.length ?? 0) === 1 ? "Pending Application" : "Pending Applications"}
             link="/applications"
           />
           <StatItem
             icon={Award}
-            color="text-blue-600 dark:text-blue-500"
-            bg="bg-blue-500/10"
             value={adminStats.board}
             label={adminStats.board === 1 ? "Board Member" : "Board Members"}
             link="/members"
           />
           <StatItem
             icon={Crown}
-            color="text-purple-600 dark:text-purple-500"
-            bg="bg-purple-500/10"
             value={adminStats.eBoard}
             label={adminStats.eBoard === 1 ? "E-Board Member" : "E-Board Members"}
             link="/members"
@@ -281,18 +241,15 @@ export default function Dashboard() {
 
     // Everyone else shows personal stats (from AuthContext)
     return (
-      <div className={`grid gap-4 ${isMobile ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'}`}>
+      <div className="grid grid-cols-2 pl-px pt-px lg:grid-cols-4">
         <StatItem
           icon={Trophy}
-          color="text-yellow-600 dark:text-yellow-500"
-          bg="bg-yellow-500/10"
+          emphasis
           value={profile?.points || 0}
           label="Points"
         />
         <StatItem
           icon={FolderKanban}
-          color="text-blue-600 dark:text-blue-500"
-          bg="bg-blue-500/10"
           value={
             userProjects.inProgress.length > 0
               ? userProjects.inProgress.length
@@ -307,8 +264,6 @@ export default function Dashboard() {
         />
         <StatItem
           icon={BookOpen}
-          color="text-purple-600 dark:text-purple-500"
-          bg="bg-purple-500/10"
           value={
             userClasses.inProgress.length > 0
               ? userClasses.inProgress.length
@@ -323,8 +278,6 @@ export default function Dashboard() {
         />
         <StatItem
           icon={Award}
-          color="text-green-600 dark:text-green-500"
-          bg="bg-green-500/10"
           value={role?.replace('-', ' ') || 'Prospect'}
           label="Status"
         />
@@ -349,57 +302,60 @@ export default function Dashboard() {
       : [];
 
     return (
-      <Card className="hover:shadow-lg transition-shadow h-full flex flex-col min-w-[300px]">
-        <CardHeader className="p-6 pb-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Calendar className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <CardTitle className="text-xl">Upcoming Events</CardTitle>
-                <CardDescription>{`${allEvents.length} event${allEvents.length !== 1 ? 's' : ''}`}</CardDescription>
-              </div>
+      <Card className="flex h-full min-w-[300px] flex-col">
+        <CardHeader className="shrink-0 space-y-0 border-b border-border p-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <CardTitle className="font-mono text-sm font-extrabold uppercase tracking-[0.08em]">
+                Upcoming Events
+              </CardTitle>
+              <CardDescription className="mt-1 font-mono text-[11px] uppercase tracking-[0.08em] tabular-nums text-muted-foreground">
+                {`${allEvents.length} event${allEvents.length !== 1 ? 's' : ''}`}
+              </CardDescription>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate('/events')}
-              className="hover:bg-primary/10 hover:text-primary"
+              className="group shrink-0 rounded-none font-mono text-xs font-semibold uppercase tracking-[0.1em] hover:bg-tint hover:text-foreground"
             >
-              View All <ArrowRight className="h-4 w-4 ml-1" />
+              View All <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transform-none" />
             </Button>
           </div>
         </CardHeader>
-        <CardContent className={`flex overflow-y-auto p-4 h-full flex-col justify-flex-start ${isMobile ? 'p-4' : 'p-2'}`}>
+        <CardContent className="flex-1 overflow-y-auto p-0">
           {isLoading ? (
-            <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Loading...</div>
+            <div className="flex h-full items-center justify-center p-6 font-mono text-xs uppercase tracking-[0.08em] text-muted-foreground">Loading...</div>
           ) : allEvents.length === 0 ? (
-            <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
-              <Calendar className="h-8 w-8 text-primary opacity-30 mb-2" />
-              <p className="text-sm">No upcoming events</p>
+            <div className="flex h-full items-center justify-center p-4">
+              <div className="flex w-full flex-col items-center gap-2 border border-dashed border-grey-3 px-6 py-8 text-center">
+                <Calendar className="h-6 w-6 text-grey-3" aria-hidden="true" />
+                <p className="font-mono text-xs uppercase tracking-[0.08em] text-muted-foreground">No upcoming events</p>
+              </div>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div>
               {allEvents.map((event) => (
-                <Card key={event.id} className="w-full border bg-card hover:bg-primary/5 transition-colors cursor-pointer" onClick={() => navigate(`/events?id=${event.id}`)}>
-                  <CardHeader className="p-3 pb-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <CardTitle className="text-lg font-semibold truncate">{event.name}</CardTitle>
-                      {event.points > 0 && <Badge variant="default" className="scale-90 origin-right">+{event.points}</Badge>}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-3 pt-0.5 space-y-1">
-                    <div className="flex items-center gap-2 text-[14px] text-muted-foreground">
-                      <Calendar className="h-3 w-3" />
+                <div
+                  key={event.id}
+                  onClick={() => navigate(`/events?id=${event.id}`)}
+                  className="group cursor-pointer border-b border-hairline-faint px-4 py-3 transition-colors last:border-b-0 hover:bg-tint"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="min-w-0 truncate font-sans text-sm font-semibold text-foreground">{event.name}</p>
+                    {event.points > 0 && <Badge variant="default" className="shrink-0">+{event.points}</Badge>}
+                  </div>
+                  <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1.5 tabular-nums">
+                      <Calendar className="h-3 w-3 shrink-0" aria-hidden="true" />
                       <span>{format(new Date(event.event_date), 'MMM d, yyyy • h:mm a')}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-[14px] text-muted-foreground">
-                      <MapPin className="h-3 w-3" />
+                    </span>
+                    <span className="flex min-w-0 items-center gap-1.5">
+                      <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
                       <span className="truncate">{event.location}</span>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </span>
+                  </div>
+                </div>
               ))}
             </div>
           )}
@@ -411,9 +367,6 @@ export default function Dashboard() {
   const ResourceCard = ({ type }: { type: 'Projects' | 'Classes' }) => {
     const isProject = type === 'Projects';
     const Icon = isProject ? FolderKanban : BookOpen;
-    const colorClass = isProject ? "text-blue-600 dark:text-blue-500" : "text-purple-600 dark:text-purple-500";
-    const bgClass = isProject ? "bg-blue-500/10" : "bg-purple-500/10";
-    const hoverBtnClass = isProject ? "hover:bg-blue-500/10 hover:text-blue-600" : "hover:bg-purple-500/10 hover:text-purple-600";
     const link = isProject ? '/projects' : '/classes';
 
     // For board/e-board: show all projects/classes from dashboard query
@@ -437,78 +390,75 @@ export default function Dashboard() {
     const desc = `${items.length} ${items.length === 1 ? singularMap[type] : type.toLowerCase()}`;
 
     return (
-      <Card className="hover:shadow-lg transition-shadow h-full flex flex-col min-w-[300px]">
-        <CardHeader className="p-6 pb-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={`p-2 ${bgClass} rounded-lg`}>
-                <Icon className={`h-5 w-5 ${colorClass}`} />
-              </div>
-              <div>
-                <CardTitle className="text-xl">{title}</CardTitle>
-                <CardDescription>{desc}</CardDescription>
-              </div>
+      <Card className="flex h-full min-w-[300px] flex-col">
+        <CardHeader className="shrink-0 space-y-0 border-b border-border p-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <CardTitle className="font-mono text-sm font-extrabold uppercase tracking-[0.08em]">
+                {title}
+              </CardTitle>
+              <CardDescription className="mt-1 font-mono text-[11px] uppercase tracking-[0.08em] tabular-nums text-muted-foreground">
+                {desc}
+              </CardDescription>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate(link)}
-              className={hoverBtnClass}
+              className="group shrink-0 rounded-none font-mono text-xs font-semibold uppercase tracking-[0.1em] hover:bg-tint hover:text-foreground"
             >
-              View All <ArrowRight className="h-4 w-4 ml-1" />
+              View All <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transform-none" />
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="flex overflow-y-auto p-4 h-full flex-col justify-flex-start">
+        <CardContent className="flex-1 overflow-y-auto p-0">
           {isLoading ? (
-            <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Loading...</div>
+            <div className="flex h-full items-center justify-center p-6 font-mono text-xs uppercase tracking-[0.08em] text-muted-foreground">Loading...</div>
           ) : items.length === 0 ? (
-            <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
-              <Icon className={`h-8 w-8 ${colorClass} opacity-30 mb-2`} />
-              <p className="text-sm">No active {type.toLowerCase()}</p>
+            <div className="flex h-full items-center justify-center p-4">
+              <div className="flex w-full flex-col items-center gap-2 border border-dashed border-grey-3 px-6 py-8 text-center">
+                <Icon className="h-6 w-6 text-grey-3" aria-hidden="true" />
+                <p className="font-mono text-xs uppercase tracking-[0.08em] text-muted-foreground">No active {type.toLowerCase()}</p>
+              </div>
             </div>
           ) : (
-            <div className={`grid gap-3 ${isBoardOrAbove && !isMobile ? 'grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3' : type === 'Classes' && !isMobile && !isBoardOrAbove ? 'grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-2' : 'grid-cols-1'}`}>
+            <div>
               {items.map((item) => {
                 const status = getStatus(item);
                 const count = 'project_members' in item ? item.project_members[0].count : item.class_enrollments[0].count;
 
                 return (
-                  <Card key={item.id} className="w-full border bg-card hover:bg-primary/5 transition-colors cursor-pointer" onClick={(e) => {
-                    if ((e.target as HTMLElement).closest('button')) return;
-                    navigate(`${link}?id=${item.id}`);
-                  }}>
-                    <CardHeader className={`${isMobile ? "p-5" : "xl:p-5 lg:p-3 md:p-4"} !pb-0`}>
-                      <div className="flex items-center justify-between w-full">
-                        <CardTitle className="text-lg font-semibold truncate max-w-[70%] min-w-0">{item.name}</CardTitle>
-                        <div className="flex flex-col items-end gap-2">
-                          <Badge variant={status.variant} className="scale-90 origin-right">{status.label}</Badge>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className={`${isMobile ? "p-5" : "xl:p-5 lg:p-3 md:p-4"} !pt-0 space-y-1`}>
-                      <div className="flex items-center justify-between text-[14px] text-muted-foreground mt-1">
-                        {'client_name' in item && item.client_name && (
-                          <span className="flex items-center gap-1 max-w-[80%] min-w-0">
-                            <FolderKanban className="h-3 w-3" />
-                            <span className="capitalize truncate">{item.client_name}</span>
-                          </span>
-                        )}
-                        {'location' in item && item.location && (
-                          <span className="flex items-center gap-1 max-w-[80%] min-w-0">
-                            <MapPin className="h-3 w-3" />
-                            <span className="capitalize truncate">{item.location}</span>
-                          </span>
-                        )}
-                        <span className="flex items-center gap-1">
-                          <Users className="h-3 w-3" />
-                          <span>
-                            {count}
-                          </span>
+                  <div
+                    key={item.id}
+                    onClick={(e) => {
+                      if ((e.target as HTMLElement).closest('button')) return;
+                      navigate(`${link}?id=${item.id}`);
+                    }}
+                    className="group cursor-pointer border-b border-hairline-faint px-4 py-3 transition-colors last:border-b-0 hover:bg-tint"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="min-w-0 max-w-[70%] truncate font-sans text-sm font-semibold text-foreground">{item.name}</p>
+                      <Badge variant={status.variant} className="shrink-0">{status.label}</Badge>
+                    </div>
+                    <div className="mt-1.5 flex items-center justify-between gap-4 font-mono text-xs text-muted-foreground">
+                      {'client_name' in item && item.client_name && (
+                        <span className="flex min-w-0 max-w-[80%] items-center gap-1.5">
+                          <FolderKanban className="h-3 w-3 shrink-0" aria-hidden="true" />
+                          <span className="truncate capitalize">{item.client_name}</span>
                         </span>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      )}
+                      {'location' in item && item.location && (
+                        <span className="flex min-w-0 max-w-[80%] items-center gap-1.5">
+                          <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
+                          <span className="truncate capitalize">{item.location}</span>
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1.5 tabular-nums">
+                        <Users className="h-3 w-3" aria-hidden="true" />
+                        <span>{count}</span>
+                      </span>
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -519,14 +469,13 @@ export default function Dashboard() {
   };
 
   return (
-    <div
-      className="flex flex-col h-full w-full p-4 gap-4 overflow-y-auto justify-center">
-      {/* 1. Header */}
+    <div className="flex h-fit min-h-full w-full flex-col gap-6 p-6 md:gap-8 md:p-10">
+      {/* 1. Page header */}
       <div className="shrink-0">
-        <WelcomeCard />
+        <PageHeader />
       </div>
 
-      {/* 2. Stats */}
+      {/* 2. Stats bento */}
       <div className="shrink-0">
         <StatsGrid />
       </div>

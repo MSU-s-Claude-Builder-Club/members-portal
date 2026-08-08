@@ -38,7 +38,7 @@
 -- STEP 1: Extensions
 -- ============================================================================
 
-CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA net;
+CREATE EXTENSION IF NOT EXISTS pg_net;
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 CREATE EXTENSION IF NOT EXISTS supabase_vault;
 

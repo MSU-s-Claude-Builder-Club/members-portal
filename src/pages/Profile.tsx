@@ -1,14 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useProfile, UserBadge } from '@/contexts/AuthContext';
+import { useProfile } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -22,7 +20,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Trophy, Mail, Linkedin, Github, FileText, Camera, RotateCw, ExternalLink, Trash2, AlertTriangle } from 'lucide-react';
+import { Mail, Linkedin, Github, FileText, Camera, RotateCw, ExternalLink, Trash2, AlertTriangle } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import {
   Select,
@@ -33,13 +31,34 @@ import {
 } from '@/components/ui/select';
 import Cropper, { Area } from 'react-easy-crop';
 import type { Database } from '@/integrations/supabase/database.types';
+import type { AppRole } from '@/contexts/AuthContext';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { isValidGithubUsername, isValidLinkedinUsername } from '@/lib/validation';
+
+/** Eyebrow recipe — the signature move */
+const EYEBROW = 'font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground';
+
+/** The one role-chip mapping (mono, uppercase, square). */
+const CHIP_BASE =
+  'inline-flex shrink-0 items-center whitespace-nowrap border px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em]';
+
+const roleChipClass = (role: AppRole | null): string =>
+  role === 'e-board'
+    ? 'bg-primary text-primary-foreground border-primary'
+    : role === 'board'
+      ? 'bg-foreground text-page border-foreground'
+      : role === 'member'
+        ? 'border-border text-foreground'
+        : 'border-grey-3 text-grey-2';
+
+/** Danger button recipe */
+const DANGER_BTN =
+  'border-2 border-destructive bg-destructive font-mono text-xs font-semibold uppercase tracking-[0.1em] text-destructive-foreground transition-colors hover:border-foreground hover:bg-foreground hover:text-page disabled:pointer-events-none disabled:opacity-50';
 
 const Profile = () => {
   // Get data from contexts
   const { user, profile, refreshProfile, signOut, loading: authLoading } = useAuth();
-  const { isBoardOrAbove } = useProfile();
+  const { isBoardOrAbove, role } = useProfile();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -502,38 +521,51 @@ const Profile = () => {
   if (authLoading || !user || !profile) {
     return (
       <div className={`min-h-full flex items-center justify-center ${isMobile ? 'p-4' : 'p-6'}`}>
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6">
-            <div className="text-center space-y-4">
-              <div className="w-12 h-12 border-4 border-orange-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-              <p className="text-muted-foreground">Loading profile...</p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="w-full max-w-md border border-border bg-page p-8">
+          <div className="text-center space-y-4">
+            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent motion-reduce:animate-none"></div>
+            <p className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">Loading profile...</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 w-full h-full overflow-y-auto">
-      <div className="grid gap-x-6 gap-y-6 lg:gap-y-2 grid-cols-1 lg:grid-cols-3 justify-center items-center lg:h-full lg:grid-rows-[1fr_auto]">
-        {/* Left Column - Profile Overview */}
-        <div className="lg:col-span-1">
-          <Card className="flex flex-col">
-            <CardHeader className="text-center pb-6">
-              <div className="flex justify-center mb-4">
-                <div className="relative">
-                  <Avatar className={`${isMobile ? 'h-24 w-24' : 'h-32 w-32'} border-4 border-background shadow-lg`}>
-                    <AvatarImage src={profile.profile_picture_url || undefined} />
-                    <AvatarFallback className="text-3xl">
+    <div className="p-6 md:p-10 w-full h-full overflow-y-auto">
+      <div className="mx-auto max-w-[1200px]">
+        {/* Page header */}
+        <div className="border-b border-border pb-6">
+          <p className={EYEBROW}>Personnel file</p>
+          <h1 className="mt-1 font-mono text-3xl md:text-4xl font-extrabold tracking-[-0.03em]">Profile</h1>
+          <p className="mt-2 font-mono text-xs text-muted-foreground tabular-nums">
+            {user.email}
+            {profile.created_at ? ` · joined ${new Date(profile.created_at).toLocaleDateString()}` : ''}
+          </p>
+        </div>
+
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* Left column — identity + stats */}
+          <div className="lg:col-span-1">
+            <div className="border border-border bg-page">
+              <div className="hatch border-b border-border px-5 py-2.5">
+                <p className={EYEBROW}>Identity</p>
+              </div>
+
+              <div className="p-5">
+                <div className="relative w-fit">
+                  <Avatar className={`${isMobile ? 'h-24 w-24' : 'h-28 w-28'} rounded-none border border-border`}>
+                    <AvatarImage src={profile.profile_picture_url || undefined} className="rounded-none" />
+                    <AvatarFallback className="rounded-none font-mono text-3xl">
                       {fullName ? getInitials(fullName) : user.email?.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <label
                     htmlFor="avatar-upload"
-                    className={`absolute bottom-0 right-0 bg-primary rounded-full cursor-pointer hover:bg-primary/90 transition-colors shadow-lg ${isMobile ? 'p-2' : 'p-2.5'}`}
+                    title="Upload profile picture"
+                    className="absolute -bottom-px -right-px flex cursor-pointer items-center justify-center border border-border bg-primary p-2 text-primary-foreground transition-colors hover:bg-accent-hover"
                   >
-                    <Camera className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} text-on-primary`} />
+                    <Camera className="h-4 w-4" />
                     <input
                       ref={fileInputRef}
                       id="avatar-upload"
@@ -544,63 +576,23 @@ const Profile = () => {
                     />
                   </label>
                 </div>
-              </div>
-              <CardTitle className="text-2xl">{fullName || 'No name set'}</CardTitle>
-              <CardDescription className="flex items-center justify-center gap-1.5 mt-1">
-                <Mail className="h-3.5 w-3.5" />
-                {user.email}
-              </CardDescription>
-            </CardHeader>
 
-            <div className="relative py-6">
-              <div className="absolute inset-0 flex items-center px-6">
-                <div className="w-full border-t-2"></div>
-              </div>
-              <div className="relative flex justify-center">
-                <div className="bg-card px-4 gap-2 flex flex-row">
-                  <UserBadge className="text-xs capitalize px-4 py-1.5 shrink-0 whitespace-nowrap" />
+                <h2 className="mt-4 font-mono text-xl font-extrabold tracking-[-0.02em]">
+                  {fullName || 'No name set'}
+                </h2>
+                <p className="mt-1 flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
+                  <Mail className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">{user.email}</span>
+                </p>
+
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {role && <span className={`${CHIP_BASE} ${roleChipClass(role)}`}>{role}</span>}
                   {profile.term_joined && (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Badge
-                          className="px-4 py-1.5 shrink-0 whitespace-nowrap relative overflow-hidden font-semibold border-2 rounded-full tracking-wide"
-                          style={{
-                            background: 'transparent',
-                            borderColor: 'rgba(88, 80, 236, 0.33)',
-                            zIndex: 1,
-                          }}
-                        >
-                          <span
-                            className="absolute inset-0 pointer-events-none"
-                            aria-hidden="true"
-                            style={{
-                              zIndex: 0,
-                              borderRadius: 'inherit',
-                              filter: 'blur(10px)',
-                              opacity: 0.71,
-                              background: 'conic-gradient(from 180deg, rgba(88,80,236,0.78) 0%, rgba(88,80,236,0.39) 100%)',
-                              animation: 'swirl 2.8s linear infinite',
-                            }}
-                          />
-                          <span
-                            className="relative z-10"
-                            style={{
-                              color: 'rgb(55 65 81)',
-                            }}
-                          >
-                            <span className="dark:text-white text-[rgb(55,65,81)]">
-                              {profile.term_joined}
-                            </span>
-                          </span>
-                          <style>
-                            {`
-                              @keyframes swirl {
-                                0% { transform: rotate(0deg);}
-                                100% { transform: rotate(360deg);}
-                              }
-                            `}
-                          </style>
-                        </Badge>
+                        <span className={`${CHIP_BASE} border-border text-foreground`}>
+                          {profile.term_joined}
+                        </span>
                       </TooltipTrigger>
                       <TooltipContent>
                         {profile.created_at
@@ -611,255 +603,293 @@ const Profile = () => {
                   )}
                 </div>
               </div>
-            </div>
 
-            <CardContent className="space-y-6 flex-1 flex flex-col justify-between">
-              <div className="p-4 bg-gradient-to-br from-yellow-500/10 to-primary/10 rounded-lg border text-center">
-                <Trophy className="h-5 w-5 text-yellow-600 dark:text-yellow-500 mx-auto mb-2" />
-                <div className="text-xl font-bold">{profile.points}</div>
-                <div className="text-xs text-muted-foreground mt-1">Points</div>
+              {/* Stats bento — hairline-collapsed cells, ONE primary emphasis */}
+              <div className="grid grid-cols-3 divide-x divide-border border-t border-border">
+                <div className="p-4">
+                  <p className="font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Points</p>
+                  <p className="mt-1 font-sans text-2xl font-bold tracking-[-0.02em] tabular-nums text-primary">
+                    {profile.points}
+                  </p>
+                </div>
+                <div className="p-4">
+                  <p className="font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Term</p>
+                  <p className="mt-1 font-sans text-2xl font-bold tracking-[-0.02em] tabular-nums">
+                    {profile.term_joined || '—'}
+                  </p>
+                </div>
+                <div className="p-4">
+                  <p className="font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Year</p>
+                  <p className="mt-1 truncate font-sans text-2xl font-bold capitalize tracking-[-0.02em]">
+                    {classYear || '—'}
+                  </p>
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </div>
 
-        {/* Right Column - Edit Form */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader className={isMobile ? 'pb-0' : undefined}>
-              <CardTitle>Edit Profile</CardTitle>
-              <CardDescription>
-                Update your personal information. A well-filled out profile will help you stand out on applications.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className={isMobile ? 'p-4' : ''}>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className={`grid gap-6 ${isMobile ? 'grid-cols-1 gap-4' : 'grid-cols-1 md:grid-cols-2'}`}>
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name</Label>
-                    <Input
-                      id="fullName"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                    />
-                  </div>
+          {/* Right column — edit form */}
+          <div className="lg:col-span-2">
+            <div className="border border-border bg-page">
+              <div className="hatch border-b border-border px-5 py-2.5">
+                <p className={EYEBROW}>Edit profile</p>
+              </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="classYear">Class Year</Label>
-                    <Select value={classYear} onValueChange={setClassYear}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select year" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="freshman">Freshman</SelectItem>
-                        <SelectItem value="sophomore">Sophomore</SelectItem>
-                        <SelectItem value="junior">Junior</SelectItem>
-                        <SelectItem value="senior">Senior</SelectItem>
-                        <SelectItem value="graduate">Graduate</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+              <div className={isMobile ? 'p-4' : 'p-5 md:p-6'}>
+                <p className="max-w-[68ch] text-sm text-muted-foreground">
+                  Update your personal information. A well-filled out profile will help you stand out on applications.
+                </p>
 
-                {isBoardOrAbove && (
-                  <div className="space-y-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="position">Position</Label>
-                      <Input
-                        id="position"
-                        placeholder="e.g., Marketing Director"
-                        value={position}
-                        onChange={(e) => setPosition(e.target.value)}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Your role or title in the club
-                      </p>
+                <form onSubmit={handleSubmit} className="mt-6">
+                  {/* ── Identity ── */}
+                  <section>
+                    <p className={EYEBROW}>Identity</p>
+                    <div className={`mt-4 grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
+                      <div className="space-y-2">
+                        <Label htmlFor="fullName">Full Name</Label>
+                        <Input
+                          id="fullName"
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                        />
+                      </div>
+
+                      {isBoardOrAbove && (
+                        <div className="space-y-2">
+                          <Label htmlFor="position">Position</Label>
+                          <Input
+                            id="position"
+                            placeholder="e.g., Marketing Director"
+                            value={position}
+                            onChange={(e) => setPosition(e.target.value)}
+                          />
+                          <p className="font-mono text-xs text-muted-foreground">
+                            Your role or title in the club
+                          </p>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
+                  </section>
 
-                <div className="space-y-2">
-                  <Label htmlFor="linkedinUsername">
-                    <div className="flex items-center gap-2">
-                      <Linkedin className="h-4 w-4" />
-                      LinkedIn Username
+                  {/* ── Academics ── */}
+                  <section className="mt-6 border-t border-border pt-6">
+                    <p className={EYEBROW}>Academics</p>
+                    <div className="mt-4 space-y-4">
+                      <div className={`space-y-2 ${isMobile ? '' : 'md:max-w-[calc(50%-0.5rem)]'}`}>
+                        <Label htmlFor="classYear">Class Year</Label>
+                        <Select value={classYear} onValueChange={setClassYear}>
+                          <SelectTrigger id="classYear">
+                            <SelectValue placeholder="Select year" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="freshman">Freshman</SelectItem>
+                            <SelectItem value="sophomore">Sophomore</SelectItem>
+                            <SelectItem value="junior">Junior</SelectItem>
+                            <SelectItem value="senior">Senior</SelectItem>
+                            <SelectItem value="graduate">Graduate</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="resume">Resume (PDF, DOC, or DOCX)</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="resume"
+                            type="file"
+                            accept=".pdf,.doc,.docx"
+                            onChange={(e) => setResumeFile(e.target.files?.[0] || null)}
+                            className={profile?.resume_url ? "flex-[4]" : "w-full"}
+                          />
+                          {profile?.resume_url && (
+                            <>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => window.open(profile.resume_url, '_blank')}
+                                className="flex items-center gap-2 px-3"
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                                {isMobile ? null : "Resume"}
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="red"
+                                onClick={deleteResume}
+                                disabled={loading}
+                                className={`px-3 ${DANGER_BTN}`}
+                                title="Delete resume"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                        {resumeFile && (
+                          <p className="flex items-center gap-1 font-mono text-xs text-muted-foreground">
+                            <FileText className="h-3 w-3" />
+                            Selected: {resumeFile.name}
+                          </p>
+                        )}
+                        <p className="font-mono text-xs text-muted-foreground">
+                          Uploading a new resume will replace your current one
+                        </p>
+                      </div>
                     </div>
-                  </Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-claude-peach/90">
-                      linkedin.com/in/
-                    </span>
-                    <Input
-                      id="linkedinUsername"
-                      value={linkedinUsername}
-                      onChange={(e) => setLinkedinUsername(e.target.value)}
-                      placeholder="yourprofile"
-                      className="pl-[126px]"
-                    />
-                  </div>
-                </div>
+                  </section>
 
-                <div className="space-y-2">
-                  <Label htmlFor="githubUsername">
-                    <div className="flex items-center gap-2">
-                      <Github className="h-4 w-4" />
-                      GitHub Username
+                  {/* ── Links ── */}
+                  <section className="mt-6 border-t border-border pt-6">
+                    <p className={EYEBROW}>Links</p>
+                    <div className="mt-4 space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="linkedinUsername">
+                          <div className="flex items-center gap-2">
+                            <Linkedin className="h-4 w-4" />
+                            LinkedIn Username
+                          </div>
+                        </Label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 font-mono text-xs text-grey-2">
+                            linkedin.com/in/
+                          </span>
+                          <Input
+                            id="linkedinUsername"
+                            value={linkedinUsername}
+                            onChange={(e) => setLinkedinUsername(e.target.value)}
+                            placeholder="yourprofile"
+                            className="pl-[130px]"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="githubUsername">
+                          <div className="flex items-center gap-2">
+                            <Github className="h-4 w-4" />
+                            GitHub Username
+                          </div>
+                        </Label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 font-mono text-xs text-grey-2">
+                            github.com/
+                          </span>
+                          <Input
+                            id="githubUsername"
+                            value={githubUsername}
+                            onChange={(e) => setGithubUsername(e.target.value)}
+                            placeholder="yourusername"
+                            className="pl-[94px]"
+                          />
+                        </div>
+                      </div>
                     </div>
-                  </Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-claude-peach/90">
-                      github.com/
-                    </span>
-                    <Input
-                      id="githubUsername"
-                      value={githubUsername}
-                      onChange={(e) => setGithubUsername(e.target.value)}
-                      placeholder="yourusername"
-                      className="pl-[100px]"
-                    />
-                  </div>
-                </div>
+                  </section>
 
-                <div className="space-y-2">
-                  <Label htmlFor="resume">Resume (PDF, DOC, or DOCX)</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="resume"
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      onChange={(e) => setResumeFile(e.target.files?.[0] || null)}
-                      className={profile?.resume_url ? "flex-[4]" : "w-full"}
-                    />
-                    {profile?.resume_url && (
-                      <>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => window.open(profile.resume_url, '_blank')}
-                          className="flex items-center gap-2 px-3"
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                          {isMobile ? null : "Resume"}
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="red"
-                          onClick={deleteResume}
-                          disabled={loading}
-                          className="px-3"
-                          title="Delete resume"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                  {resumeFile && (
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      <FileText className="h-3 w-3" />
-                      Selected: {resumeFile.name}
-                    </p>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    Uploading a new resume will replace your current one
-                  </p>
-                </div>
+                  <Button type="submit" disabled={loading} className="mt-6 w-full" size="lg">
+                    {loading ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                </form>
+              </div>
+            </div>
+          </div>
 
-                <Button type="submit" disabled={loading} className="w-full" size="lg">
-                  {loading ? 'Saving...' : 'Save Changes'}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Delete Profile Link - Spans all columns */}
-        <div className="flex items-center justify-center lg:col-span-3 py-2">
-          <AlertDialog open={showDeleteDialog} onOpenChange={(open) => {
-            setShowDeleteDialog(open);
-            if (!open) {
-              setDeleteConfirmationEmail('');
-            }
-          }}>
-            <AlertDialogTrigger asChild>
-              <button
-                disabled={isDeleting}
-                className="text-sm text-muted-foreground/60 hover:text-red-600 transition-colors"
-              >
-                {isDeleting ? 'Deleting your profile...' : 'Delete your profile'}
-              </button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <div className="flex w-full justify-between items-center">
-                  <AlertDialogTitle className="text-left">Delete account</AlertDialogTitle>
-                  <div className="h-8 w-8 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
-                    <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
-                  </div>
-                </div>
-                <AlertDialogDescription className="text-left mt-4 space-y-3">
-                  <p>
-                    This action cannot be undone. This will permanently delete your account and remove all your data from our servers.
-                  </p>
-
-                  <div className="space-y-2">
-                    <p className="font-semibold text-foreground text-sm">
-                      You will lose:
-                    </p>
-                    <ol className="text-sm space-y-1 text-muted-foreground ml-4">
-                      <li className="list-decimal">All your points ({profile?.points || 0} points)</li>
-                      <li className="list-decimal">Your profile information and settings</li>
-                      <li className="list-decimal">Uploaded files (resume, profile picture)</li>
-                      <li className="list-decimal">Access to the members portal</li>
-                    </ol>
-                  </div>
-
-                  <div className="space-y-2 pt-2">
-                    <p className="text-sm font-medium">
-                      Type your email to confirm deletion:
-                    </p>
-                    <Input
-                      type="email"
-                      placeholder={user?.email || "your@email.com"}
-                      value={deleteConfirmationEmail}
-                      onChange={(e) => setDeleteConfirmationEmail(e.target.value)}
+          {/* ── Danger zone — spans all columns ── */}
+          <div className="lg:col-span-3">
+            <div className="border border-destructive p-5 md:p-6">
+              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-destructive">Danger zone</p>
+              <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <p className="max-w-[60ch] text-sm text-muted-foreground">
+                  Permanently delete your account, your uploaded files, and your points. This cannot be undone.
+                </p>
+                <AlertDialog open={showDeleteDialog} onOpenChange={(open) => {
+                  setShowDeleteDialog(open);
+                  if (!open) {
+                    setDeleteConfirmationEmail('');
+                  }
+                }}>
+                  <AlertDialogTrigger asChild>
+                    <button
                       disabled={isDeleting}
-                      autoComplete="off"
-                    />
-                  </div>
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter
-                className={`flex !justify-around ${isMobile ? 'space-y-2 flex-col-reverse' : 'flex-row'}`}
-              >
-                <AlertDialogCancel
-                  disabled={isDeleting}
-                  className={isMobile ? '' : 'w-[47%] mt-0'}
-                >
-                  Cancel
-                </AlertDialogCancel>
-                <Button
-                  variant="red"
-                  onClick={handleDeleteProfile}
-                  disabled={isDeleting || deleteConfirmationEmail !== user?.email}
-                  className={!isMobile ? 'w-[47%]' : 'w-full'}
-                >
-                  {isDeleting ? 'Deleting...' : 'Delete my account'}
-                </Button>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                      className={`${DANGER_BTN} shrink-0 px-4 py-2.5`}
+                    >
+                      {isDeleting ? 'Deleting your profile...' : 'Delete your profile'}
+                    </button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <div className="flex w-full justify-between items-center">
+                        <AlertDialogTitle className="text-left font-mono font-extrabold tracking-[-0.02em]">Delete account</AlertDialogTitle>
+                        <div className="flex h-8 w-8 items-center justify-center border border-destructive text-destructive">
+                          <AlertTriangle className="h-5 w-5" />
+                        </div>
+                      </div>
+                      <AlertDialogDescription className="text-left mt-4 space-y-3">
+                        <p>
+                          This action cannot be undone. This will permanently delete your account and remove all your data from our servers.
+                        </p>
+
+                        <div className="space-y-2">
+                          <p className="font-semibold text-foreground text-sm">
+                            You will lose:
+                          </p>
+                          <ol className="text-sm space-y-1 text-muted-foreground ml-4">
+                            <li className="list-decimal">All your points ({profile?.points || 0} points)</li>
+                            <li className="list-decimal">Your profile information and settings</li>
+                            <li className="list-decimal">Uploaded files (resume, profile picture)</li>
+                            <li className="list-decimal">Access to the members portal</li>
+                          </ol>
+                        </div>
+
+                        <div className="space-y-2 pt-2">
+                          <p className="font-mono text-xs font-medium uppercase tracking-[0.1em] text-foreground">
+                            Type your email to confirm deletion:
+                          </p>
+                          <Input
+                            type="email"
+                            placeholder={user?.email || "your@email.com"}
+                            value={deleteConfirmationEmail}
+                            onChange={(e) => setDeleteConfirmationEmail(e.target.value)}
+                            disabled={isDeleting}
+                            autoComplete="off"
+                          />
+                        </div>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter
+                      className={`flex !justify-around ${isMobile ? 'space-y-2 flex-col-reverse' : 'flex-row'}`}
+                    >
+                      <AlertDialogCancel
+                        disabled={isDeleting}
+                        className={isMobile ? '' : 'w-[47%] mt-0'}
+                      >
+                        Cancel
+                      </AlertDialogCancel>
+                      <Button
+                        variant="red"
+                        onClick={handleDeleteProfile}
+                        disabled={isDeleting || deleteConfirmationEmail !== user?.email}
+                        className={`${DANGER_BTN} ${!isMobile ? 'w-[47%]' : 'w-full'}`}
+                      >
+                        {isDeleting ? 'Deleting...' : 'Delete my account'}
+                      </Button>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Image Crop Modal */}
       <Dialog open={showCropModal} onOpenChange={setShowCropModal}>
-        <DialogContent className={`${isMobile ? 'max-w-[calc(100vw-2rem)]' : 'max-w-2xl'} rounded-xl`}>
+        <DialogContent className={isMobile ? 'max-w-[calc(100vw-2rem)]' : 'max-w-2xl'}>
           <DialogHeader>
             <DialogTitle className={isMobile ? 'text-lg' : ''}>Crop Profile Picture</DialogTitle>
           </DialogHeader>
           <div className={`space-y-4 ${isMobile ? 'space-y-3' : 'space-y-4'}`}>
-            <div className={`relative bg-muted rounded-lg overflow-hidden ${isMobile ? 'h-64' : 'h-96'}`}>
+            <div className={`relative bg-muted overflow-hidden ${isMobile ? 'h-64' : 'h-96'}`}>
               {imageSrc && (
                 <Cropper
                   image={imageSrc}
@@ -871,7 +901,7 @@ const Profile = () => {
                   onZoomChange={setZoom}
                   onRotationChange={setRotation}
                   onCropComplete={onCropComplete}
-                  cropShape="round"
+                  cropShape="rect"
                 />
               )}
             </div>
@@ -902,7 +932,7 @@ const Profile = () => {
             </div>
           </div>
           <div
-            className={`gap-2 pt-4 w-full flex flex-shrink-0 border-t bg-page/95 backdrop-blur supports-[backdrop-filter]:bg-page/60
+            className={`gap-2 pt-4 w-full flex flex-shrink-0 border-t border-border bg-page
               ${isMobile ? 'flex-col' : 'flex-row'}
             `}
           >

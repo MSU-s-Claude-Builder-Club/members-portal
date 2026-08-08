@@ -1,16 +1,22 @@
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
+/**
+ * The hero's demo-register element: a small bordered "window" whose only
+ * content is live rendered proof — the floating Claude logo. Chrome is
+ * hatched, hairlined, and mono; the color inside is the evidence.
+ */
 const InteractiveLogo = () => {
   const navigate = useNavigate();
+  const shouldReduceMotion = useReducedMotion();
 
   // Wobbly floating animation with randomized values
   const floatingVariants = {
     floating: {
-      y: [0, -12, -8, -15, -10, 0],
+      y: [0, -10, -6, -12, -8, 0],
       x: [0, 3, -2, 4, -3, 0],
       rotate: [0, 1.5, -1, 2, -1.5, 0],
-    }
+    },
   };
 
   const handleClick = () => {
@@ -18,47 +24,48 @@ const InteractiveLogo = () => {
   };
 
   return (
-    <div className="flex justify-center mb-8 py-10">
+    <div className="flex justify-center">
       <motion.div
-        className="relative cursor-pointer group"
+        className="group relative w-[240px] cursor-pointer border border-border bg-page transition-colors duration-200 hover:border-primary motion-reduce:transition-none md:w-[280px]"
         onClick={handleClick}
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.8, type: "spring", delay: 0.2 }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+        whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
       >
-        <motion.div
-          className="relative w-32 h-32 md:w-40 md:h-40"
-          variants={floatingVariants}
-          animate="floating"
-          transition={{
-            duration: 6,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        >
-          {/* Ambient Glow */}
-          <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-600 blur-2xl opacity-30 animate-pulse rounded-full" />
+        {/* Window chrome */}
+        <div className="hatch flex h-[30px] items-center gap-1.5 border-b border-border px-3 transition-colors duration-200 group-hover:border-primary motion-reduce:transition-none">
+          <span aria-hidden="true" className="h-[9px] w-[9px] rounded-full bg-grey-3" />
+          <span aria-hidden="true" className="h-[9px] w-[9px] rounded-full bg-grey-3" />
+          <span aria-hidden="true" className="h-[9px] w-[9px] rounded-full bg-grey-3" />
+          <span className="ml-2 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            claude-logo.png
+          </span>
+        </div>
 
-          {/* Logo */}
-          <img
-            src="/claude-logo.png"
-            alt="Claude Logo"
-            className="relative w-full h-full object-contain drop-shadow-2xl transition-transform duration-300 group-hover:drop-shadow-[0_0_30px_rgba(251,146,60,0.5)]"
-          />
-
-          {/* Click hint - appears on hover */}
+        {/* The demo: live rendered proof */}
+        <div className="flex items-center justify-center px-8 py-10">
           <motion.div
-            className="absolute -bottom-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-            initial={{ y: 10 }}
-            whileHover={{ y: 0 }}
+            className="h-28 w-28 md:h-36 md:w-36"
+            variants={floatingVariants}
+            animate={shouldReduceMotion ? undefined : "floating"}
+            transition={{
+              duration: 6,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
           >
-            <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
-              Click to login
-            </span>
+            <img
+              src="/claude-logo.png"
+              alt="Claude Logo"
+              className="h-full w-full object-contain"
+            />
           </motion.div>
-        </motion.div>
+        </div>
+
+        {/* Status line — visible by default, floods orange on hover */}
+        <div className="border-t border-border px-3 py-2 text-center transition-colors duration-200 group-hover:border-primary group-hover:bg-primary motion-reduce:transition-none">
+          <span className="whitespace-nowrap font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground transition-colors duration-200 group-hover:text-primary-foreground motion-reduce:transition-none">
+            Click to login
+          </span>
+        </div>
       </motion.div>
     </div>
   );

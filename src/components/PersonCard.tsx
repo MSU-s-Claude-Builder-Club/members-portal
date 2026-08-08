@@ -1,6 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { RoleBadge } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,7 +10,7 @@ import {
     DropdownMenuSubTrigger,
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { Trophy, Mail, GraduationCap, Crown, Users, Award, Eye, Settings, UserMinus, Ban, ArrowBigUpDashIcon } from 'lucide-react';
+import { Trophy, Mail, GraduationCap, Crown, Users, Award, Settings, UserMinus, Ban, ArrowBigUpDashIcon } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/database.types';
 import type { AppRole } from '@/contexts/AuthContext';
 
@@ -47,6 +44,20 @@ const getInitials = (name: string) => {
         .slice(0, 2);
 };
 
+/** The one role-chip mapping (mono, uppercase, square). group-hover classes answer the tile's ink flood. */
+const CHIP_BASE =
+    'inline-flex shrink-0 items-center whitespace-nowrap border px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] transition-colors duration-200';
+
+const ROLE_CHIP: Record<string, string> = {
+    'e-board': 'bg-primary text-primary-foreground border-primary',
+    board: 'bg-foreground text-page border-foreground group-hover:bg-page group-hover:text-foreground group-hover:border-page',
+    member: 'border-border text-foreground group-hover:border-page/60 group-hover:text-page',
+    prospect: 'border-grey-3 text-grey-2 group-hover:border-page/40 group-hover:text-page/70',
+};
+
+const BANNED_CHIP =
+    'border-border text-muted-foreground line-through decoration-primary decoration-2 group-hover:border-page/40 group-hover:text-page/60';
+
 export const PersonCard = ({
     person,
     onViewProfile,
@@ -72,161 +83,185 @@ export const PersonCard = ({
     // Board cannot promote to e-board
     const canPromoteToEBoard = currentUserRole !== 'board';
 
+    const chipClass = person.is_banned ? BANNED_CHIP : (ROLE_CHIP[person.role] ?? ROLE_CHIP.member);
+
+    const termLabel = person.term_joined
+        ? person.term_joined
+        : (() => {
+            const date = person.created_at ? new Date(person.created_at) : new Date();
+            return date.toLocaleString('en-US', { month: 'short', year: 'numeric' });
+        })();
+
     return (
-        <Card className="flex flex-col h-full w-full relative">
-            <CardHeader className="pb-0">
-                <div className="flex items-center justify-between gap-4">
-                    <CardTitle className="flex items-center gap-3 flex-1 min-w-0">
-                        <Avatar className="h-12 w-12 shrink-0">
-                            <AvatarImage src={person.profile_picture_url || undefined} />
-                            <AvatarFallback className="text-lg">
-                                {person.full_name ? getInitials(person.full_name) : person.email.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                            <CardTitle className="text-base truncate">
-                                {person.full_name || 'No name'}
-                            </CardTitle>
-                            {type === 'member' && person.position && (
-                                <p className="text-sm text-muted-foreground truncate">{person.position}</p>
-                            )}
-                            {type === 'prospect' && (
-                                <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
-                                    <Mail className="h-3 w-3 shrink-0" />
-                                    <p className="truncate">{person.email}</p>
-                                </div>
-                            )}
-                        </div>
-                    </CardTitle>
-
-                    {/* Badge */}
-                    {type === 'member' ? (
-                        <RoleBadge role={person.role} className="capitalize shrink-0 whitespace-nowrap" />
-                    ) : (
-                        <Badge className="capitalize shrink-0 whitespace-nowrap">
-                            {person.term_joined
-                                ? person.term_joined
-                                : (() => {
-                                    const date = person.created_at ? new Date(person.created_at) : new Date();
-                                    return date.toLocaleString('en-US', { month: 'short', year: 'numeric' });
-                                })()}
-                        </Badge>
-                    )}
-                </div>
-            </CardHeader>
-
-            <CardContent className="flex flex-col flex-1 min-h-0">
-                <div className="flex-1 space-y-3 mt-3">
-                    <div className="flex items-center justify-between text-sm">
-                        {person.class_year ? (
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                                <GraduationCap className="h-4 w-4" />
-                                <span className="capitalize">{person.class_year}</span>
-                            </div>
-                        ) : (
-                            <div className="text-muted-foreground">
-                                <GraduationCap className="h-4 w-4 inline mr-2" />
-                                No class year
-                            </div>
+        <div
+            className="group relative flex h-full w-full cursor-pointer flex-col border border-border bg-page p-4 transition-colors duration-200 hover:border-foreground hover:bg-foreground motion-reduce:transition-none"
+            onClick={() => onViewProfile(person)}
+        >
+            {/* Identity row */}
+            <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <Avatar className="h-12 w-12 shrink-0 rounded-none border border-border transition-colors duration-200 group-hover:border-page/40">
+                        <AvatarImage src={person.profile_picture_url || undefined} className="rounded-none" />
+                        <AvatarFallback className="rounded-none font-mono text-sm text-muted-foreground group-hover:text-page/70">
+                            {person.full_name ? getInitials(person.full_name) : person.email.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                        <p className="truncate font-mono text-sm font-semibold text-foreground transition-colors duration-200 group-hover:text-page">
+                            {person.full_name || 'No name'}
+                        </p>
+                        {type === 'member' && person.position && (
+                            <p className="truncate text-xs text-muted-foreground transition-colors duration-200 group-hover:text-page/60">
+                                {person.position}
+                            </p>
                         )}
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                            <Trophy className="h-4 w-4" />
-                            <span className="font-medium">{person.points}</span>
-                        </div>
+                        {type === 'prospect' && (
+                            <p className="mt-0.5 flex items-center gap-1 font-mono text-[11px] text-muted-foreground transition-colors duration-200 group-hover:text-page/60">
+                                <Mail className="h-3 w-3 shrink-0" />
+                                <span className="truncate">{person.email}</span>
+                            </p>
+                        )}
                     </div>
                 </div>
 
-                <div className="flex flex-row gap-2 mt-4">
-                    <Button size="sm" className="w-full" onClick={() => onViewProfile(person)}>
-                        <Eye className="h-4 w-4" />
-                        View Profile
-                    </Button>
+                {/* Chip */}
+                {type === 'member' ? (
+                    <span className={`${CHIP_BASE} ${chipClass}`}>{person.role}</span>
+                ) : (
+                    <span className={`${CHIP_BASE} ${person.is_banned ? BANNED_CHIP : ROLE_CHIP.prospect}`}>
+                        {termLabel}
+                    </span>
+                )}
+            </div>
 
-                    {showManageButton && (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger size="sm" asChild>
-                                <Button variant="outline" size="sm" className="w-full">
-                                    <Settings className="h-4 w-4" />
-                                    Manage
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="center" className="w-40">
-                                {/* Member Management - Only show role change for e-board */}
-                                {type === 'member' && onRoleChange && canChangeRoles && (
-                                    <>
-                                        <DropdownMenuSub>
-                                            <DropdownMenuSubTrigger variant="ghost">
-                                                <Crown className="h-4 w-4 mx-1" />
-                                                Change Role
-                                            </DropdownMenuSubTrigger>
-                                            <DropdownMenuSubContent>
-                                                <DropdownMenuItem
-                                                    onClick={() => onRoleChange(person.id, 'member')}
-                                                    disabled={person.role === 'member'}
-                                                >
-                                                    <Users className="h-4 w-4" />
-                                                    Member
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    onClick={() => onRoleChange(person.id, 'board')}
-                                                    disabled={person.role === 'board'}
-                                                >
-                                                    <Award className="h-4 w-4" />
-                                                    Board
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    onClick={() => onRoleChange(person.id, 'e-board')}
-                                                    disabled={person.role === 'e-board' || !canPromoteToEBoard}
-                                                >
-                                                    <Crown className="h-4 w-4" />
-                                                    E-Board
-                                                </DropdownMenuItem>
-                                            </DropdownMenuSubContent>
-                                        </DropdownMenuSub>
-                                        <DropdownMenuSeparator />
-                                    </>
-                                )}
+            {/* Meta row */}
+            <div className="mt-4 flex flex-1 items-end justify-between gap-3 text-xs">
+                {person.class_year ? (
+                    <span className="flex items-center gap-1.5 text-muted-foreground transition-colors duration-200 group-hover:text-page/60">
+                        <GraduationCap className="h-3.5 w-3.5 shrink-0" />
+                        <span className="capitalize">{person.class_year}</span>
+                    </span>
+                ) : (
+                    <span className="flex items-center gap-1.5 text-muted-foreground transition-colors duration-200 group-hover:text-page/60">
+                        <GraduationCap className="h-3.5 w-3.5 shrink-0" />
+                        No class year
+                    </span>
+                )}
+                <span className="flex items-center gap-1.5 text-muted-foreground transition-colors duration-200 group-hover:text-page/60">
+                    <Trophy className="h-3.5 w-3.5 shrink-0" />
+                    <span className="font-mono text-sm font-semibold tabular-nums text-foreground transition-colors duration-200 group-hover:text-page">
+                        {person.points}
+                    </span>
+                </span>
+            </div>
 
-                                {/* Graduate (Prospects only) */}
-                                {type === 'prospect' && onGraduate && (
-                                    <DropdownMenuItem
-                                        onClick={() => onGraduate(person.id, person.full_name || person.email)}
-                                        variant="green"
-                                        className="rounded-t-md rounded-b-none bg-green-600/20 border-0 border-green-600 text-green-600 hover:bg-green-600 hover:text-cream hover:rounded-md transition-all duration-200"
-                                    >
-                                        <ArrowBigUpDashIcon className="h-4 w-4" />
-                                        Graduate
-                                    </DropdownMenuItem>
-                                )}
+            {/* Footer */}
+            <div className="mt-3 flex items-center justify-between gap-2 border-t border-hairline-faint pt-3 transition-colors duration-200 group-hover:border-page/20">
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onViewProfile(person);
+                    }}
+                    className="flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground transition-colors duration-200 hover:text-primary focus-visible:text-primary group-hover:text-page"
+                >
+                    View profile
+                    <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none">
+                        →
+                    </span>
+                </button>
 
-                                {/* Kick */}
-                                {onKick && (
-                                    <DropdownMenuItem
-                                        onClick={() => onKick(person.id, person.full_name || person.email)}
-                                        variant="red"
-                                        className={`border-0 ${type === 'member' ? 'rounded-b-none rounded-t-md' : 'rounded-b-md rounded-t-none'} hover:rounded-md transition-all duration-200`}
-                                    >
-                                        <UserMinus className="h-4 w-4" />
-                                        {type === 'member' ? 'Kick Member' : 'Kick Prospect'}
-                                    </DropdownMenuItem>
-                                )}
+                {showManageButton && (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                aria-label="Manage"
+                                title="Manage"
+                                onClick={(e) => e.stopPropagation()}
+                                onPointerDown={(e) => e.stopPropagation()}
+                                className="h-8 w-8 shrink-0 p-0 group-hover:border-page/40 group-hover:text-page"
+                            >
+                                <Settings className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="center" className="w-44" onClick={(e) => e.stopPropagation()}>
+                            {/* Member Management - Only show role change for e-board */}
+                            {type === 'member' && onRoleChange && canChangeRoles && (
+                                <>
+                                    <DropdownMenuSub>
+                                        <DropdownMenuSubTrigger variant="ghost" className="font-mono text-xs uppercase tracking-[0.08em]">
+                                            <Crown className="h-4 w-4 mx-1" />
+                                            Change Role
+                                        </DropdownMenuSubTrigger>
+                                        <DropdownMenuSubContent>
+                                            <DropdownMenuItem
+                                                onClick={() => onRoleChange(person.id, 'member')}
+                                                disabled={person.role === 'member'}
+                                                className="font-mono text-xs uppercase tracking-[0.08em]"
+                                            >
+                                                <Users className="h-4 w-4" />
+                                                Member
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onClick={() => onRoleChange(person.id, 'board')}
+                                                disabled={person.role === 'board'}
+                                                className="font-mono text-xs uppercase tracking-[0.08em]"
+                                            >
+                                                <Award className="h-4 w-4" />
+                                                Board
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onClick={() => onRoleChange(person.id, 'e-board')}
+                                                disabled={person.role === 'e-board' || !canPromoteToEBoard}
+                                                className="font-mono text-xs uppercase tracking-[0.08em]"
+                                            >
+                                                <Crown className="h-4 w-4" />
+                                                E-Board
+                                            </DropdownMenuItem>
+                                        </DropdownMenuSubContent>
+                                    </DropdownMenuSub>
+                                    <DropdownMenuSeparator />
+                                </>
+                            )}
 
-                                {/* Ban */}
-                                {onBan && (
-                                    <DropdownMenuItem
-                                        onClick={() => onBan(person.id, person.full_name || person.email)}
-                                        variant="red"
-                                        className="border-0 rounded-t-none rounded-b-md hover:rounded-md transition-all duration-200"
-                                    >
-                                        <Ban className="h-4 w-4" />
-                                        {type === 'member' ? 'Ban Member' : 'Ban Prospect'}
-                                    </DropdownMenuItem>
-                                )}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    )}
-                </div>
-            </CardContent>
-        </Card>
+                            {/* Graduate (Prospects only) */}
+                            {type === 'prospect' && onGraduate && (
+                                <DropdownMenuItem
+                                    onClick={() => onGraduate(person.id, person.full_name || person.email)}
+                                    className="font-mono text-xs uppercase tracking-[0.08em] text-primary focus:bg-primary focus:text-primary-foreground"
+                                >
+                                    <ArrowBigUpDashIcon className="h-4 w-4" />
+                                    Graduate
+                                </DropdownMenuItem>
+                            )}
+
+                            {/* Kick */}
+                            {onKick && (
+                                <DropdownMenuItem
+                                    onClick={() => onKick(person.id, person.full_name || person.email)}
+                                    className="font-mono text-xs uppercase tracking-[0.08em] text-destructive focus:bg-destructive focus:text-destructive-foreground"
+                                >
+                                    <UserMinus className="h-4 w-4" />
+                                    {type === 'member' ? 'Kick Member' : 'Kick Prospect'}
+                                </DropdownMenuItem>
+                            )}
+
+                            {/* Ban */}
+                            {onBan && (
+                                <DropdownMenuItem
+                                    onClick={() => onBan(person.id, person.full_name || person.email)}
+                                    className="font-mono text-xs uppercase tracking-[0.08em] text-destructive focus:bg-destructive focus:text-destructive-foreground"
+                                >
+                                    <Ban className="h-4 w-4" />
+                                    {type === 'member' ? 'Ban Member' : 'Ban Prospect'}
+                                </DropdownMenuItem>
+                            )}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                )}
+            </div>
+        </div>
     );
 };

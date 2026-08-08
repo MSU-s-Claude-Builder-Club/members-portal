@@ -51,77 +51,18 @@ export interface FundamentalsWeekData {
     sessions: FundamentalsSessionData[];
 }
 
-/** Reusable accents — assign per week in WEEKS; override any field inline for one-offs. */
-const ACCENT_BLUE: FundamentalsWeekAccent = {
-    color: 'blue',
-    bg: 'bg-blue-50 dark:bg-blue-950/20',
-    text: 'text-blue-600 dark:text-blue-400',
-    border: 'border-blue-200 dark:border-blue-800',
-    badge: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
-    dot: 'bg-blue-400',
-};
-
-const ACCENT_GREEN: FundamentalsWeekAccent = {
-    color: 'emerald',
-    bg: 'bg-emerald-50 dark:bg-emerald-950/20',
-    text: 'text-emerald-600 dark:text-emerald-400',
-    border: 'border-emerald-200 dark:border-emerald-800',
-    badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
-    dot: 'bg-emerald-400',
-};
-
-const ACCENT_PURPLE: FundamentalsWeekAccent = {
-    color: 'violet',
-    bg: 'bg-violet-50 dark:bg-violet-950/20',
-    text: 'text-violet-600 dark:text-violet-400',
-    border: 'border-violet-200 dark:border-violet-800',
-    badge: 'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300',
-    dot: 'bg-violet-400',
-};
-
-const ACCENT_RED: FundamentalsWeekAccent = {
-    color: 'rose',
-    bg: 'bg-rose-50 dark:bg-rose-950/20',
-    text: 'text-rose-600 dark:text-rose-400',
-    border: 'border-rose-200 dark:border-rose-800',
-    badge: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300',
-    dot: 'bg-rose-400',
-};
-
-const ACCENT_BROWN: FundamentalsWeekAccent = {
-    color: 'yellow',
-    bg: 'bg-yellow-50 dark:bg-yellow-900/30',
-    text: 'text-yellow-800 dark:text-yellow-300',
-    border: 'border-yellow-300 dark:border-yellow-700',
-    badge: 'bg-yellow-200 text-yellow-900 dark:bg-yellow-900/60 dark:text-yellow-200',
-    dot: 'bg-yellow-700',
-};
-
-const ACCENT_GRAY: FundamentalsWeekAccent = {
-    color: 'gray',
-    bg: 'bg-gray-100 dark:bg-gray-900/30',
-    text: 'text-gray-700 dark:text-gray-300',
-    border: 'border-gray-400 dark:border-gray-700',
-    badge: 'bg-gray-100 text-gray-600 dark:bg-gray-800/60 dark:text-gray-200',
-    dot: 'bg-gray-400',
-};
-
-const ACCENT_INDIGO: FundamentalsWeekAccent = {
-    color: 'indigo',
-    bg: 'bg-indigo-50 dark:bg-indigo-900/20',
-    text: 'text-indigo-700 dark:text-indigo-300',
-    border: 'border-indigo-200 dark:border-indigo-700',
-    badge: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-200',
-    dot: 'bg-indigo-500',
-};
-
-const ACCENT_AMBER: FundamentalsWeekAccent = {
-    color: 'amber',
-    bg: 'bg-amber-50 dark:bg-amber-950/20',
-    text: 'text-amber-700 dark:text-amber-300',
-    border: 'border-amber-200 dark:border-amber-800',
-    badge: 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200',
-    dot: 'bg-amber-500',
+/**
+ * Reusable accents — assign per week in WEEKS; override any field inline for one-offs.
+ * The system speaks in ink: every week carries the same paper/ink/hairline bundle
+ * (tokens only — see DESIGN.md §2). Emphasis, when earned, is the one orange.
+ */
+const ACCENT_INK: FundamentalsWeekAccent = {
+    color: 'ink',
+    bg: 'bg-page',
+    text: 'text-foreground',
+    border: 'border-border',
+    badge: 'border border-border text-foreground',
+    dot: 'bg-foreground',
 };
 
 /** Base URL path for this class (no trailing slash). */
@@ -133,7 +74,7 @@ export const WEEKS: FundamentalsWeekData[] = [
         title: 'Linux & The Command Line',
         subtitle: 'Your new home base',
         icon: <Terminal className="h-5 w-5" />,
-        accent: ACCENT_BROWN,
+        accent: ACCENT_INK,
         sessions: [
             {
                 type: 'lecture',
@@ -172,7 +113,7 @@ export const WEEKS: FundamentalsWeekData[] = [
         title: 'Data Structures & Algorithms',
         subtitle: 'Go deeper',
         icon: <Binary className="h-5 w-5" />,
-        accent: ACCENT_RED,
+        accent: ACCENT_INK,
         sessions: [
             {
                 type: 'lecture',
@@ -211,7 +152,7 @@ export const WEEKS: FundamentalsWeekData[] = [
         title: 'C++ & Object-Oriented Programming',
         subtitle: 'Design software, not just functions',
         icon: <Cpu className="h-5 w-5" />,
-        accent: ACCENT_RED,
+        accent: ACCENT_INK,
         sessions: [
             {
                 type: 'lecture',
@@ -250,7 +191,7 @@ export const WEEKS: FundamentalsWeekData[] = [
         title: 'Git & Agile Engineering',
         subtitle: 'How real teams work',
         icon: <GitBranch className="h-5 w-5" />,
-        accent: ACCENT_GRAY,
+        accent: ACCENT_INK,
         sessions: [
             {
                 type: 'lecture',
@@ -289,7 +230,7 @@ export const WEEKS: FundamentalsWeekData[] = [
         title: 'Sprint Planning',
         subtitle: 'Set up all sprints in advance',
         icon: <Workflow className="h-5 w-5" />,
-        accent: ACCENT_INDIGO,
+        accent: ACCENT_INK,
         sessions: [
             {
                 type: 'lecture',
@@ -328,7 +269,7 @@ export const WEEKS: FundamentalsWeekData[] = [
         title: 'Containerization with Docker',
         subtitle: 'Build once, run anywhere',
         icon: <Package className="h-5 w-5" />,
-        accent: ACCENT_GREEN,
+        accent: ACCENT_INK,
         sessions: [
             {
                 type: 'lecture',
@@ -367,7 +308,7 @@ export const WEEKS: FundamentalsWeekData[] = [
         title: 'Backend Development',
         subtitle: 'The engine under the hood',
         icon: <Server className="h-5 w-5" />,
-        accent: ACCENT_BLUE,
+        accent: ACCENT_INK,
         sessions: [
             {
                 type: 'lecture',
@@ -406,7 +347,7 @@ export const WEEKS: FundamentalsWeekData[] = [
         title: 'Testing & CI/CD',
         subtitle: 'Ship with confidence',
         icon: <TestTube className="h-5 w-5" />,
-        accent: ACCENT_GREEN,
+        accent: ACCENT_INK,
         sessions: [
             {
                 type: 'lecture',
@@ -445,7 +386,7 @@ export const WEEKS: FundamentalsWeekData[] = [
         title: 'Frontend Development',
         subtitle: 'Build interfaces people actually use',
         icon: <Globe className="h-5 w-5" />,
-        accent: ACCENT_PURPLE,
+        accent: ACCENT_INK,
         sessions: [
             {
                 type: 'lecture',
@@ -484,7 +425,7 @@ export const WEEKS: FundamentalsWeekData[] = [
         title: 'Auth & Identity',
         subtitle: 'Secure your project',
         icon: <Shield className="h-5 w-5" />,
-        accent: ACCENT_GRAY,
+        accent: ACCENT_INK,
         sessions: [
             {
                 type: 'lecture',
@@ -523,7 +464,7 @@ export const WEEKS: FundamentalsWeekData[] = [
         title: 'Deployment',
         subtitle: 'From local to production',
         icon: <Rocket className="h-5 w-5" />,
-        accent: ACCENT_BLUE,
+        accent: ACCENT_INK,
         sessions: [
             {
                 type: 'lecture',
@@ -562,7 +503,7 @@ export const WEEKS: FundamentalsWeekData[] = [
         title: 'Final Sprint',
         subtitle: 'README, final demo, and celebration',
         icon: <Trophy className="h-5 w-5" />,
-        accent: ACCENT_AMBER,
+        accent: ACCENT_INK,
         sessions: [
             {
                 type: 'lecture',

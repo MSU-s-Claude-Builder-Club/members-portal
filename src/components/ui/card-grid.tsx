@@ -16,29 +16,41 @@ export interface CardGridProps {
     className?: string;
 }
 
+/** A card whose legacy accent classes mention the accent is the ONE emphasized cell. */
+const isEmphasized = (card: CardItem) => /primary|orange/.test(`${card.color} ${card.bg} ${card.border}`);
+
 export function CardGrid({ cards, columns = 3, className = '' }: CardGridProps) {
     const gridCols = {
         1: 'grid-cols-1',
-        2: 'grid-cols-1 sm:grid-cols-2',
-        3: 'grid-cols-1 sm:grid-cols-3',
-        4: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
+        2: 'grid-cols-1 md:grid-cols-2',
+        3: 'grid-cols-1 md:grid-cols-3',
+        4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
     };
 
     return (
-        <div className={`my-6 grid ${gridCols[columns]} gap-3 ${className}`}>
-            {cards.map((card) => (
-                <div key={card.id} className={`rounded-xl border ${card.bg} ${card.border} overflow-hidden`}>
-                    <div className="px-4 py-3 border-b border-inherit">
-                        <p className={`text-xs font-black ${card.color}`}>{card.title}</p>
-                        {card.subtitle && (
-                            <p className="text-xs text-muted-foreground">{card.subtitle}</p>
-                        )}
+        <div className={`my-6 grid ${gridCols[columns]} pt-px pl-px ${className}`}>
+            {cards.map((card) => {
+                const emphasized = isEmphasized(card);
+                return (
+                    <div key={card.id} className="-mt-px -ml-px border border-border bg-page">
+                        <div className="px-4 py-3 border-b border-hairline-faint">
+                            <p
+                                className={`font-mono text-[11px] font-semibold uppercase tracking-[0.1em] ${emphasized ? 'text-primary' : 'text-foreground'}`}
+                            >
+                                {card.title}
+                            </p>
+                            {card.subtitle && (
+                                <p className="font-mono text-[10px] tracking-[0.02em] text-muted-foreground mt-0.5">
+                                    {card.subtitle}
+                                </p>
+                            )}
+                        </div>
+                        <div className="px-4 py-3 text-sm font-light leading-relaxed text-ink-soft">
+                            {card.content}
+                        </div>
                     </div>
-                    <div className="px-4 py-3">
-                        {card.content}
-                    </div>
-                </div>
-            ))}
+                );
+            })}
         </div>
     );
 }

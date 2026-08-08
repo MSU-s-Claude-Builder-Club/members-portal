@@ -3,9 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile, type Class } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,17 +14,47 @@ import { useDeepLinkModal } from '@/hooks/use-deep-link-modal';
 import { DetailModal } from '@/components/modals/DetailModal';
 import { EditModal } from '@/components/modals/EditModal';
 import { MembersListModal } from '@/components/modals/MembersListModal';
-import { ItemCard } from '@/components/ItemCard';
 import SemesterSelector from '@/components/SemesterSelector';
 import { Plus, MapPin, Users, Edit, Calendar as CalendarIcon, Eye, Crown, BookOpen, Mail } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/database.types';
 import type { MembershipInfo, ItemWithMembers } from '@/types/modal.types';
 import { useNavigate } from 'react-router-dom';
-import { escapeCsv } from '@/lib/utils';
+import { cn, escapeCsv } from '@/lib/utils';
 
 type Semester = Database['public']['Tables']['semesters']['Row'];
 
 type ClassWithMembers = ItemWithMembers<Class>;
+
+/* DESIGN.md recipes — status chips (§5), CTAs (§5), eyebrows (§3) */
+const CHIP_BASE =
+  'inline-flex items-center whitespace-nowrap border px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] transition-colors duration-200 motion-reduce:transition-none';
+const CTA_BASE =
+  'inline-flex min-h-[40px] items-center justify-center gap-2 px-4 py-2 font-mono text-xs font-semibold uppercase tracking-[0.1em] transition-colors duration-200 motion-reduce:transition-none disabled:pointer-events-none disabled:opacity-50';
+const CTA_PRIMARY = `${CTA_BASE} border-2 border-border bg-page text-foreground hover:border-primary hover:bg-primary hover:text-primary-foreground group-hover:border-page`;
+const CTA_QUIET = `${CTA_BASE} border border-border bg-page text-foreground hover:border-primary hover:bg-primary hover:text-primary-foreground group-hover:border-page`;
+const EYEBROW =
+  'font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground';
+
+/* Status chips per §5: in progress = ink fill; available = outline; completed = past grey.
+   Each carries its ink-flood flip so it stays legible when the card floods. */
+const statusChipClass = (state: 'available' | 'in_progress' | 'completed') => {
+  if (state === 'in_progress') {
+    return `${CHIP_BASE} border-foreground bg-foreground text-page group-hover:border-page group-hover:bg-page group-hover:text-foreground`;
+  }
+  if (state === 'completed') {
+    return `${CHIP_BASE} border-grey-3 text-grey-2`;
+  }
+  return `${CHIP_BASE} border-border text-foreground group-hover:border-page group-hover:text-page`;
+};
+
+const getInitials = (name: string) => {
+  return name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+};
 
 const Classes = () => {
   const { user } = useAuth();
@@ -458,173 +486,255 @@ const Classes = () => {
 
     if (!status) return null;
 
-    const badges = [];
-    if (isEnrolled && !isMobile) {
-      badges.push(
-        <Badge key="enrolled" variant="outline" className="shrink-0 whitespace-nowrap">
-          {isTeacher ? 'Teacher' : 'Student'}
-        </Badge>
-      );
-    }
-    badges.push(
-      <Badge key="status" variant={status.variant}>
-        {status.label}
-      </Badge>
-    );
+    const maxDisplay = 5;
+    const displayedMembers = cls.members.slice(0, maxDisplay);
+    const remainingCount = cls.members.length - maxDisplay;
 
-    const metadata = [];
-
-    if (cls.semesters) {
-      metadata.push({
-        icon: <CalendarIcon className="h-4 w-4" />,
-        text: `${cls.semesters.code} - ${cls.semesters.name}`,
+    const copyClassEmailsCsv = () => {
+      const emails = (cls.members ?? [])
+        .map(m => m.profile?.email)
+        .filter((e): e is string => Boolean(e));
+      if (emails.length === 0) {
+        toast({ title: 'No emails', description: 'No member emails to copy for this class.', variant: 'destructive' });
+        return;
+      }
+      void navigator.clipboard.writeText(emails.map(escapeCsv).join(',')).then(() => {
+        toast({ title: 'Copied', description: `${emails.length} email${emails.length === 1 ? '' : 's'} copied to clipboard` });
       });
-    }
+    };
 
-    if (cls.location) {
-      metadata.push({
-        icon: <MapPin className="h-4 w-4" />,
-        text: cls.location,
-      });
-    }
-
-    if (teacher) {
-      metadata.push({
-        icon: <Crown className="h-4 w-4 text-yellow-500" />,
-        text: `Teacher: ${teacher.profile.full_name || teacher.profile.email}`,
-      });
-    }
-
-    metadata.push({
-      icon: <Users className="h-4 w-4 group-hover:text-orange-600 transition-colors duration-400" />,
-      text: `${cls.memberCount} ${cls.memberCount === 1 ? 'member' : 'members'}`,
-      interactive: true,
-      onClick: () => modalState.openMembers(cls),
-    });
-
-    const actions = [];
-
-    actions.push({
-      label: isBoardOrAbove ? 'Edit Details' : 'View Details',
-      onClick: () => modalState.open(cls, cls.id),
-      icon: isBoardOrAbove
-        ? <Edit className="h-4 w-4 mr-2" />
-        : <Eye className="h-4 w-4 mr-2" />,
-      variant: isBoardOrAbove ? 'outline' : 'default',
-    });
-
-    if (isBoardOrAbove) {
-      const copyClassEmailsCsv = () => {
-        const emails = (cls.members ?? [])
-          .map(m => m.profile?.email)
-          .filter((e): e is string => Boolean(e));
-        if (emails.length === 0) {
-          toast({ title: 'No emails', description: 'No member emails to copy for this class.', variant: 'destructive' });
-          return;
-        }
-        void navigator.clipboard.writeText(emails.map(escapeCsv).join(',')).then(() => {
-          toast({ title: 'Copied', description: `${emails.length} email${emails.length === 1 ? '' : 's'} copied to clipboard` });
-        });
-      };
-      actions.push({
-        label: 'Copy member emails as CSV',
-        onClick: copyClassEmailsCsv,
-        icon: <Mail className="h-4 w-4" />,
-        variant: 'default',
-        size: 'icon',
-      });
-    }
-
-    // Only show class page button if class has started and not on mobile
-    if ((status.state === 'in_progress' || status.state === 'completed') && !isMobile) {
-      actions.push({
-        label: 'View Class Page',
-        onClick: () => {
-          const className = cls.name
-            .trim()
-            .replace(/\s+/g, '-')
-            .replace(/[^a-zA-Z0-9-]/g, '')
-            .toLowerCase();
-          navigate(`/classes/${className}`);
-        },
-        icon: <BookOpen className="h-4 w-4 mr-2" />,
-        variant: isBoardOrAbove ? 'default' : 'outline',
-      });
-    }
+    const goToClassPage = () => {
+      const className = cls.name
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-zA-Z0-9-]/g, '')
+        .toLowerCase();
+      navigate(`/classes/${className}`);
+    };
 
     return (
-      <ItemCard
-        title={cls.name}
-        badges={badges}
-        metadata={metadata}
-        description={cls.description || undefined}
-        members={{
-          data: cls.members,
-          onViewAll: () => modalState.openMembers(cls),
-          maxDisplay: 5,
-        }}
-        actions={actions}
-      />
+      <article className="group relative flex h-full min-w-0 flex-col border border-border bg-page p-5 transition-colors duration-200 hover:bg-foreground motion-reduce:transition-none">
+        {/* Eyebrow row: semester code + chips + board furniture */}
+        <div className="flex items-start justify-between gap-3">
+          <p className={cn(EYEBROW, 'transition-colors duration-200 group-hover:text-page/60 motion-reduce:transition-none')}>
+            {cls.semesters?.code || 'No term'}
+          </p>
+          <div className="flex shrink-0 items-center gap-2">
+            {isEnrolled && !isMobile && (
+              <span
+                className={cn(
+                  CHIP_BASE,
+                  isTeacher
+                    ? 'border-primary bg-primary text-primary-foreground'
+                    : 'border-foreground bg-foreground text-page group-hover:border-page group-hover:bg-page group-hover:text-foreground'
+                )}
+              >
+                {isTeacher ? 'Teacher' : 'Student'}
+              </span>
+            )}
+            <span className={statusChipClass(status.state)}>{status.label}</span>
+            {isBoardOrAbove && (
+              <button
+                type="button"
+                onClick={copyClassEmailsCsv}
+                title="Copy member emails as CSV"
+                aria-label="Copy member emails as CSV"
+                className="inline-flex h-8 w-8 items-center justify-center border border-border text-muted-foreground transition-colors duration-200 hover:border-primary hover:bg-primary hover:text-primary-foreground group-hover:border-page group-hover:text-page/70 motion-reduce:transition-none"
+              >
+                <Mail className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Course title */}
+        <h3 className="mt-2 break-words font-sans text-lg font-bold leading-snug text-foreground transition-colors duration-200 group-hover:text-page motion-reduce:transition-none">
+          {cls.name}
+        </h3>
+
+        {/* Mono meta — term / room / teacher / enrollment */}
+        <div className="mt-3 space-y-1.5 font-mono text-xs text-muted-foreground transition-colors duration-200 group-hover:text-page/60 motion-reduce:transition-none">
+          {cls.semesters && (
+            <div className="flex items-center gap-2">
+              <CalendarIcon className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{cls.semesters.code} - {cls.semesters.name}</span>
+            </div>
+          )}
+          {cls.location && (
+            <div className="flex items-center gap-2">
+              <MapPin className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{cls.location}</span>
+            </div>
+          )}
+          {teacher && (
+            <div className="flex items-center gap-2">
+              <Crown className="h-3.5 w-3.5 shrink-0 text-primary" />
+              <span className="truncate">Teacher: {teacher.profile.full_name || teacher.profile.email}</span>
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => modalState.openMembers(cls)}
+            className="flex items-center gap-2 tabular-nums underline decoration-transparent transition-colors duration-200 hover:text-primary hover:decoration-primary motion-reduce:transition-none"
+          >
+            <Users className="h-3.5 w-3.5 shrink-0" />
+            <span>{cls.memberCount} {cls.memberCount === 1 ? 'member' : 'members'}</span>
+          </button>
+        </div>
+
+        {/* Enrollment register — square portraits */}
+        {cls.members.length > 0 && (
+          <div className="mt-3 flex -space-x-px">
+            {displayedMembers.map((member) => (
+              <Avatar
+                key={member.id}
+                className="h-8 w-8 rounded-none border border-border group-hover:border-page"
+              >
+                <AvatarImage src={member.profile.profile_picture_url || undefined} />
+                <AvatarFallback className="rounded-none text-xs">
+                  {member.profile.full_name
+                    ? getInitials(member.profile.full_name)
+                    : member.profile.email.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            ))}
+            {remainingCount > 0 && (
+              <div className="flex h-8 w-8 items-center justify-center border border-border bg-secondary font-mono text-[10px] tabular-nums group-hover:border-page">
+                +{remainingCount}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Description */}
+        {cls.description && (
+          <p className="mt-3 line-clamp-3 whitespace-pre-line break-words text-sm leading-relaxed text-muted-foreground transition-colors duration-200 group-hover:text-page/60 motion-reduce:transition-none">
+            {cls.description}
+          </p>
+        )}
+
+        {/* Actions */}
+        <div className="mt-auto flex flex-col gap-2 pt-4 md:flex-row md:flex-wrap md:items-center">
+          <button
+            type="button"
+            className={cn(isBoardOrAbove ? CTA_QUIET : CTA_PRIMARY, 'w-full md:w-auto')}
+            onClick={() => modalState.open(cls, cls.id)}
+          >
+            {isBoardOrAbove
+              ? <Edit className="h-4 w-4" />
+              : <Eye className="h-4 w-4" />}
+            {isBoardOrAbove ? 'Edit Details' : 'View Details'}
+          </button>
+
+          {(status.state === 'in_progress' || status.state === 'completed') && !isMobile && (
+            <button
+              type="button"
+              onClick={goToClassPage}
+              className="group/link inline-flex min-h-[40px] items-center justify-center gap-1.5 px-2 font-mono text-xs font-semibold uppercase tracking-[0.1em] text-foreground transition-colors duration-200 hover:text-primary group-hover:text-page motion-reduce:transition-none md:justify-start"
+            >
+              <BookOpen className="h-4 w-4" />
+              View Class Page
+              <span
+                aria-hidden="true"
+                className="transition-transform duration-200 group-hover/link:translate-x-0.5 motion-reduce:transition-none"
+              >
+                →
+              </span>
+            </button>
+          )}
+        </div>
+      </article>
     );
   };
 
-  return (
-    <div className="p-6 w-full h-full overflow-y-auto">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold`}>Classes</h1>
-          <p className="text-muted-foreground">Club classes</p>
+  const renderCatalogGrid = (classes: ClassWithMembers[]) => (
+    <div className="grid grid-cols-1 gap-0 pl-px pt-px md:grid-cols-2 xl:grid-cols-3">
+      {classes.map(cls => (
+        <div key={cls.id} className="-ml-px -mt-px w-full min-w-0">
+          {renderClassCard(cls)}
         </div>
-        {isBoardOrAbove && (
-          <Button onClick={() => setIsCreateModalOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Class
-          </Button>
+      ))}
+    </div>
+  );
+
+  return (
+    <div className="h-full w-full overflow-y-auto p-6 md:p-10">
+      {/* PAGE HEADER — eyebrow / title / meta line (DESIGN.md §6) */}
+      <header className="border-b border-border pb-6">
+        <p className={EYEBROW}>Classes</p>
+        <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
+          <h1 className="font-mono text-3xl font-extrabold tracking-[-0.03em] md:text-4xl">
+            Classes
+          </h1>
+          {isBoardOrAbove && (
+            <button
+              type="button"
+              className={CTA_PRIMARY}
+              onClick={() => setIsCreateModalOpen(true)}
+            >
+              <Plus className="h-4 w-4" />
+              Create Class
+            </button>
+          )}
+        </div>
+        {!loading && (
+          <p className="mt-3 font-mono text-xs tabular-nums text-muted-foreground">
+            {inProgress.length} in progress · {available.length} available · {completed.length} completed
+          </p>
         )}
-      </div>
+      </header>
 
       {loading ? (
-        <Card className="mt-6">
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">Loading classes...</p>
-          </CardContent>
-        </Card>
-      ) : available.length === 0 && inProgress.length === 0 && completed.length === 0 ? (
-        <Card className="mt-6">
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">No classes at this time.</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="mt-6 space-y-6">
-          {inProgress.length > 0 && (
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(375px,1fr))]">
-              {inProgress.map(cls => (
-                <div key={cls.id} className="min-w-0 w-full">
-                  {renderClassCard(cls)}
-                </div>
-              ))}
+        <div className="mt-6 grid grid-cols-1 gap-0 pl-px pt-px md:grid-cols-2 xl:grid-cols-3" aria-busy="true">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="-ml-px -mt-px h-48 animate-pulse space-y-3 border border-border p-5 motion-reduce:animate-none"
+            >
+              <div className="h-3 w-1/4 bg-grey-4/40" />
+              <div className="h-4 w-2/3 bg-grey-4/40" />
+              <div className="h-3 w-1/2 bg-grey-4/40" />
+              <div className="h-3 w-1/3 bg-grey-4/40" />
             </div>
+          ))}
+          <p className="sr-only">Loading classes...</p>
+        </div>
+      ) : available.length === 0 && inProgress.length === 0 && completed.length === 0 ? (
+        <div className="mt-6 border border-dashed border-grey-3 px-6 py-12 text-center">
+          <p className={EYEBROW}>Course catalog empty</p>
+          <p className="mt-2 text-sm text-muted-foreground">No classes at this time.</p>
+          {isBoardOrAbove && (
+            <button
+              type="button"
+              className={cn(CTA_PRIMARY, 'mt-5')}
+              onClick={() => setIsCreateModalOpen(true)}
+            >
+              <Plus className="h-4 w-4" />
+              Create Class
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="mt-6 space-y-8">
+          {inProgress.length > 0 && (
+            <section>
+              <p className={cn(EYEBROW, 'mb-3 tabular-nums')}>In progress · {inProgress.length}</p>
+              {renderCatalogGrid(inProgress)}
+            </section>
           )}
 
           {available.length > 0 && (
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(375px,1fr))]">
-              {available.map(cls => (
-                <div key={cls.id} className="min-w-0 w-full">
-                  {renderClassCard(cls)}
-                </div>
-              ))}
-            </div>
+            <section>
+              <p className={cn(EYEBROW, 'mb-3 tabular-nums')}>Available · {available.length}</p>
+              {renderCatalogGrid(available)}
+            </section>
           )}
 
           {completed.length > 0 && (
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(375px,1fr))]">
-              {completed.map(cls => (
-                <div key={cls.id} className="min-w-0 w-full">
-                  {renderClassCard(cls)}
-                </div>
-              ))}
-            </div>
+            <section>
+              <p className={cn(EYEBROW, 'mb-3 tabular-nums')}>Completed · {completed.length}</p>
+              {renderCatalogGrid(completed)}
+            </section>
           )}
         </div>
       )}
@@ -741,7 +851,7 @@ const Classes = () => {
                         .map(m => (
                           <div key={m.id} className="flex items-center gap-2">
                             <span className="font-semibold">{m.profile.full_name || 'No name'}</span>
-                            <span className="text-xs text-muted-foreground">{m.profile.email}</span>
+                            <span className="font-mono text-xs text-muted-foreground">{m.profile.email}</span>
                           </div>
                         ))}
                     </div>

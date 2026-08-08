@@ -660,9 +660,39 @@ const Auth = () => {
     }
   };
 
+  // Chrome title for the panel's titlebar strip (rendered uppercase via CSS)
+  const chromeTitle = showSignupVerification || showLoginEmailVerification
+    ? 'Verify email'
+    : showCodeInput
+      ? 'Verify code'
+      : isResettingPassword
+        ? 'Reset password'
+        : isLogin
+          ? 'Authenticate'
+          : 'Create account';
+
   return (
-    <div className={`min-h-screen flex items-center justify-center bg-gradient-to-br from-page to-secondary ${isMobile ? 'px-4 py-8' : 'px-4'}`}>
-      <Card className={`w-full ${isMobile ? 'max-w-sm' : 'max-w-md'}`}>
+    <div className={`relative min-h-screen flex items-center justify-center overflow-hidden bg-page ${isMobile ? 'px-4 py-8' : 'px-4'}`}>
+      {/* Oversized mono watermark — texture through type, not images */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none select-none absolute inset-0 hidden md:flex items-center justify-center overflow-hidden"
+      >
+        <span className="-rotate-12 whitespace-nowrap font-mono text-[14rem] lg:text-[18rem] font-extrabold uppercase leading-none tracking-[-0.04em] text-foreground/[0.04]">
+          CBC — MSU
+        </span>
+      </div>
+
+      <Card className={`relative z-10 w-full ${isMobile ? 'max-w-sm' : 'max-w-md'} rounded-none border border-border bg-page shadow-[8px_8px_0_0_hsl(var(--foreground))]`}>
+        {/* Titlebar strip — window chrome for the engineering document */}
+        <div className="hatch flex h-[38px] items-center gap-1.5 border-b border-border px-4">
+          <span aria-hidden="true" className="h-[9px] w-[9px] rounded-full bg-grey-3" />
+          <span aria-hidden="true" className="h-[9px] w-[9px] rounded-full bg-grey-3" />
+          <span aria-hidden="true" className="h-[9px] w-[9px] rounded-full bg-grey-3" />
+          <span className="ml-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            {chromeTitle}
+          </span>
+        </div>
         <CardHeader className={isMobile ? 'pb-4' : ''}>
           <CardTitle className={isMobile ? 'text-xl' : ''}>
             {showSignupVerification
@@ -702,7 +732,7 @@ const Auth = () => {
 
           {showSignupVerification ? (
             <div className={`space-y-4 ${isMobile ? 'space-y-3' : 'space-y-4'}`}>
-              <Alert className="border-primary/20">
+              <Alert className="rounded-none border-border">
                 <AlertDescription className="text-sm">
                   A verification code has been sent to <strong>{signupEmail}</strong>. Enter it below to verify your account.
                 </AlertDescription>
@@ -717,7 +747,7 @@ const Auth = () => {
                   onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 8))}
                   maxLength={8}
                   placeholder="Enter code from email"
-                  className="text-center text-2xl tracking-widest"
+                  className="text-center font-mono text-2xl tracking-widest tabular-nums"
                 />
               </div>
 
@@ -742,7 +772,7 @@ const Auth = () => {
               <Button
                 type="button"
                 variant="ghost"
-                className={`w-full hover:bg-transparent hover:text-primary transition-all duration-200 ${isMobile ? 'h-11 text-sm' : ''}`}
+                className={`w-full hover:bg-transparent hover:text-primary transition-colors duration-200 motion-reduce:transition-none ${isMobile ? 'h-11 text-sm' : ''}`}
                 onClick={() => {
                   setShowSignupVerification(false);
                   setVerificationCode('');
@@ -756,7 +786,7 @@ const Auth = () => {
             </div>
           ) : showLoginEmailVerification ? (
             <div className={`space-y-4 ${isMobile ? 'space-y-3' : 'space-y-4'}`}>
-              <Alert className="border-primary/20">
+              <Alert className="rounded-none border-border">
                 <AlertDescription className="text-sm">
                   A verification code has been sent to <strong>{loginVerificationEmail}</strong>. Enter it below to verify your email and complete login.
                 </AlertDescription>
@@ -771,7 +801,7 @@ const Auth = () => {
                   onChange={(e) => setLoginVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 8))}
                   maxLength={8}
                   placeholder="Enter code from email"
-                  className="text-center text-2xl tracking-widest"
+                  className="text-center font-mono text-2xl tracking-widest tabular-nums"
                 />
               </div>
 
@@ -796,7 +826,7 @@ const Auth = () => {
               <Button
                 type="button"
                 variant="ghost"
-                className={`w-full hover:bg-transparent hover:text-primary transition-all duration-200 ${isMobile ? 'h-11 text-sm' : ''}`}
+                className={`w-full hover:bg-transparent hover:text-primary transition-colors duration-200 motion-reduce:transition-none ${isMobile ? 'h-11 text-sm' : ''}`}
                 onClick={() => {
                   setShowLoginEmailVerification(false);
                   setLoginVerificationCode('');
@@ -812,7 +842,7 @@ const Auth = () => {
             </div>
           ) : showCodeInput ? (
             <div className={`space-y-4 ${isMobile ? 'space-y-3' : 'space-y-4'}`}>
-              <Alert className="border-primary/20">
+              <Alert className="rounded-none border-border">
                 <AlertDescription className="text-sm">
                   A verification code has been sent to <strong>{resetEmail}</strong>. Enter it below to reset your password.
                 </AlertDescription>
@@ -827,7 +857,7 @@ const Auth = () => {
                   onChange={(e) => setResetCode(e.target.value.replace(/\D/g, '').slice(0, 8))}
                   maxLength={8}
                   placeholder="Enter code from email"
-                  className="text-center text-2xl tracking-widest"
+                  className="text-center font-mono text-2xl tracking-widest tabular-nums"
                 />
               </div>
 
@@ -856,7 +886,7 @@ const Auth = () => {
               <Button
                 type="button"
                 variant="ghost"
-                className={`w-full hover:bg-transparent hover:text-primary transition-all duration-200 ${isMobile ? 'h-11 text-sm' : ''}`}
+                className={`w-full hover:bg-transparent hover:text-primary transition-colors duration-200 motion-reduce:transition-none ${isMobile ? 'h-11 text-sm' : ''}`}
                 onClick={() => {
                   setShowCodeInput(false);
                   setResetCode('');
@@ -900,7 +930,7 @@ const Auth = () => {
               <Button
                 type="button"
                 variant="ghost"
-                className={`w-full hover:bg-transparent hover:text-primary transition-all duration-200 ${isMobile ? 'h-11 text-sm' : ''}`}
+                className={`w-full hover:bg-transparent hover:text-primary transition-colors duration-200 motion-reduce:transition-none ${isMobile ? 'h-11 text-sm' : ''}`}
                 onClick={() => {
                   setIsResettingPassword(false);
                   setNewPassword('');
@@ -986,7 +1016,7 @@ const Auth = () => {
               )}
 
               {showForgotPassword && isLogin && (
-                <Alert className="border-primary/20">
+                <Alert className="rounded-none border-border">
                   <AlertDescription>
                     <p className="text-sm mb-3">
                       Enter your email address and we'll send you a verification code to reset your password.
@@ -1017,7 +1047,7 @@ const Auth = () => {
               <Button
                 type="button"
                 variant="ghost"
-                className={`w-full hover:bg-transparent hover:text-primary transition-all duration-200 ${isMobile ? 'h-11 text-sm' : ''}`}
+                className={`w-full hover:bg-transparent hover:text-primary transition-colors duration-200 motion-reduce:transition-none ${isMobile ? 'h-11 text-sm' : ''}`}
                 onClick={() => {
                   const nextLogin = !isLogin;
                   setIsLogin(nextLogin);

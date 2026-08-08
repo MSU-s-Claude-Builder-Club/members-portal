@@ -210,9 +210,9 @@ This project is private and proprietary to the Claude Builder Club at Michigan S
 
 ---
 
-## 👨‍💻 Maintainer
+## 👨‍💻 Maintained by
 
-**Ankur Desai** - Creator & Maintainer
+The **Claude Builder Club @ MSU** Executive Board.
 
 For questions or support:
 - Instagram: [@claudemsu](https://www.instagram.com/claudemsu)

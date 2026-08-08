@@ -55,6 +55,15 @@ const TextType = ({
 
   const textArray = useMemo(() => (Array.isArray(text) ? text : [text]), [text]);
 
+  // Reduced motion: render the full text immediately, no caret, no animation.
+  const prefersReducedMotion = useMemo(
+    () =>
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    []
+  );
+
   const getRandomSpeed = useCallback(() => {
     if (!variableSpeed) return typingSpeed;
     const { min, max } = variableSpeed;
@@ -85,6 +94,7 @@ const TextType = ({
   }, [startOnVisible]);
 
   useEffect(() => {
+    if (prefersReducedMotion) return;
     if (showCursor && cursorRef.current) {
       gsap.set(cursorRef.current, { opacity: 1 });
       gsap.to(cursorRef.current, {
@@ -92,13 +102,13 @@ const TextType = ({
         duration: cursorBlinkDuration,
         repeat: -1,
         yoyo: true,
-        ease: 'power2.inOut'
+        ease: 'steps(1)'
       });
     }
-  }, [showCursor, cursorBlinkDuration]);
+  }, [showCursor, cursorBlinkDuration, prefersReducedMotion]);
 
   useEffect(() => {
-    if (!isVisible) return;
+    if (!isVisible || prefersReducedMotion) return;
 
     let timeout: ReturnType<typeof setTimeout>;
 
@@ -165,7 +175,8 @@ const TextType = ({
     reverseMode,
     variableSpeed,
     onSentenceComplete,
-    getRandomSpeed
+    getRandomSpeed,
+    prefersReducedMotion
   ]);
 
   const shouldHideCursor =
@@ -179,15 +190,14 @@ const TextType = ({
       ...props
     },
     <span className="inline self-center align-middle" style={{ color: getCurrentTextColor() || 'inherit' }}>
-      {displayedText}
+      {prefersReducedMotion ? textArray[currentTextIndex] : displayedText}
     </span>,
-    showCursor && (
+    showCursor && !prefersReducedMotion && (
       <span
         ref={cursorRef}
-        className={`ml-1 mb-2 inline-block opacity-100 ${shouldHideCursor ? 'hidden' : ''} ${cursorClassName}`}
-      >
-        {cursorCharacter}
-      </span>
+        aria-hidden="true"
+        className={`ml-1 inline-block w-0 h-[1em] border-r-[0.06em] border-current align-middle opacity-100 ${shouldHideCursor ? 'hidden' : ''} ${cursorClassName}`}
+      />
     )
   );
 };

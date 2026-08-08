@@ -45,25 +45,36 @@ interface ApplicationCreateModalProps {
 
 const BOARD_POSITIONS = [
   // E-Board
-  'President', // Hadi
-  'SVP',       // Ankur
-  'VP of Marketing', // Diego
-  'VP of Community', // Sparsh
-  'VP of Technical Operations', // ?
+  'President',
+  'SVP',
+  'VP of Marketing',
+  'VP of Community',
+  'VP of Technical Operations',
   // Board
-  'Creative Director', // Iraj
-  'Content Director', // ?
-  'Outreach Director', // ?
-  'Outreach Officer', // Jack
-  'Workshop Director', // Daniel
-  'Events Director', // Yash
-  'Social Director', // Daler
-  'Program Director', // ?
-  'Project Director', // Jonathan
-  'Xcelerate Director', // Jason
-  'Treasurer', // Caleb
-  'Secretary', // Eera
+  'Creative Director',
+  'Content Director',
+  'Outreach Director',
+  'Outreach Officer',
+  'Workshop Director',
+  'Events Director',
+  'Social Director',
+  'Program Director',
+  'Project Director',
+  'Xcelerate Director',
+  'Treasurer',
+  'Secretary',
 ];
+
+/** Mono eyebrow that labels each hairline-ruled field group. */
+const GROUP_EYEBROW =
+  'font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground';
+
+/** Hairline-ruled field group wrapper. */
+const GROUP_RULE = 'space-y-4 border-t border-hairline-faint pt-5';
+
+/** Dashed dropzone shell for file uploads. */
+const DROPZONE =
+  'relative border border-dashed border-grey-3 transition-colors hover:border-primary hover:bg-tint focus-within:border-primary';
 
 export const ApplicationCreateModal = ({
   open,
@@ -561,228 +572,280 @@ export const ApplicationCreateModal = ({
         {/* Type-specific Fields */}
         {applicationType === 'board' && (
           <>
-            <div className="space-y-2">
-              <Label htmlFor="boardPosition" required>Position</Label>
-              <Select value={selectedBoardPosition} onValueChange={setSelectedBoardPosition}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select position" />
-                </SelectTrigger>
-                <SelectContent>
-                  {BOARD_POSITIONS.map((pos) => (
-                    <SelectItem key={pos} value={pos}>
-                      {pos}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className={GROUP_RULE}>
+              <p className={GROUP_EYEBROW}>Board application</p>
+
+              <div className="space-y-2">
+                <Label htmlFor="boardPosition" required>Position</Label>
+                <Select value={selectedBoardPosition} onValueChange={setSelectedBoardPosition}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select position" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {BOARD_POSITIONS.map((pos) => (
+                      <SelectItem key={pos} value={pos}>
+                        {pos}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="whyPosition" required>Why this position?</Label>
-              <Textarea
-                id="whyPosition"
-                value={whyPosition}
-                onChange={(e) => setWhyPosition(e.target.value)}
-                rows={4}
-                placeholder="What impact do you want to make in this role, and why are you applying now?"
-              />
-            </div>
+            <div className={GROUP_RULE}>
+              <p className={GROUP_EYEBROW}>Responses</p>
 
-            <div className="space-y-2">
-              <Label htmlFor="relevantExperience" required>Relevant Experience</Label>
-              <Textarea
-                id="relevantExperience"
-                value={relevantExperience}
-                onChange={(e) => setRelevantExperience(e.target.value)}
-                rows={3}
-                placeholder="Share leadership experience, projects, skills, or specific examples that make you a strong fit."
-              />
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="whyPosition" required>Why this position?</Label>
+                <Textarea
+                  id="whyPosition"
+                  value={whyPosition}
+                  onChange={(e) => setWhyPosition(e.target.value)}
+                  rows={4}
+                  placeholder="What impact do you want to make in this role, and why are you applying now?"
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="otherCommitments" required>Other Commitments</Label>
-              <Textarea
-                id="otherCommitments"
-                value={otherCommitments}
-                onChange={(e) => setOtherCommitments(e.target.value)}
-                rows={3}
-                placeholder="Jobs, other orgs, courses, or anything else that affects your weekly availability."
-              />
+              <div className="space-y-2">
+                <Label htmlFor="relevantExperience" required>Relevant Experience</Label>
+                <Textarea
+                  id="relevantExperience"
+                  value={relevantExperience}
+                  onChange={(e) => setRelevantExperience(e.target.value)}
+                  rows={3}
+                  placeholder="Share leadership experience, projects, skills, or specific examples that make you a strong fit."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="otherCommitments" required>Other Commitments</Label>
+                <Textarea
+                  id="otherCommitments"
+                  value={otherCommitments}
+                  onChange={(e) => setOtherCommitments(e.target.value)}
+                  rows={3}
+                  placeholder="Jobs, other orgs, courses, or anything else that affects your weekly availability."
+                />
+              </div>
             </div>
           </>
         )}
 
         {applicationType === 'class' && (
           <>
-            <div className="space-y-2">
-              <Label htmlFor="class" required>Select Class</Label>
-              <Select value={selectedClassId} onValueChange={setSelectedClassId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select class" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableClasses.map((cls) => (
-                    <SelectItem key={cls.id} value={cls.id}>
-                      {cls.name}
-                      {cls.semesters && ` (${cls.semesters.code})`}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className={GROUP_RULE}>
+              <p className={GROUP_EYEBROW}>Class application</p>
+
+              <div className="space-y-2">
+                <Label htmlFor="class" required>Select Class</Label>
+                <Select value={selectedClassId} onValueChange={setSelectedClassId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select class" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableClasses.map((cls) => (
+                      <SelectItem key={cls.id} value={cls.id}>
+                        {cls.name}
+                        {cls.semesters && ` (${cls.semesters.code})`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label required>Class Role</Label>
+                <RadioGroup value={selectedClassRole} onValueChange={(value) => setSelectedClassRole(value as 'student' | 'teacher')}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="student" id="class-student" />
+                    <Label htmlFor="class-student">Student</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="teacher" id="class-teacher" />
+                    <Label htmlFor="class-teacher">Teacher</Label>
+                  </div>
+                </RadioGroup>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label required>Class Role</Label>
-              <RadioGroup value={selectedClassRole} onValueChange={(value) => setSelectedClassRole(value as 'student' | 'teacher')}>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="student" id="class-student" />
-                  <Label htmlFor="class-student">Student</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="teacher" id="class-teacher" />
-                  <Label htmlFor="class-teacher">Teacher</Label>
-                </div>
-              </RadioGroup>
-            </div>
+            <div className={GROUP_RULE}>
+              <p className={GROUP_EYEBROW}>Responses</p>
 
-            <div className="space-y-2">
-              <Label htmlFor="whyClass" required>Why this class?</Label>
-              <Textarea
-                id="whyClass"
-                value={whyClass}
-                onChange={(e) => setWhyClass(e.target.value)}
-                rows={4}
-                placeholder="What do you hope to learn/teach, and how does this class fit your goals?"
-              />
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="whyClass" required>Why this class?</Label>
+                <Textarea
+                  id="whyClass"
+                  value={whyClass}
+                  onChange={(e) => setWhyClass(e.target.value)}
+                  rows={4}
+                  placeholder="What do you hope to learn/teach, and how does this class fit your goals?"
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="relevantKnowledge" required>Relevant knowledge</Label>
-              <Textarea
-                id="relevantKnowledge"
-                value={relevantKnowledge}
-                onChange={(e) => setRelevantKnowledge(e.target.value)}
-                rows={3}
-                placeholder="What do you already know that will help you succeed? (Concepts, tools, prior coursework, etc.)"
-              />
+              <div className="space-y-2">
+                <Label htmlFor="relevantKnowledge" required>Relevant knowledge</Label>
+                <Textarea
+                  id="relevantKnowledge"
+                  value={relevantKnowledge}
+                  onChange={(e) => setRelevantKnowledge(e.target.value)}
+                  rows={3}
+                  placeholder="What do you already know that will help you succeed? (Concepts, tools, prior coursework, etc.)"
+                />
+              </div>
             </div>
           </>
         )}
 
         {applicationType === 'project' && (
           <>
-            <div className="space-y-2">
-              <Label htmlFor="project" required>Select Project</Label>
-              <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select project" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableProjects.map((proj) => (
-                    <SelectItem key={proj.id} value={proj.id}>
-                      {proj.name}
-                      {proj.semesters && ` (${proj.semesters.code})`}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className={GROUP_RULE}>
+              <p className={GROUP_EYEBROW}>Project application</p>
+
+              <div className="space-y-2">
+                <Label htmlFor="project" required>Select Project</Label>
+                <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select project" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableProjects.map((proj) => (
+                      <SelectItem key={proj.id} value={proj.id}>
+                        {proj.name}
+                        {proj.semesters && ` (${proj.semesters.code})`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label required>Project Role</Label>
+                <RadioGroup value={selectedProjectRole} onValueChange={(value) => setSelectedProjectRole(value as 'member' | 'lead')}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="member" id="project-member" />
+                    <Label htmlFor="project-member">Member</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="lead" id="project-lead" />
+                    <Label htmlFor="project-lead">Lead</Label>
+                  </div>
+                </RadioGroup>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label required>Project Role</Label>
-              <RadioGroup value={selectedProjectRole} onValueChange={(value) => setSelectedProjectRole(value as 'member' | 'lead')}>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="member" id="project-member" />
-                  <Label htmlFor="project-member">Member</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="lead" id="project-lead" />
-                  <Label htmlFor="project-lead">Lead</Label>
-                </div>
-              </RadioGroup>
-            </div>
+            <div className={GROUP_RULE}>
+              <p className={GROUP_EYEBROW}>Responses</p>
 
-            <div className="space-y-2">
-              <Label htmlFor="relevantExperience" required>Relevant experience</Label>
-              <Textarea
-                id="relevantExperience"
-                value={relevantExperience}
-                onChange={(e) => setRelevantExperience(e.target.value)}
-                rows={3}
-                placeholder="What skills/projects make you a good fit?"
-              />
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="relevantExperience" required>Relevant experience</Label>
+                <Textarea
+                  id="relevantExperience"
+                  value={relevantExperience}
+                  onChange={(e) => setRelevantExperience(e.target.value)}
+                  rows={3}
+                  placeholder="What skills/projects make you a good fit?"
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="problemSolved" required>Problem solved</Label>
-              <Textarea
-                id="problemSolved"
-                value={problemSolved}
-                onChange={(e) => setProblemSolved(e.target.value)}
-                rows={3}
-                placeholder="Describe a problem you've solved (or a tough challenge you overcame). What was your approach and result?"
-              />
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="problemSolved" required>Problem solved</Label>
+                <Textarea
+                  id="problemSolved"
+                  value={problemSolved}
+                  onChange={(e) => setProblemSolved(e.target.value)}
+                  rows={3}
+                  placeholder="Describe a problem you've solved (or a tough challenge you overcame). What was your approach and result?"
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="projectDetail" required>Project detail</Label>
-              <Textarea
-                id="projectDetail"
-                value={projectDetail}
-                onChange={(e) => setProjectDetail(e.target.value)}
-                rows={4}
-                placeholder="What do you want to work on in this project? Are you interested in the backend or the frontend?"
-              />
+              <div className="space-y-2">
+                <Label htmlFor="projectDetail" required>Project detail</Label>
+                <Textarea
+                  id="projectDetail"
+                  value={projectDetail}
+                  onChange={(e) => setProjectDetail(e.target.value)}
+                  rows={4}
+                  placeholder="What do you want to work on in this project? Are you interested in the backend or the frontend?"
+                />
+              </div>
             </div>
           </>
         )}
 
-        <div className="space-y-2">
-          <Label htmlFor="resume">Resume</Label>
-          {resumePullLoading && (
-            <p className="text-sm text-muted-foreground">Loading your profile resume…</p>
-          )}
-          {!resumePullLoading && (resumeFile || profileResumeFile) ? (
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-medium">
-                {resumeFile ? resumeFile.name : 'Profile Resume'}
-              </span>
-              <button
-                type="button"
-                className="text-sm text-primary underline-offset-4 hover:underline"
-                onClick={() => {
-                  setResumeFile(null);
-                  setProfileResumeFile(null);
-                  setResumeInputKey((k) => k + 1);
-                }}
-              >
-                Remove
-              </button>
-            </div>
-          ) : null}
-          {!resumePullLoading && !resumeFile && !profileResumeFile && (
-            <Input
-              key={resumeInputKey}
-              id="resume"
-              type="file"
-              accept=".pdf,.doc,.docx"
-              onChange={(e) => {
-                const file = e.target.files?.[0] ?? null;
-                setResumeFile(file);
-                if (file) setProfileResumeFile(null);
-              }}
-            />
-          )}
-        </div>
+        <div className={GROUP_RULE}>
+          <p className={GROUP_EYEBROW}>Documents</p>
 
-        <div className="space-y-2">
-          <Label htmlFor="transcript">Transcript</Label>
-          <Input
-            id="transcript"
-            type="file"
-            accept=".pdf"
-            onChange={(e) => setTranscriptFile(e.target.files?.[0] || null)}
-          />
+          <div className="space-y-2">
+            <Label htmlFor="resume">Resume</Label>
+            {resumePullLoading && (
+              <p className="font-mono text-xs text-muted-foreground">Loading your profile resume…</p>
+            )}
+            {!resumePullLoading && (resumeFile || profileResumeFile) ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex max-w-full items-center border border-border px-3 py-1.5 font-mono text-xs">
+                  <span className="truncate">
+                    {resumeFile ? resumeFile.name : 'Profile Resume'}
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  className="font-mono text-xs font-medium uppercase tracking-[0.08em] text-primary underline-offset-4 hover:underline"
+                  onClick={() => {
+                    setResumeFile(null);
+                    setProfileResumeFile(null);
+                    setResumeInputKey((k) => k + 1);
+                  }}
+                >
+                  Remove
+                </button>
+              </div>
+            ) : null}
+            {!resumePullLoading && !resumeFile && !profileResumeFile && (
+              <div className={DROPZONE}>
+                <Input
+                  key={resumeInputKey}
+                  id="resume"
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] ?? null;
+                    setResumeFile(file);
+                    if (file) setProfileResumeFile(null);
+                  }}
+                  className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                />
+                <div className="pointer-events-none flex flex-col items-center gap-1 px-4 py-6 text-center">
+                  <span className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                    Drop file or click to upload
+                  </span>
+                  <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-grey-2">
+                    PDF · DOC · DOCX
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="transcript">Transcript</Label>
+            <div className={DROPZONE}>
+              <Input
+                id="transcript"
+                type="file"
+                accept=".pdf"
+                onChange={(e) => setTranscriptFile(e.target.files?.[0] || null)}
+                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+              />
+              <div className="pointer-events-none flex flex-col items-center gap-1 px-4 py-6 text-center">
+                <span className="max-w-full truncate font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                  {transcriptFile ? transcriptFile.name : 'Drop file or click to upload'}
+                </span>
+                <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-grey-2">
+                  PDF
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </>
     );
@@ -798,18 +861,18 @@ export const ApplicationCreateModal = ({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
-        className={`${isMobile ? 'max-w-[92vw] max-h-[90vh]' : 'max-w-2xl max-h-[90vh] p-6'
-          } overflow-y-auto overflow-x-hidden rounded-xl`}
+        className={`${isMobile ? 'max-w-[92vw] max-h-[90vh]' : 'max-w-2xl max-h-[90vh]'
+          } gap-0 overflow-y-auto overflow-x-hidden rounded-none border border-border p-0 shadow-[8px_8px_0_0_hsl(var(--foreground))]`}
       >
-        <DialogHeader>
-          <DialogTitle>New Application</DialogTitle>
-          <DialogDescription>
+        <DialogHeader className="hatch space-y-1 border-b border-border px-6 py-4 text-left">
+          <DialogTitle className="font-mono text-lg font-extrabold tracking-[-0.02em]">New Application</DialogTitle>
+          <DialogDescription className="font-mono text-xs text-muted-foreground">
             You may only apply to each class or project once, as the teacher/lead or a student/member.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="">
-          <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-3">
+        <div className="px-6 py-5">
+          <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-5">
             <div className="space-y-2">
               <Label htmlFor="applicationType" required>Application Type</Label>
               <Select
@@ -830,18 +893,18 @@ export const ApplicationCreateModal = ({
             {renderFormFields()}
 
             {applicationType && (
-              <div className="flex gap-2 pt-4 flex-col w-full sm:flex-row">
+              <div className="flex w-full flex-col gap-2 border-t border-hairline-faint pt-4 md:flex-row">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={onClose}
                   disabled={loading}
-                  className="w-full sm:flex-1"
+                  className="w-full md:flex-1"
                 >
                   <X className="h-4 w-4 mr-0" />
                   Cancel
                 </Button>
-                <Button type="submit" disabled={loading} className="w-full sm:flex-1">
+                <Button type="submit" disabled={loading} className="w-full md:flex-1">
                   <Save className="h-4 w-4 mr-0" />
                   {loading ? 'Submitting...' : 'Submit Application'}
                 </Button>

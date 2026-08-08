@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -12,13 +12,8 @@ import {
     ArrowLeft,
     CheckCircle,
     XCircle,
-    ExternalLink,
     Calendar,
-    FileText,
     Info,
-    Briefcase,
-    BookOpen,
-    BookUser,
     Github,
     MapPin,
     Users,
@@ -30,7 +25,6 @@ import { DetailModal } from '@/components/modals/DetailModal';
 import type { Database } from '@/integrations/supabase/database.types';
 import type { DetailSection } from '@/types/modal.types';
 import { Class, Project, useProfile } from '@/contexts/AuthContext';
-import { InterfaceVariant } from '@/lib/utils';
 
 type Application = Database['public']['Tables']['applications']['Row'];
 type Profile = Database['public']['Tables']['profiles']['Row'];
@@ -39,6 +33,22 @@ type AppRole = Database['public']['Enums']['app_role'];
 interface MemberWithRole extends Profile {
     role: AppRole;
 }
+
+/** Status chip base — mono uppercase micro-label per the design contract. */
+const CHIP_BASE =
+    'inline-flex items-center whitespace-nowrap border px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.08em]';
+
+/** Mono uppercase question/section label for the dossier. */
+const DOSSIER_LABEL =
+    'font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground';
+
+const getInitials = (name: string) =>
+    name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
 
 const ApplicationViewerPage = () => {
     const { id } = useParams<{ id: string }>();
@@ -236,19 +246,19 @@ const ApplicationViewerPage = () => {
         }
     };
 
+    // Status chips per the ink/outline/strike system
     const getStatusBadge = (status: string) => {
         const variants = {
-            accepted: { variant: 'green', text: 'Accepted' },
-            rejected: { variant: 'red', text: 'Rejected' },
-            pending: { variant: 'secondary', text: 'Pending' },
+            accepted: { className: 'border-foreground bg-foreground text-page', text: 'Accepted' },
+            rejected: {
+                className: 'border-border text-muted-foreground line-through decoration-primary decoration-2',
+                text: 'Rejected',
+            },
+            pending: { className: 'border-border text-foreground', text: 'Pending' },
         };
         const config = variants[status as keyof typeof variants] || variants.pending;
 
-        return (
-            <Badge variant={config.variant as InterfaceVariant} className="text-sm px-3 py-1">
-                {config.text}
-            </Badge>
-        );
+        return <span className={`${CHIP_BASE} ${config.className}`}>{config.text}</span>;
     };
 
     const getAcceptanceMessage = () => {
@@ -289,7 +299,7 @@ const ApplicationViewerPage = () => {
         if (item.description) {
             sections.push({
                 title: 'Description',
-                content: <p className="whitespace-pre-wrap">{item.description}</p>,
+                content: <p className="whitespace-pre-wrap leading-relaxed text-ink-soft">{item.description}</p>,
             });
         }
 
@@ -299,10 +309,10 @@ const ApplicationViewerPage = () => {
         // Term
         if (item.semesters) {
             gridItems.push(
-                <div key="term" className="space-y-2">
-                    <h4 className="font-semibold text-sm">Term</h4>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Calendar className="h-4 w-4" />
+                <div key="term" className="space-y-1.5">
+                    <h4 className={DOSSIER_LABEL}>Term</h4>
+                    <div className="flex items-center gap-2 font-mono text-xs tabular-nums text-ink-soft">
+                        <Calendar className="h-4 w-4 shrink-0" />
                         {item.semesters.code} - {item.semesters.name}
                     </div>
                 </div>
@@ -311,10 +321,10 @@ const ApplicationViewerPage = () => {
 
         // Size
         gridItems.push(
-            <div key="size" className="space-y-2">
-                <h4 className="font-semibold text-sm">{isProject ? 'Team Size' : 'Class Size'}</h4>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Users className="h-4 w-4" />
+            <div key="size" className="space-y-1.5">
+                <h4 className={DOSSIER_LABEL}>{isProject ? 'Team Size' : 'Class Size'}</h4>
+                <div className="flex items-center gap-2 font-mono text-xs tabular-nums text-ink-soft">
+                    <Users className="h-4 w-4 shrink-0" />
                     {isProject
                         ? `${item.project_members[0].count} ${item.project_members[0].count === 1 ? 'member' : 'members'}`
                         : `${item.class_enrollments[0].count} ${item.class_enrollments[0].count === 1 ? 'student' : 'students'}`
@@ -328,11 +338,11 @@ const ApplicationViewerPage = () => {
             gridItems.push(
                 <div
                     key="location"
-                    className="space-y-2 md:col-span-2"
+                    className="space-y-1.5 md:col-span-2"
                 >
-                    <h4 className="font-semibold text-sm">Location</h4>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <MapPin className="h-4 w-4" />
+                    <h4 className={DOSSIER_LABEL}>Location</h4>
+                    <div className="flex items-center gap-2 font-mono text-xs text-ink-soft">
+                        <MapPin className="h-4 w-4 shrink-0" />
                         {item.location}
                     </div>
                 </div>
@@ -341,23 +351,24 @@ const ApplicationViewerPage = () => {
 
         if (hasStarted && 'github_project_id' in item && item.github_project_id) {
             gridItems.push(
-                <div key="repo" className="space-y-2">
-                    <h4 className="font-semibold text-sm">Repository</h4>
+                <div key="repo" className="space-y-1.5">
+                    <h4 className={DOSSIER_LABEL}>Repository</h4>
                     <a
                         href={`https://github.com/orgs/claude-msu/projects/${item.github_project_id}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-sm text-primary hover:underline"
+                        className="group/repo inline-flex items-center gap-2 font-mono text-xs text-ink-soft transition-colors hover:text-primary"
                     >
-                        <Github className="h-4 w-4" />
+                        <Github className="h-4 w-4 shrink-0" />
                         View on GitHub
+                        <span aria-hidden className="transition-transform group-hover/repo:translate-x-0.5">→</span>
                     </a>
                 </div>
             );
         }
 
         sections.push({
-            content: <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{gridItems}</div>,
+            content: <div className="grid grid-cols-1 gap-4 md:grid-cols-2">{gridItems}</div>,
             fullWidth: true,
             title: ''
         });
@@ -407,10 +418,10 @@ const ApplicationViewerPage = () => {
                         key={key}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="space-y-2"
+                        className="border-t border-hairline-faint px-4 py-5 md:px-6"
                     >
-                        <h3 className="font-semibold text-base">{title}</h3>
-                        <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                        <h3 className={DOSSIER_LABEL}>{title}</h3>
+                        <p className="mt-2 max-w-[68ch] whitespace-pre-wrap text-[15px] leading-relaxed text-ink-soft">
                             {value || 'Not provided'}
                         </p>
                     </motion.div>
@@ -425,7 +436,7 @@ const ApplicationViewerPage = () => {
     if (loading) {
         return (
             <div className="min-h-screen bg-page">
-                <div className="max-w-7xl mx-auto px-6 py-8">
+                <div className="mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-8">
                     <Button variant="ghost" onClick={() => navigate('/applications')} className="mb-6">
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Back to Applications
@@ -442,9 +453,9 @@ const ApplicationViewerPage = () => {
 
     if (!application) {
         return (
-            <div className="min-h-screen bg-page flex items-center justify-center">
+            <div className="flex min-h-screen items-center justify-center bg-page">
                 <div className="text-center">
-                    <h1 className="text-2xl font-bold mb-2">Application Not Found</h1>
+                    <h1 className="mb-2 font-mono text-2xl font-extrabold tracking-[-0.02em]">Application Not Found</h1>
                     <Button onClick={() => navigate('/applications')}>
                         <ArrowLeft className="h-4 w-4 mr-2" />
                         Back to Applications
@@ -462,26 +473,26 @@ const ApplicationViewerPage = () => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-green-500"
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-foreground"
                     >
                         <motion.div
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                             transition={{ type: 'spring', duration: 0.6 }}
-                            className="text-center text-white"
+                            className="text-center text-page"
                         >
                             <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: [0, 1.2, 1] }}
                                 transition={{ delay: 0.2, duration: 0.5 }}
                             >
-                                <CheckCircle className="w-32 h-32 mx-auto mb-6" />
+                                <CheckCircle className="mx-auto mb-6 h-32 w-32" />
                             </motion.div>
                             <motion.h1
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.4 }}
-                                className="text-4xl font-bold mb-2"
+                                className="mb-2 font-mono text-4xl font-extrabold tracking-[-0.02em]"
                             >
                                 Application Accepted!
                             </motion.h1>
@@ -500,7 +511,7 @@ const ApplicationViewerPage = () => {
                             initial={{ scale: 0, opacity: 1 }}
                             animate={{ scale: 3, opacity: 0 }}
                             transition={{ duration: 1 }}
-                            className="absolute inset-0 rounded-full bg-green-400"
+                            className="absolute inset-0 bg-page/10"
                             style={{ transformOrigin: 'center' }}
                         />
                     </motion.div>
@@ -511,26 +522,26 @@ const ApplicationViewerPage = () => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-red-500"
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-destructive"
                     >
                         <motion.div
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                             transition={{ type: 'spring', duration: 0.6 }}
-                            className="text-center text-white"
+                            className="text-center text-destructive-foreground"
                         >
                             <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: [0, 1.2, 1] }}
                                 transition={{ delay: 0.2, duration: 0.5 }}
                             >
-                                <XCircle className="w-32 h-32 mx-auto mb-6" />
+                                <XCircle className="mx-auto mb-6 h-32 w-32" />
                             </motion.div>
                             <motion.h1
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.4 }}
-                                className="text-4xl font-bold mb-2"
+                                className="mb-2 font-mono text-4xl font-extrabold tracking-[-0.02em]"
                             >
                                 Application Rejected
                             </motion.h1>
@@ -549,7 +560,7 @@ const ApplicationViewerPage = () => {
                             initial={{ scale: 0, opacity: 1 }}
                             animate={{ scale: 3, opacity: 0 }}
                             transition={{ duration: 1 }}
-                            className="absolute inset-0 rounded-full bg-red-400"
+                            className="absolute inset-0 bg-page/10"
                             style={{ transformOrigin: 'center' }}
                         />
                     </motion.div>
@@ -557,39 +568,32 @@ const ApplicationViewerPage = () => {
             </AnimatePresence>
 
             <div className="min-h-screen bg-page">
-                <div className="max-w-7xl mx-auto px-6 py-8">
+                <div className="mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-8">
                     {/* Header */}
                     <motion.div
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="mb-8"
+                        className="mb-6 md:mb-8"
                     >
-                        <Button variant="ghost" onClick={() => navigate('/applications')} className="mb-6 hover:bg-primary">
+                        <Button variant="ghost" onClick={() => navigate('/applications')} className="-ml-2">
                             <ArrowLeft className="h-4 w-4 mr-2" />
                             Back to Applications
                         </Button>
-
-                        <div>
-                            <div className={`flex items-center gap-6 flex-wrap${isMobile ? ' justify-between' : ''}`}>
-                                <h1 className="text-4xl font-bold">{applicantProfile?.full_name ?? 'Applicant'}</h1>
-                                {getStatusBadge(application.status)}
-                            </div>
-                        </div>
                     </motion.div>
 
                     {/* Main Content */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* Left Column */}
+                    <div className="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-3">
+                        {/* Left Column — the dossier */}
                         <motion.div
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="lg:col-span-2 space-y-6"
+                            className="space-y-6 lg:col-span-2"
                         >
                             {/* Deletion Warning */}
                             {deletionInfo && application.status !== 'pending' && (
-                                <Alert className="bg-muted/50 border-muted-foreground/20">
-                                    <AlertDescription className="text-sm flex items-center gap-3 text-muted-foreground min-h-7">
+                                <Alert className="rounded-none border-hairline-faint bg-tint">
+                                    <AlertDescription className="flex min-h-7 items-center gap-3 font-mono text-xs text-muted-foreground">
                                         <Info className={isMobile ? "h-10 w-10" : "h-4 w-4"} />
                                         <div className="flex items-center gap-2">
                                             {deletionInfo}
@@ -598,125 +602,141 @@ const ApplicationViewerPage = () => {
                                 </Alert>
                             )}
 
-                            {/* Application Information */}
-                            <div className="bg-card border rounded-lg p-6 shadow-sm">
-                                <h2 className="text-xl font-semibold mb-4">Application Information</h2>
-                                {/* Project/Class/Position name - full row */}
-                                {((application.application_type === 'board' && application.board_position) ||
-                                    (application.application_type === 'class' && classData) ||
-                                    (application.application_type === 'project' && projectData)) && (
-                                        <div className="space-y-1 mb-4">
-                                            <p className="text-sm font-medium text-muted-foreground">
-                                                {application.application_type === 'board' && 'Position'}
-                                                {application.application_type === 'class' && 'Class'}
-                                                {application.application_type === 'project' && 'Project'}
+                            {/* THE DOCUMENT */}
+                            <div className="border border-border bg-page">
+                                {/* Titlebar strip */}
+                                <div className="hatch flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-border px-4 py-2.5 md:px-6">
+                                    <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.14em]">
+                                        Application · {application.application_type}
+                                    </span>
+                                    <span className="font-mono text-[10px] uppercase tabular-nums text-muted-foreground">
+                                        No. {application.id.slice(0, 8)} · {format(new Date(application.created_at), 'MMM d, yyyy')}
+                                    </span>
+                                </div>
+
+                                {/* Applicant identity row */}
+                                <div className="flex flex-wrap items-center gap-4 px-4 py-5 md:px-6">
+                                    <Avatar className="h-12 w-12 shrink-0 rounded-none border border-border">
+                                        <AvatarImage src={applicantProfile?.profile_picture_url || undefined} />
+                                        <AvatarFallback className="rounded-none bg-page font-mono text-sm text-foreground">
+                                            {getInitials(applicantProfile?.full_name ?? 'Applicant')}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div className="min-w-0 flex-1">
+                                        <h1 className="truncate font-sans text-2xl font-bold tracking-[-0.02em] md:text-3xl">
+                                            {applicantProfile?.full_name ?? 'Applicant'}
+                                        </h1>
+                                        {applicantProfile?.email && (
+                                            <p className="mt-0.5 truncate font-mono text-xs text-muted-foreground">
+                                                {applicantProfile.email}
                                             </p>
-                                            <div className="flex items-center gap-2">
-                                                {application.application_type === 'board' && <Briefcase className="h-5 w-5" />}
-                                                {application.application_type === 'class' && <BookOpen className="h-5 w-5" />}
-                                                {application.application_type === 'project' && <Briefcase className="h-5 w-5" />}
-                                                <p className="text-lg font-semibold">
+                                        )}
+                                    </div>
+                                    <div className="shrink-0">{getStatusBadge(application.status)}</div>
+                                </div>
+
+                                {/* Filing information */}
+                                <div className="border-t border-hairline-faint px-4 py-5 md:px-6">
+                                    {/* Project/Class/Position name - full row */}
+                                    {((application.application_type === 'board' && application.board_position) ||
+                                        (application.application_type === 'class' && classData) ||
+                                        (application.application_type === 'project' && projectData)) && (
+                                            <div className="mb-4">
+                                                <p className={DOSSIER_LABEL}>
+                                                    {application.application_type === 'board' && 'Position'}
+                                                    {application.application_type === 'class' && 'Class'}
+                                                    {application.application_type === 'project' && 'Project'}
+                                                </p>
+                                                <p className="mt-1 font-sans text-lg font-bold">
                                                     {application.application_type === 'board' && application.board_position}
                                                     {application.application_type === 'class' && classData?.name}
                                                     {application.application_type === 'project' && projectData?.name}
                                                 </p>
                                             </div>
-                                        </div>
-                                    )}
-                                {/* Role (member/student/lead/teacher) and submission date */}
-                                <div className="grid grid-cols-2 gap-6">
-                                    {(application.application_type === 'class' && application.class_role) ||
-                                    (application.application_type === 'project' && application.project_role) ? (
-                                        <div className="space-y-1">
-                                            <p className="text-sm text-muted-foreground">Role</p>
-                                            <div className="flex items-center gap-2">
-                                                <BookUser className="h-5 w-5 text-muted-foreground" />
-                                                <p className="font-medium capitalize text-lg">
+                                        )}
+                                    {/* Role (member/student/lead/teacher) and submission date */}
+                                    <div className="grid grid-cols-2 gap-6">
+                                        {(application.application_type === 'class' && application.class_role) ||
+                                        (application.application_type === 'project' && application.project_role) ? (
+                                            <div>
+                                                <p className={DOSSIER_LABEL}>Role</p>
+                                                <p className="mt-1 font-mono text-sm capitalize">
                                                     {application.application_type === 'class' && application.class_role?.replace('_', ' ')}
                                                     {application.application_type === 'project' && application.project_role?.replace('_', ' ')}
                                                 </p>
                                             </div>
-                                        </div>
-                                    ) : null}
-                                    <div className="space-y-1">
-                                        <p className="text-sm text-muted-foreground">Submitted</p>
-                                        <div className="flex items-center gap-2">
-                                            <Calendar className="h-5 w-5 text-muted-foreground" />
-                                            <p className="font-medium text-lg">{format(new Date(application.created_at), 'MMM d, yyyy')}</p>
+                                        ) : null}
+                                        <div>
+                                            <p className={DOSSIER_LABEL}>Submitted</p>
+                                            <p className="mt-1 font-mono text-sm tabular-nums">
+                                                {format(new Date(application.created_at), 'MMM d, yyyy')}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* Application Responses */}
-                            <div className="bg-card border rounded-lg p-6 shadow-sm">
-                                <h2 className="text-xl font-semibold mb-4">Application Responses</h2>
-                                <div className="space-y-6">{renderApplicationFields()}</div>
-                            </div>
+                                {/* Q&A — application responses */}
+                                {renderApplicationFields()}
 
-                            {/* Documents - Sticky below class/project */}
-                            {(application.resume_url || application.transcript_url) && (
-                                <div>
-                                    <div className="bg-card border rounded-lg p-6 shadow-sm">
-                                        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                                            <FileText className="h-5 w-5" />
-                                            Documents
-                                        </h2>
-                                        <div className={`grid gap-6 ${application.resume_url && application.transcript_url ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                                {/* Documents */}
+                                {(application.resume_url || application.transcript_url) && (
+                                    <div className="border-t border-hairline-faint px-4 py-5 md:px-6">
+                                        <h3 className={DOSSIER_LABEL}>Documents</h3>
+                                        <div className="mt-3 flex flex-wrap gap-3">
                                             {application.resume_url && (
-                                                <Button
-                                                    variant="outline"
+                                                <button
+                                                    type="button"
                                                     onClick={() => handleOpenDocument(application.resume_url!)}
-                                                    className="w-full"
+                                                    className="group/doc inline-flex min-h-10 items-center gap-2 border border-border px-4 py-2 font-mono text-xs font-semibold uppercase tracking-[0.08em] text-foreground transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground"
                                                 >
-                                                    <ExternalLink className="h-4 w-4 mr-2" />
                                                     {isMobile ? 'Resume' : 'View Resume'}
-                                                </Button>
+                                                    <span aria-hidden className="transition-transform group-hover/doc:translate-x-0.5">→</span>
+                                                </button>
                                             )}
                                             {application.transcript_url && (
-                                                <Button
-                                                    variant="outline"
+                                                <button
+                                                    type="button"
                                                     onClick={() => handleOpenDocument(application.transcript_url!)}
-                                                    className="w-full"
+                                                    className="group/doc inline-flex min-h-10 items-center gap-2 border border-border px-4 py-2 font-mono text-xs font-semibold uppercase tracking-[0.08em] text-foreground transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground"
                                                 >
-                                                    <ExternalLink className="h-4 w-4 mr-2" />
                                                     {isMobile ? 'Transcript' : 'View Transcript'}
-                                                </Button>
+                                                    <span aria-hidden className="transition-transform group-hover/doc:translate-x-0.5">→</span>
+                                                </button>
                                             )}
                                         </div>
                                     </div>
-                                </div>
-                            )}
+                                )}
 
-                            {/* Action Buttons */}
-                            {application.status === 'pending' && canReview && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.3 }}
-                                    className="bg-card border rounded-lg p-6 shadow-sm"
-                                >
-                                    <h2 className="text-xl font-semibold mb-4">Review Actions</h2>
-                                    <div className="flex gap-4">
-                                        <Button
-                                            variant="green"
-                                            className="flex-1 h-12 text-base"
-                                            onClick={handleAccept}
-                                        >
-                                            <CheckCircle className="h-5 w-5 mr-2" />
-                                            Accept Application
-                                        </Button>
-                                        <Button
-                                            variant="red"
-                                            className="flex-1 h-12 text-base"
-                                            onClick={handleReject}
-                                        >
-                                            <XCircle className="h-5 w-5 mr-2" />
-                                            Reject Application
-                                        </Button>
-                                    </div>
-                                </motion.div>
-                            )}
+                                {/* Reviewer actions — ruled-off footer strip */}
+                                {application.status === 'pending' && canReview && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.3 }}
+                                        className="hatch border-t border-border px-4 py-4 md:px-6"
+                                    >
+                                        <p className={DOSSIER_LABEL}>Review Actions</p>
+                                        <div className="mt-3 flex flex-col gap-3 md:flex-row">
+                                            <button
+                                                type="button"
+                                                onClick={handleAccept}
+                                                className="inline-flex h-12 flex-1 items-center justify-center border-2 border-border bg-page px-5 font-mono text-sm font-semibold uppercase tracking-[0.1em] text-foreground transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground"
+                                            >
+                                                <CheckCircle className="h-5 w-5 mr-2 shrink-0" />
+                                                Accept Application
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={handleReject}
+                                                className="inline-flex h-12 flex-1 items-center justify-center border-2 border-destructive bg-destructive px-5 font-mono text-sm font-semibold uppercase tracking-[0.1em] text-destructive-foreground transition-colors hover:border-foreground hover:bg-foreground hover:text-page"
+                                            >
+                                                <XCircle className="h-5 w-5 mr-2 shrink-0" />
+                                                Reject Application
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </div>
                         </motion.div>
 
                         {/* Right Column */}

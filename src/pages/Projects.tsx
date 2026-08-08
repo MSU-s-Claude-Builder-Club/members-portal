@@ -5,8 +5,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfile, type Project } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,7 +17,7 @@ import { EditModal } from '@/components/modals/EditModal';
 import { MembersListModal } from '@/components/modals/MembersListModal';
 import { ItemCard } from '@/components/ItemCard';
 import SemesterSelector from '@/components/SemesterSelector';
-import { Plus, Github, Calendar as CalendarIcon, Users, Briefcase, Crown, Eye, Edit, Mail } from 'lucide-react';
+import { Plus, Github, Calendar as CalendarIcon, Users, Eye, Edit, Mail } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/database.types';
 import type { MembershipInfo, ItemWithMembers } from '@/types/modal.types';
 import { escapeCsv } from '@/lib/utils';
@@ -27,6 +25,10 @@ import { escapeCsv } from '@/lib/utils';
 type Semester = Database['public']['Tables']['semesters']['Row'];
 
 type ProjectWithMembers = ItemWithMembers<Project>;
+
+/** Status chip base — mono uppercase micro-label per the design contract. */
+const CHIP_BASE =
+  'inline-flex items-center whitespace-nowrap border px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em]';
 
 const Projects = () => {
   const { user } = useAuth();
@@ -457,49 +459,88 @@ const Projects = () => {
 
     if (!status) return null;
 
+    // Status chips per the ink/outline/grey system — flip on the card's ink flood
+    const statusChipClass =
+      status.state === 'in_progress'
+        ? 'border-foreground bg-foreground text-page group-hover:border-page group-hover:bg-page group-hover:text-foreground'
+        : status.state === 'completed'
+          ? 'border-grey-3 text-grey-2'
+          : 'border-border text-foreground group-hover:border-page group-hover:text-page';
+
     const badges = [];
     if (isMember && !isMobile) {
       badges.push(
-        <Badge key="member" variant="outline" className="shrink-0 whitespace-nowrap">
+        <span
+          key="member"
+          className={`${CHIP_BASE} shrink-0 border-border text-foreground transition-colors group-hover:border-page group-hover:text-page`}
+        >
           {isLead ? 'Lead' : 'Member'}
-        </Badge>
+        </span>
       );
     }
     badges.push(
-      <Badge key="status" variant={status.variant}>
+      <span key="status" className={`${CHIP_BASE} shrink-0 transition-colors ${statusChipClass}`}>
         {status.label}
-      </Badge>
+      </span>
     );
 
     const metadata = [];
 
-    if (project.semesters) {
-      metadata.push({
-        icon: <CalendarIcon className="h-4 w-4" />,
-        text: `${project.semesters.code} - ${project.semesters.name}`,
-      });
-    }
+    // Mono meta row: semester code · member count · lead
+    metadata.push({
+      icon: null,
+      text: '',
+      render: () => (
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 tabular-nums">
+          {project.semesters && <span>{project.semesters.code}</span>}
+          {project.semesters && <span aria-hidden>·</span>}
+          <button
+            type="button"
+            onClick={() => modalState.openMembers(project)}
+            className="cursor-pointer underline decoration-transparent underline-offset-4 transition-colors hover:text-primary hover:decoration-primary"
+          >
+            {project.memberCount} {project.memberCount === 1 ? 'member' : 'members'}
+          </button>
+          {lead && (
+            <>
+              <span aria-hidden>·</span>
+              <span className="min-w-0">Lead: {lead.profile.full_name || lead.profile.email}</span>
+            </>
+          )}
+        </div>
+      ),
+    });
 
     if (project.client_name) {
       metadata.push({
-        icon: <Briefcase className="h-4 w-4" />,
-        text: `Client: ${project.client_name}`,
+        icon: null,
+        text: '',
+        render: () => <div>Client: {project.client_name}</div>,
       });
     }
 
-    if (lead) {
+    // Only show GitHub link if project has started
+    if (project.github_project_id && !isMobile) {
       metadata.push({
-        icon: <Crown className="h-4 w-4 text-yellow-500" />,
-        text: `Lead: ${lead.profile.full_name || lead.profile.email}`,
+        icon: null,
+        text: '',
+        render: () => (
+          <a
+            href={`https://github.com/orgs/claude-msu/projects/${project.github_project_id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex max-w-full items-center gap-1.5 transition-colors hover:text-primary"
+          >
+            <span className="truncate">
+              github.com/orgs/claude-msu/projects/{project.github_project_id}
+            </span>
+            <span aria-hidden className="shrink-0 transition-transform group-hover:translate-x-0.5">
+              →
+            </span>
+          </a>
+        ),
       });
     }
-
-    metadata.push({
-      icon: <Users className="h-4 w-4 group-hover:text-orange-600 transition-colors duration-400" />,
-      text: `${project.memberCount} ${project.memberCount === 1 ? 'member' : 'members'}`,
-      interactive: true,
-      onClick: () => modalState.openMembers(project),
-    });
 
     const actions = [];
 
@@ -534,17 +575,6 @@ const Projects = () => {
       });
     }
 
-    // Only show GitHub button if project has started
-    if (project.github_project_id && !isMobile) {
-      actions.push({
-        label: 'View on GitHub',
-        onClick: () => window.open(`https://github.com/orgs/claude-msu/projects/${project.github_project_id}`, '_blank'),
-        icon: <Github className="h-4 w-4 mr-2" />,
-        variant: isBoardOrAbove ? 'default' : 'outline',
-      });
-    }
-
-
     return (
       <ItemCard
         title={project.name}
@@ -561,64 +591,79 @@ const Projects = () => {
     );
   };
 
-  return (
-    <div className="p-6 w-full h-full overflow-y-auto">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold`}>Projects</h1>
-          <p className="text-muted-foreground">Club projects</p>
-        </div>
-        {isBoardOrAbove && (
-          <Button onClick={() => setIsCreateModalOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Project
-          </Button>
-        )}
+  const renderSection = (label: string, projects: ProjectWithMembers[]) => (
+    <section>
+      <div className="mb-3 flex items-baseline justify-between gap-4">
+        <h2 className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+          {label}
+        </h2>
+        <span className="font-mono text-[11px] tabular-nums text-grey-3">
+          {String(projects.length).padStart(2, '0')}
+        </span>
       </div>
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(375px,1fr))]">
+        {projects.map(project => (
+          <div key={project.id} className="min-w-0 w-full">
+            {renderProjectCard(project)}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+
+  const projectCount = inProgress.length + available.length + completed.length;
+
+  return (
+    <div className="h-full w-full overflow-y-auto p-6 md:p-10">
+      {/* Page header */}
+      <header className="border-b border-border pb-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+              Projects
+            </p>
+            <h1 className="mt-2 font-mono text-3xl font-extrabold tracking-[-0.03em] md:text-4xl">
+              Project board
+            </h1>
+            <p className="mt-3 font-mono text-xs tabular-nums text-muted-foreground">
+              {loading
+                ? 'Loading projects...'
+                : `${projectCount} ${projectCount === 1 ? 'project' : 'projects'} · ${inProgress.length} in progress · ${available.length} available · ${completed.length} completed`}
+            </p>
+          </div>
+          {isBoardOrAbove && (
+            <Button onClick={() => setIsCreateModalOpen(true)} className="shrink-0">
+              <Plus className="h-4 w-4 mr-2" />
+              Create Project
+            </Button>
+          )}
+        </div>
+      </header>
 
       {loading ? (
-        <Card className="mt-6">
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">Loading projects...</p>
-          </CardContent>
-        </Card>
+        <div className="mt-6 border border-border p-8">
+          <p className="text-center font-mono text-sm text-muted-foreground">Loading projects...</p>
+        </div>
       ) : available.length === 0 && inProgress.length === 0 && completed.length === 0 ? (
-        <Card className="mt-6">
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">No projects at this time.</p>
-          </CardContent>
-        </Card>
+        <div className="mt-6 border border-dashed border-grey-3 p-8 text-center">
+          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+            No projects
+          </p>
+          <p className="mt-2 text-sm text-muted-foreground">No projects at this time.</p>
+          {isBoardOrAbove && (
+            <Button onClick={() => setIsCreateModalOpen(true)} className="mt-4">
+              <Plus className="h-4 w-4 mr-2" />
+              Create Project
+            </Button>
+          )}
+        </div>
       ) : (
-        <div className="mt-6 space-y-6">
-          {inProgress.length > 0 && (
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(375px,1fr))]">
-              {inProgress.map(project => (
-                <div key={project.id} className="min-w-0 w-full">
-                  {renderProjectCard(project)}
-                </div>
-              ))}
-            </div>
-          )}
+        <div className="mt-6 space-y-8">
+          {inProgress.length > 0 && renderSection('In progress', inProgress)}
 
-          {available.length > 0 && (
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(375px,1fr))]">
-              {available.map(project => (
-                <div key={project.id} className="min-w-0 w-full">
-                  {renderProjectCard(project)}
-                </div>
-              ))}
-            </div>
-          )}
+          {available.length > 0 && renderSection('Available', available)}
 
-          {completed.length > 0 && (
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(375px,1fr))]">
-              {completed.map(project => (
-                <div key={project.id} className="min-w-0 w-full">
-                  {renderProjectCard(project)}
-                </div>
-              ))}
-            </div>
-          )}
+          {completed.length > 0 && renderSection('Completed', completed)}
         </div>
       )}
 
@@ -733,8 +778,8 @@ const Projects = () => {
                         .filter(m => m.role === 'lead')
                         .map(m => (
                           <div key={m.id} className="flex items-center gap-2">
-                            <span className="font-semibold">{m.profile.full_name || 'No name'}</span>
-                            <span className="text-xs text-muted-foreground">{m.profile.email}</span>
+                            <span className="font-semibold text-foreground">{m.profile.full_name || 'No name'}</span>
+                            <span className="font-mono text-xs text-muted-foreground">{m.profile.email}</span>
                           </div>
                         ))}
                     </div>
@@ -751,19 +796,22 @@ const Projects = () => {
               return projectHasStarted ? [{
                 title: 'GitHub Project',
                 content: (
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start"
+                  <button
+                    type="button"
                     onClick={() =>
                       window.open(
                         `https://github.com/orgs/claude-msu/projects/${modalState.selectedItem!.github_project_id}`,
                         '_blank'
                       )
                     }
+                    className="group/gh inline-flex w-full items-center justify-between gap-2 border border-border px-4 py-2.5 font-mono text-xs font-semibold uppercase tracking-[0.08em] text-foreground transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground"
                   >
-                    <Github className="h-4 w-4 mr-2" />
-                    {`GitHub Project #${modalState.selectedItem!.github_project_id}`}
-                  </Button>
+                    <span className="flex items-center gap-2">
+                      <Github className="h-4 w-4" />
+                      {`GitHub Project #${modalState.selectedItem!.github_project_id}`}
+                    </span>
+                    <span aria-hidden className="transition-transform group-hover/gh:translate-x-0.5">→</span>
+                  </button>
                 ),
               }] : [];
             })(),

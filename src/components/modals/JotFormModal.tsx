@@ -63,21 +63,23 @@ export const JotFormModal = ({ open, onClose }: JotFormModalProps) => {
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="max-w-[85vw] h-[90vh] flex flex-col rounded-md">
-                <DialogHeader>
-                    <DialogTitle>Weekly Check-in Form</DialogTitle>
-                    <DialogDescription>
+            <DialogContent className="flex h-[90vh] max-w-[85vw] flex-col gap-0 rounded-none border border-border bg-page p-0 shadow-[8px_8px_0_0_hsl(var(--foreground))]">
+                <DialogHeader className="hatch shrink-0 space-y-1 border-b border-border px-6 py-4 text-left">
+                    <DialogTitle className="font-mono text-lg font-extrabold tracking-[-0.02em]">
+                        Weekly Check-in Form
+                    </DialogTitle>
+                    <DialogDescription className="font-mono text-xs text-muted-foreground">
                         Your name and email are pre-filled. Complete and submit the form below.
                     </DialogDescription>
                 </DialogHeader>
 
                 {!isReady ? (
-                    <div className="py-8 text-center text-muted-foreground">
+                    <div className="p-8 text-center font-mono text-sm text-muted-foreground">
                         Please sign in to submit the weekly check-in form.
                     </div>
                 ) : (
-                    <div className="flex flex-col flex-1 min-h-0 gap-3">
-                        <div className="flex-1 min-h-[480px] rounded-md border bg-muted/30 overflow-hidden">
+                    <div className="flex min-h-0 flex-1 flex-col p-4">
+                        <div className="min-h-[480px] flex-1 overflow-hidden border border-border bg-page">
                             <iframe
                                 title="Weekly check-in form"
                                 src={embedUrl}

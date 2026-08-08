@@ -21,6 +21,10 @@ interface SemesterSelectorProps {
   required?: boolean;
 }
 
+// Mono chip trigger per system: hairline border, mono uppercase, tint wash on hover
+const chipTriggerClasses =
+  'h-auto w-full justify-between rounded-none border border-border bg-transparent px-3 py-1.5 font-mono text-xs uppercase tracking-[0.08em] transition-colors hover:bg-tint';
+
 const SemesterSelector = ({ value, onSelect, required = false }: SemesterSelectorProps) => {
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,12 +79,14 @@ const SemesterSelector = ({ value, onSelect, required = false }: SemesterSelecto
     setShowCreateModal(false);
   };
 
+  const selectedSemester = semesters.find(s => s.id === value);
+
   if (loading) {
     return (
       <div className="space-y-2">
         <Label required={required}>Term</Label>
         <Select disabled>
-          <SelectTrigger>
+          <SelectTrigger className={chipTriggerClasses}>
             <SelectValue placeholder="Loading terms..." />
           </SelectTrigger>
         </Select>
@@ -100,29 +106,36 @@ const SemesterSelector = ({ value, onSelect, required = false }: SemesterSelecto
           onValueChange={handleSelect}
           required={required}
         >
-          <SelectTrigger>
-            <SelectValue placeholder={semesters.length === 0 ? "No terms available" : "Select term"} />
+          <SelectTrigger className={chipTriggerClasses}>
+            {/* The chip reads the current semester CODE; placeholder otherwise */}
+            <SelectValue placeholder={semesters.length === 0 ? "No terms available" : "Select term"}>
+              {selectedSemester?.code}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {semesters.length === 0 ? (
-              <div className="p-2 text-sm text-muted-foreground text-center">
+              <div className="p-2 text-center font-mono text-xs text-muted-foreground">
                 No terms available. Create one below.
               </div>
             ) : (
               semesters.map((semester) => (
-                <SelectItem key={semester.id} value={semester.id}>
+                <SelectItem
+                  key={semester.id}
+                  value={semester.id}
+                  className="font-mono text-xs data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                >
                   {semester.code} - {semester.name}
                 </SelectItem>
               ))
             )}
-            <div className="border-t mt-1 pt-1">
+            <div className="mt-1 border-t border-border pt-1">
               <Button
                 type="button"
                 variant="ghost"
-                className="w-full justify-start text-sm h-8"
+                className="h-8 w-full justify-start rounded-none font-mono text-xs uppercase tracking-[0.08em] hover:bg-tint"
                 onClick={() => setShowCreateModal(true)}
               >
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="mr-2 h-4 w-4" />
                 Add New Term
               </Button>
             </div>

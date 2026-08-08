@@ -4,8 +4,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,7 +19,6 @@ import {
 } from '@/components/ui/popover';
 import { DetailModal } from '@/components/modals/DetailModal';
 import { EditModal } from '@/components/modals/EditModal';
-import { ItemCard } from '@/components/ItemCard';
 import { Plus, Calendar as CalendarIcon, MapPin, Users, Trophy, Eye, Edit, QrCode, Clock, MailCheck, X, CheckCircle, Mail } from 'lucide-react';
 import { FaGoogle, FaApple } from 'react-icons/fa';
 import { format } from 'date-fns';
@@ -43,6 +40,21 @@ const TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
   };
 });
 
+/* DESIGN.md recipes — status chips (§5), CTAs (§5), eyebrows (§3) */
+const CHIP_BASE =
+  'inline-flex items-center whitespace-nowrap border px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em]';
+const CTA_BASE =
+  'inline-flex min-h-[40px] items-center justify-center gap-2 px-4 py-2 font-mono text-xs font-semibold uppercase tracking-[0.1em] transition-colors duration-200 motion-reduce:transition-none disabled:pointer-events-none disabled:opacity-50';
+const CTA_PRIMARY = `${CTA_BASE} border-2 border-border bg-page text-foreground hover:border-primary hover:bg-primary hover:text-primary-foreground`;
+const CTA_QUIET = `${CTA_BASE} border border-border bg-page text-foreground hover:bg-tint`;
+const CTA_DANGER = `${CTA_BASE} border-2 border-destructive bg-destructive text-destructive-foreground hover:border-foreground hover:bg-foreground hover:text-page`;
+const EYEBROW =
+  'font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground';
+const CAL_LINK =
+  'group/cal flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left font-mono text-[11px] font-medium uppercase tracking-[0.08em] transition-colors duration-200 hover:bg-tint hover:text-primary motion-reduce:transition-none';
+const PICKER_TRIGGER =
+  'w-full justify-start border border-input bg-page px-3 font-mono text-sm font-normal text-foreground hover:bg-tint hover:text-foreground';
+
 const Events = () => {
   const { user } = useAuth();
   const { role, isBoardOrAbove, userEvents, eventsLoading, refreshEvents } = useProfile();
@@ -60,6 +72,9 @@ const Events = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [generatingQR, setGeneratingQR] = useState<string | null>(null);
   const [saveLoading, setSaveLoading] = useState(false);
+
+  // Header meta — receipts from the ledger already computed above
+  const upcomingCount = events.filter(e => new Date(e.event_date) > new Date()).length;
 
   // Form state
   const [name, setName] = useState('');
@@ -632,6 +647,16 @@ const Events = () => {
     return 'Internal Meeting';
   };
 
+  // Status chip per DESIGN.md §5: live/today = orange fill; upcoming = outline
+  const getEventChipClass = (event: Event) => {
+    const now = new Date();
+    const eventDate = new Date(event.event_date);
+    if (eventDate <= now || eventDate.toDateString() === now.toDateString()) {
+      return `${CHIP_BASE} border-primary bg-primary text-primary-foreground`;
+    }
+    return `${CHIP_BASE} border-border text-foreground`;
+  };
+
   const renderEventCard = (event: Event) => {
     const isFull = isEventFull(event);
     const userAttendance = userAttendanceData?.[event.id];
@@ -640,251 +665,337 @@ const Events = () => {
     const attendanceCount = attendanceCounts?.[event.id] || 0;
     const eventHasStarted = new Date(event.event_date) <= new Date();
     const calendarLinks = generateCalendarLinks(event);
+    const eventDate = new Date(event.event_date);
+    const capacityPct = event.max_attendance > 0
+      ? Math.min(100, Math.round((attendanceCount / event.max_attendance) * 100))
+      : 0;
+    const memberHasRsvpAction = !isBoardOrAbove && event.rsvp_required && !eventHasStarted;
 
-    const badges = [
-      <Badge
-        key="type"
-        variant={event.rsvp_required ? 'secondary' : 'default'}
-        className="shrink-0 whitespace-nowrap"
-      >
-        {getEventTypeLabel(event)}
-      </Badge>,
-    ];
-
-    const metadata = [
-      {
-        icon: <CalendarIcon className="h-4 w-4 group-hover:text-orange-600 transition-colors" />,
-        text: format(new Date(event.event_date), isMobile ? 'MMM d, h:mm a' : 'PPP p'),
-        interactive: true,
-        onClick: () => { },
-        render: () => (
-          <Popover key="calendar-popover">
-            <PopoverTrigger asChild>
-              <div className="flex items-center gap-2 cursor-pointer group w-fit">
-                <CalendarIcon className="h-4 w-4 group-hover:text-orange-600 transition-colors" />
-                <span className="underline decoration-transparent group-hover:decoration-orange-600 group-hover:text-orange-600 transition-all">
-                  {format(new Date(event.event_date), isMobile ? 'MMM d, h:mm a' : 'PPP p')}
-                </span>
-              </div>
-            </PopoverTrigger>
-            <PopoverContent className="w-48 p-2" align={isMobile ? "start" : "end"}>
-              <div className="space-y-1">
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start gap-2 hover:bg-orange-50 dark:hover:bg-orange-700/20 hover:text-orange-600 transition-colors"
-                  onClick={() => window.open(calendarLinks.google, '_blank')}
-                >
-                  <FaGoogle className="h-4 w-4" />
-                  <span className="text-sm">Add to Google</span>
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start gap-2 hover:bg-orange-50 dark:hover:bg-orange-700/20 hover:text-orange-600 transition-colors"
-                  onClick={() => calendarLinks.apple()}
-                >
-                  <FaApple className="h-4 w-4" />
-                  <span className="text-sm">Add to Apple</span>
-                </Button>
-              </div>
-            </PopoverContent>
-          </Popover>
-        ),
-      },
-      {
-        icon: <MapPin className="h-4 w-4" />,
-        text: event.location,
-      },
-    ];
-
-    if (event.points > 0) {
-      metadata.push({
-        icon: <Trophy className="h-4 w-4" />,
-        text: `+${event.points} points`,
-      });
-    }
-
-    if (event.rsvp_required) {
-      metadata.push({
-        icon: <Users className="h-4 w-4" />,
-        text: `${attendanceCount} / ${event.max_attendance} RSVPs`,
-      });
-    }
-
-    const actions = [];
-
-    if (isBoardOrAbove) {
-      actions.push({
-        label: isMobile ? 'Edit' : 'Edit Details',
-        onClick: () => modalState.open(event, event.id),
-        icon: <Edit className="h-4 w-4 mr-2" />,
-        variant: 'outline' as const,
-      });
-
-      const copyEventEmailsCsv = async () => {
-        const emailSet = new Set<string>();
-        if (event.rsvp_required) {
-          const { data: attendance } = await supabase
-            .from('event_attendance')
-            .select('user_id')
-            .eq('event_id', event.id)
-            .not('rsvped_at', 'is', null);
-          const userIds = [...new Set((attendance ?? []).map(a => a.user_id))];
-          if (userIds.length > 0) {
-            const { data: profiles } = await supabase
-              .from('profiles')
-              .select('email')
-              .in('id', userIds)
-              .or('is_banned.is.null,is_banned.eq.false');
-            (profiles ?? []).forEach(p => emailSet.add(p.email));
-          }
-        } else {
-          const { data: roleRows } = await supabase
-            .from('user_roles')
-            .select('user_id')
-            .in('role', event.allowed_roles);
-          const userIds = [...new Set((roleRows ?? []).map(r => r.user_id))];
-          if (userIds.length > 0) {
-            const { data: profiles } = await supabase
-              .from('profiles')
-              .select('email')
-              .in('id', userIds)
-              .or('is_banned.is.null,is_banned.eq.false');
-            (profiles ?? []).forEach(p => emailSet.add(p.email));
-          }
+    const copyEventEmailsCsv = async () => {
+      const emailSet = new Set<string>();
+      if (event.rsvp_required) {
+        const { data: attendance } = await supabase
+          .from('event_attendance')
+          .select('user_id')
+          .eq('event_id', event.id)
+          .not('rsvped_at', 'is', null);
+        const userIds = [...new Set((attendance ?? []).map(a => a.user_id))];
+        if (userIds.length > 0) {
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('email')
+            .in('id', userIds)
+            .or('is_banned.is.null,is_banned.eq.false');
+          (profiles ?? []).forEach(p => emailSet.add(p.email));
         }
-        if (event.allowed_roles.includes('prospect')) {
-          const { data: prospectRoles } = await supabase
-            .from('user_roles')
-            .select('user_id')
-            .eq('role', 'prospect');
-          const prospectIds = [...new Set((prospectRoles ?? []).map(r => r.user_id))];
-          if (prospectIds.length > 0) {
-            const { data: profiles } = await supabase
-              .from('profiles')
-              .select('email')
-              .in('id', prospectIds)
-              .or('is_banned.is.null,is_banned.eq.false');
-            (profiles ?? []).forEach(p => emailSet.add(p.email));
-          }
-        }
-        const emails = [...emailSet];
-        if (emails.length === 0) {
-          toast({ title: 'No emails', description: 'No invited member emails to copy for this event.', variant: 'destructive' });
-          return;
-        }
-        void navigator.clipboard.writeText(emails.map(escapeCsv).join(',')).then(() => {
-          toast({ title: 'Copied', description: `${emails.length} email${emails.length === 1 ? '' : 's'} copied to clipboard` });
-        });
-      };
-      actions.push({
-        label: 'Copy invited emails as CSV',
-        onClick: () => void copyEventEmailsCsv(),
-        icon: <Mail className="h-4 w-4" />,
-        variant: 'default' as const,
-        size: 'icon',
-      });
-
-      if (!isMobile) {
-        actions.push({
-          label: generatingQR === event.id ? 'Generating...' : 'Generate QR Code',
-          onClick: () => handleGenerateQR(event),
-          icon: <QrCode className="h-4 w-4 mr-2" />,
-          variant: 'default' as const,
-          loading: generatingQR === event.id,
-        });
-      }
-    }
-
-    else {
-      if (event.rsvp_required && !eventHasStarted) {
-        if (hasAttended) {
-          // User has already attended - show attended status
-          actions.push({
-            label: 'Attended',
-            icon: <CheckCircle className="h-4 w-4 mr-2" />,
-            onClick: () => { }, // No action needed
-            variant: 'secondary' as const,
-            disabled: true,
-          });
-        } else if (hasRSVPed) {
-          // User has RSVPed but not attended - allow cancellation
-          actions.push({
-            label: isMobile ? 'Cancel' : 'Cancel RSVP',
-            icon: <X className="h-4 w-4 mr-2" />,
-            onClick: () => handleCancelRSVP(event.id),
-            variant: 'destructive' as const,
-            disabled: false,
-          });
-        } else {
-          // User hasn't RSVPed - allow RSVPing
-          actions.push({
-            label: isFull ? 'Full' : 'RSVP',
-            icon: <MailCheck className="h-4 w-4 mr-2" />,
-            onClick: () => handleRSVP(event.id),
-            variant: 'outline' as const,
-            disabled: isFull,
-          });
+      } else {
+        const { data: roleRows } = await supabase
+          .from('user_roles')
+          .select('user_id')
+          .in('role', event.allowed_roles);
+        const userIds = [...new Set((roleRows ?? []).map(r => r.user_id))];
+        if (userIds.length > 0) {
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('email')
+            .in('id', userIds)
+            .or('is_banned.is.null,is_banned.eq.false');
+          (profiles ?? []).forEach(p => emailSet.add(p.email));
         }
       }
-
-      actions.push({
-        label: isMobile ? 'Details' : 'View Details',
-        onClick: () => modalState.open(event, event.id),
-        icon: <Eye className="h-4 w-4 mr-2" />,
-        variant: 'default' as const,
+      if (event.allowed_roles.includes('prospect')) {
+        const { data: prospectRoles } = await supabase
+          .from('user_roles')
+          .select('user_id')
+          .eq('role', 'prospect');
+        const prospectIds = [...new Set((prospectRoles ?? []).map(r => r.user_id))];
+        if (prospectIds.length > 0) {
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('email')
+            .in('id', prospectIds)
+            .or('is_banned.is.null,is_banned.eq.false');
+          (profiles ?? []).forEach(p => emailSet.add(p.email));
+        }
+      }
+      const emails = [...emailSet];
+      if (emails.length === 0) {
+        toast({ title: 'No emails', description: 'No invited member emails to copy for this event.', variant: 'destructive' });
+        return;
+      }
+      void navigator.clipboard.writeText(emails.map(escapeCsv).join(',')).then(() => {
+        toast({ title: 'Copied', description: `${emails.length} email${emails.length === 1 ? '' : 's'} copied to clipboard` });
       });
-    }
+    };
 
     return (
-      <ItemCard
-        title={event.name}
-        badges={badges}
-        metadata={metadata}
-        description={!isMobile ? event.description || undefined : undefined}
-        actions={actions}
-      />
+      <article className="flex h-full min-w-0 flex-col border border-border bg-page md:flex-row">
+        {/* DATE BLOCK — the machine voice */}
+        <div className="flex shrink-0 items-baseline gap-3 border-b border-hairline-faint px-4 py-2.5 md:w-[96px] md:flex-col md:items-center md:justify-center md:gap-1 md:border-b-0 md:border-r md:px-2 md:py-5">
+          <span className="font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            {format(eventDate, 'MMM')}
+          </span>
+          <span className="font-mono text-3xl font-bold leading-none tabular-nums text-foreground">
+            {format(eventDate, 'dd')}
+          </span>
+          <span className="font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-grey-2">
+            {format(eventDate, 'EEE')}
+          </span>
+        </div>
+
+        {/* DOCUMENT BODY */}
+        <div className="flex min-w-0 flex-1 flex-col gap-3 p-4 md:p-5">
+          <div className="flex items-start justify-between gap-3">
+            <span className={cn(getEventChipClass(event), 'shrink-0')}>
+              {getEventTypeLabel(event)}
+            </span>
+            {isBoardOrAbove && (
+              <button
+                type="button"
+                onClick={() => void copyEventEmailsCsv()}
+                title="Copy invited emails as CSV"
+                aria-label="Copy invited emails as CSV"
+                className="inline-flex h-8 w-8 shrink-0 items-center justify-center border border-border text-muted-foreground transition-colors duration-200 hover:border-primary hover:bg-primary hover:text-primary-foreground motion-reduce:transition-none"
+              >
+                <Mail className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+
+          <h3 className="break-words font-sans text-lg font-bold leading-snug text-foreground">
+            {event.name}
+          </h3>
+
+          {/* Mono meta row: time · location · points */}
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 font-mono text-xs tabular-nums text-muted-foreground">
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1.5 underline decoration-transparent transition-colors duration-200 hover:text-primary hover:decoration-primary motion-reduce:transition-none"
+                >
+                  <CalendarIcon className="h-3.5 w-3.5 shrink-0" />
+                  {format(new Date(event.event_date), isMobile ? 'MMM d, h:mm a' : 'PPP p')}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 border border-border p-0" align={isMobile ? 'start' : 'end'}>
+                <div className="divide-y divide-hairline-faint">
+                  <button
+                    type="button"
+                    className={CAL_LINK}
+                    onClick={() => window.open(calendarLinks.google, '_blank')}
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <FaGoogle className="h-3.5 w-3.5" />
+                      Add to Google
+                    </span>
+                    <span aria-hidden="true" className="transition-transform duration-200 group-hover/cal:translate-x-0.5 motion-reduce:transition-none">
+                      →
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    className={CAL_LINK}
+                    onClick={() => calendarLinks.apple()}
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <FaApple className="h-3.5 w-3.5" />
+                      Add to Apple
+                    </span>
+                    <span aria-hidden="true" className="transition-transform duration-200 group-hover/cal:translate-x-0.5 motion-reduce:transition-none">
+                      →
+                    </span>
+                  </button>
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            {event.location && (
+              <>
+                <span aria-hidden="true" className="text-grey-3">·</span>
+                <span className="inline-flex min-w-0 items-center gap-1.5">
+                  <MapPin className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">{event.location}</span>
+                </span>
+              </>
+            )}
+
+            {event.points > 0 && (
+              <>
+                <span aria-hidden="true" className="text-grey-3">·</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Trophy className="h-3.5 w-3.5 shrink-0" />
+                  +{event.points} points
+                </span>
+              </>
+            )}
+          </div>
+
+          {/* Capacity — tabular receipt + square progress bar */}
+          {event.rsvp_required && (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between gap-3 font-mono text-xs tabular-nums text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5">
+                  <Users className="h-3.5 w-3.5 shrink-0" />
+                  RSVPs
+                </span>
+                <span className="font-semibold text-foreground">
+                  {attendanceCount}/{event.max_attendance}
+                </span>
+              </div>
+              <div className="h-1.5 w-full bg-grey-4">
+                <div className="h-full bg-primary" style={{ width: `${capacityPct}%` }} />
+              </div>
+            </div>
+          )}
+
+          {!isMobile && event.description && (
+            <p className="line-clamp-3 whitespace-pre-line break-words text-sm leading-relaxed text-muted-foreground">
+              {event.description}
+            </p>
+          )}
+
+          {/* Actions — ruled off from the document body */}
+          <div className="mt-auto flex flex-col gap-2 border-t border-hairline-faint pt-3 md:flex-row md:flex-wrap">
+            {isBoardOrAbove ? (
+              <>
+                <button
+                  type="button"
+                  className={cn(CTA_QUIET, 'w-full md:w-auto')}
+                  onClick={() => modalState.open(event, event.id)}
+                >
+                  <Edit className="h-4 w-4" />
+                  {isMobile ? 'Edit' : 'Edit Details'}
+                </button>
+                {!isMobile && (
+                  <button
+                    type="button"
+                    className={cn(CTA_PRIMARY, 'w-full md:w-auto')}
+                    onClick={() => handleGenerateQR(event)}
+                    disabled={generatingQR === event.id}
+                  >
+                    <QrCode className="h-4 w-4" />
+                    {generatingQR === event.id ? 'Generating...' : 'Generate QR Code'}
+                  </button>
+                )}
+              </>
+            ) : (
+              <>
+                {event.rsvp_required && !eventHasStarted && (
+                  hasAttended ? (
+                    <button
+                      type="button"
+                      className={cn(CTA_QUIET, 'w-full md:w-auto')}
+                      onClick={() => { }}
+                      disabled
+                    >
+                      <CheckCircle className="h-4 w-4" />
+                      Attended
+                    </button>
+                  ) : hasRSVPed ? (
+                    <button
+                      type="button"
+                      className={cn(CTA_DANGER, 'w-full md:w-auto')}
+                      onClick={() => handleCancelRSVP(event.id)}
+                    >
+                      <X className="h-4 w-4" />
+                      {isMobile ? 'Cancel' : 'Cancel RSVP'}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className={cn(CTA_PRIMARY, 'w-full md:w-auto')}
+                      onClick={() => handleRSVP(event.id)}
+                      disabled={isFull}
+                    >
+                      <MailCheck className="h-4 w-4" />
+                      {isFull ? 'Full' : 'RSVP'}
+                    </button>
+                  )
+                )}
+                <button
+                  type="button"
+                  className={cn(memberHasRsvpAction ? CTA_QUIET : CTA_PRIMARY, 'w-full md:w-auto')}
+                  onClick={() => modalState.open(event, event.id)}
+                >
+                  <Eye className="h-4 w-4" />
+                  {isMobile ? 'Details' : 'View Details'}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </article>
     );
   };
 
   return (
-    <div className="p-6 w-full h-full overflow-y-auto">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold`}>Events</h1>
-          <p className="text-muted-foreground">Upcoming events</p>
+    <div className="h-full w-full overflow-y-auto p-6 md:p-10">
+      {/* PAGE HEADER — eyebrow / title / meta line (DESIGN.md §6) */}
+      <header className="border-b border-border pb-6">
+        <p className={EYEBROW}>Events</p>
+        <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
+          <h1 className="font-mono text-3xl font-extrabold tracking-[-0.03em] md:text-4xl">
+            Events
+          </h1>
+          {isBoardOrAbove && (
+            <button
+              type="button"
+              className={CTA_PRIMARY}
+              onClick={() => setIsCreateModalOpen(true)}
+            >
+              <Plus className="h-4 w-4" />
+              Create Event
+            </button>
+          )}
         </div>
-        {isBoardOrAbove && (
-          <Button onClick={() => setIsCreateModalOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Event
-          </Button>
-        )}
-      </div>
+        <p className="mt-3 font-mono text-xs tabular-nums text-muted-foreground">
+          {upcomingCount} upcoming · {events.length} on the ledger
+        </p>
+      </header>
 
       {eventsLoading ? (
-        <Card className="mt-6">
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">Loading events...</p>
-          </CardContent>
-        </Card>
-      ) : (events.length === 0) ? (
-        <Card className="mt-6">
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">No upcoming events at this time.</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-8 mt-6">
-          {/* Event Cards */}
-          {events.length > 0 && (
-            <div>
-              <div className="grid gap-4 grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(375px,1fr))]">
-                {events.map((event) => (
-                  <div key={event.id} className="min-w-0 w-full">
-                    {renderEventCard(event)}
-                  </div>
-                ))}
+        <div className="mt-6 space-y-0" aria-busy="true">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="-mt-px flex h-28 animate-pulse border border-border first:mt-0 motion-reduce:animate-none"
+            >
+              <div className="w-16 border-r border-hairline-faint bg-grey-4/40 md:w-[96px]" />
+              <div className="flex-1 space-y-3 p-5">
+                <div className="h-3 w-1/4 bg-grey-4/40" />
+                <div className="h-3 w-2/3 bg-grey-4/40" />
+                <div className="h-3 w-1/3 bg-grey-4/40" />
               </div>
+            </div>
+          ))}
+          <p className="sr-only">Loading events...</p>
+        </div>
+      ) : (events.length === 0) ? (
+        <div className="mt-6 border border-dashed border-grey-3 px-6 py-12 text-center">
+          <p className={EYEBROW}>No events on record</p>
+          <p className="mt-2 text-sm text-muted-foreground">No upcoming events at this time.</p>
+          {isBoardOrAbove && (
+            <button
+              type="button"
+              className={cn(CTA_PRIMARY, 'mt-5')}
+              onClick={() => setIsCreateModalOpen(true)}
+            >
+              <Plus className="h-4 w-4" />
+              Create Event
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="mt-6">
+          {/* THE EVENT LEDGER — hairline-collapsed document rows */}
+          {events.length > 0 && (
+            <div className="flex flex-col">
+              {events.map((event) => (
+                <div key={event.id} className="-mt-px w-full min-w-0 first:mt-0">
+                  {renderEventCard(event)}
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -934,7 +1045,7 @@ const Events = () => {
                 <Button
                   variant="secondary"
                   className={cn(
-                    'w-full justify-center text-left font-normal',
+                    PICKER_TRIGGER,
                     !date && 'text-muted-foreground'
                   )}
                 >
@@ -950,7 +1061,6 @@ const Events = () => {
                     setDate(selectedDate);
                     setCalendarOpen(false);
                   }}
-                  className='dark:text-white'
                   initialFocus
                 />
               </PopoverContent>
@@ -964,7 +1074,7 @@ const Events = () => {
                 <Button
                   variant="secondary"
                   className={cn(
-                    'w-full justify-center text-left font-normal',
+                    PICKER_TRIGGER,
                     !eventTime && 'text-muted-foreground'
                   )}
                 >
@@ -1058,8 +1168,8 @@ const Events = () => {
           )}
         </div>
 
-        <div className="space-y-3 border rounded-lg p-4 bg-muted/50">
-          <Label className="text-base">Event Options</Label>
+        <div className="space-y-3 border border-border p-4">
+          <Label>Event Options</Label>
 
           <div className="flex items-center space-x-2">
             <Checkbox
@@ -1088,7 +1198,7 @@ const Events = () => {
             </div>
           )}
 
-          <p className="text-xs text-muted-foreground">
+          <p className="border-t border-hairline-faint pt-3 font-mono text-[11px] text-muted-foreground">
             Open to:{' '}
             {rsvpRequired
               ? 'members, board, and e-board only'
@@ -1099,8 +1209,8 @@ const Events = () => {
         </div>
 
         {!modalState.selectedItem && (
-          <div className="space-y-3 border rounded-lg p-4 bg-muted/50">
-            <Label className="text-base">Recurring Event</Label>
+          <div className="space-y-3 border border-border p-4">
+            <Label>Recurring Event</Label>
 
             <div className="flex items-center space-x-2">
               <Checkbox
@@ -1114,7 +1224,7 @@ const Events = () => {
             </div>
 
             {isRecurring && (
-              <div className="space-y-4 ml-6">
+              <div className="ml-6 space-y-4 border-l border-hairline-faint pl-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="frequency">Frequency</Label>
@@ -1122,7 +1232,7 @@ const Events = () => {
                       id="frequency"
                       value={recurrenceFrequency}
                       onChange={(e) => setRecurrenceFrequency(e.target.value as 'daily' | 'weekly' | 'monthly')}
-                      className="flex h-10 w-full rounded-md border border-input bg-page px-3 py-2 text-sm ring-offset-page focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      className="flex h-10 w-full rounded-none border border-input bg-page px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
                     >
                       <option value="daily">Daily</option>
                       <option value="weekly">Weekly</option>
@@ -1142,7 +1252,7 @@ const Events = () => {
                         onChange={(e) => setRecurrenceInterval(parseInt(e.target.value) || 1)}
                         className="w-20"
                       />
-                      <span className="text-sm text-muted-foreground">
+                      <span className="font-mono text-xs text-muted-foreground">
                         {recurrenceFrequency === 'daily' ? 'day(s)' :
                           recurrenceFrequency === 'weekly' ? 'week(s)' : 'month(s)'}
                       </span>
@@ -1158,6 +1268,7 @@ const Events = () => {
                         type="radio"
                         id="endAfter"
                         name="endType"
+                        className="accent-primary"
                         checked={recurrenceEndType === 'after'}
                         onChange={() => setRecurrenceEndType('after')}
                       />
@@ -1168,6 +1279,7 @@ const Events = () => {
                         type="radio"
                         id="endOn"
                         name="endType"
+                        className="accent-primary"
                         checked={recurrenceEndType === 'on'}
                         onChange={() => setRecurrenceEndType('on')}
                       />
@@ -1185,7 +1297,7 @@ const Events = () => {
                         onChange={(e) => setRecurrenceOccurrences(parseInt(e.target.value) || 1)}
                         className="w-20"
                       />
-                      <span className="text-sm text-muted-foreground">occurrences</span>
+                      <span className="font-mono text-xs text-muted-foreground">occurrences</span>
                     </div>
                   ) : (
                     <Popover open={recurrenceEndCalendarOpen} onOpenChange={setRecurrenceEndCalendarOpen}>
@@ -1193,7 +1305,7 @@ const Events = () => {
                         <Button
                           variant="secondary"
                           className={cn(
-                            'w-full justify-start text-left font-normal',
+                            PICKER_TRIGGER,
                             !recurrenceEndDate && 'text-muted-foreground'
                           )}
                         >
@@ -1229,12 +1341,9 @@ const Events = () => {
           onClose={modalState.close}
           title={modalState.selectedItem.name}
           badges={[
-            <Badge
-              key="type"
-              variant={modalState.selectedItem.rsvp_required ? 'default' : 'secondary'}
-            >
+            <span key="type" className={getEventChipClass(modalState.selectedItem)}>
               {getEventTypeLabel(modalState.selectedItem)}
-            </Badge>,
+            </span>,
           ]}
           sections={[
             {
@@ -1258,7 +1367,7 @@ const Events = () => {
                   title: 'Points Reward',
                   icon: <Trophy className="h-4 w-4" />,
                   content: (
-                    <span className="font-semibold text-primary">
+                    <span className="font-mono font-semibold tabular-nums text-primary">
                       +{modalState.selectedItem.points} points
                     </span>
                   ),

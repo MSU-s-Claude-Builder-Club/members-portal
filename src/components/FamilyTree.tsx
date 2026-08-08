@@ -18,23 +18,12 @@ import type { Family, FamilyNode, MemberWithRole } from '@/types/modal.types';
 // ─────────────────────────────────────────────────────────────────────────────
 
 const STYLES = `
-    @keyframes ft-aqua-pulse {
-      0%, 100% { box-shadow: 0 0 16px hsl(var(--primary) / 0.5); }
-      50%      { box-shadow: 0 0 24px hsl(var(--primary) / 0.85); }
-    }
-    .ft-aqua-pulse {
-      animation: ft-aqua-pulse 2s ease-in-out infinite;
-      border-color: hsl(var(--primary)) !important;
-    }
-    @keyframes ft-search-top-glow {
-      0%, 100% { box-shadow: 0 0 14px hsl(var(--primary) / 0.75), 0 0 28px hsl(var(--primary) / 0.55), 0 0 44px hsl(var(--primary) / 0.4); }
-      50%      { box-shadow: 0 0 20px hsl(var(--primary) / 0.9), 0 0 40px hsl(var(--primary) / 0.7), 0 0 64px hsl(var(--primary) / 0.5); }
-    }
+    /* Search #1 result: hard primary outline — no glow, no blur */
     .ft-search-top-node {
-      animation: ft-search-top-glow 2.2s ease-in-out infinite;
+      outline: 2px solid hsl(var(--primary));
+      outline-offset: 3px;
     }
     .ft-canvas-bg {
-      background: linear-gradient(165deg, hsl(var(--muted)) 0%, hsl(var(--muted) / 0.6) 50%, hsl(var(--page)) 100%);
       /* Node sizes by depth: base = level 1 (kept as-is); root = base + step; each level steps down by --ft-node-step */
       --ft-node-base: 30px;
       --ft-node-step: 14px;
@@ -49,9 +38,6 @@ const STYLES = `
     }
     @media (min-width: 1536px) {
       .ft-canvas-bg { --ft-node-base: 52px; --ft-node-step: 24px; --ft-font-base: 0.9375rem; --ft-font-step: 0.125rem; }
-    }
-    .dark .ft-canvas-bg {
-      background: linear-gradient(165deg, hsl(220 18% 14%) 0%, hsl(220 18% 10%) 50%, hsl(220 18% 7%) 100%);
     }
 `;
 
@@ -132,12 +118,19 @@ function collectEdges(node: FamilyNode, acc: [string, string][] = []): [string, 
 // Three.js scene components (private)
 // ─────────────────────────────────────────────────────────────────────────────
 
-function TreeEdge({ from, to }: { from: NodePosition; to: NodePosition }) {
+/** Resolve the ink hairline token to a concrete color for the WebGL line material (three.js cannot parse CSS vars). */
+function getInkLineColor(): string {
+    if (typeof window === 'undefined') return 'hsl(0 0% 50%)';
+    const channels = getComputedStyle(document.documentElement).getPropertyValue('--border').trim();
+    return channels ? `hsl(${channels})` : 'hsl(0 0% 50%)';
+}
+
+function TreeEdge({ from, to, color }: { from: NodePosition; to: NodePosition; color: string }) {
     const points = useMemo(() => [
         new THREE.Vector3(from.x, from.y, 0),
         new THREE.Vector3(to.x, to.y, 0),
     ], [from, to]);
-    return <Line points={points} color="#6b7280" lineWidth={1.25} transparent opacity={0.25} />;
+    return <Line points={points} color={color} lineWidth={1} transparent opacity={0.3} />;
 }
 
 function TreeNodeCard({
@@ -165,17 +158,17 @@ function TreeNodeCard({
     const initials = (member.full_name ?? member.email ?? '?')
         .split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
     const isEBoard = member.role === 'e-board';
-    const isBoard = member.role === 'board';
     const depth = node.depth;
 
+    /* Monochrome ink chips: 1px hairline; e-board = double-weight ink; current user = the one orange emphasis. */
     const borderClass =
         isCurrentUser
-            ? 'ft-aqua-pulse border-[1.5px] border-primary'
+            ? 'border-2 border-primary'
             : isEBoard
-                ? 'border-[1.5px] border-amber-500 shadow shadow-amber-500/15'
-                : isBoard
-                    ? 'border-[1.5px] border-blue-500 shadow shadow-blue-500/15'
-                    : 'border-[1.5px] border-border bg-card shadow-sm hover:border-muted-foreground/60';
+                ? 'border-2 border-foreground'
+                : isHovered
+                    ? 'border border-foreground'
+                    : 'border border-border';
 
     /* Size steps down by level: root = base+step, level 1 = base, level 2 = base-step, etc.; min 18px */
     const sizeStyle = {
@@ -190,7 +183,7 @@ function TreeNodeCard({
         <Html position={[position.x, position.y, 0]} center zIndexRange={[10, 0]}>
             <div
                 data-family-tree-node
-                className={`flex flex-col items-center cursor-pointer select-none transition-transform duration-200 ${isHovered ? 'scale-110' : 'scale-100'}`}
+                className={`flex flex-col items-center cursor-pointer select-none transition-transform duration-200 motion-reduce:transition-none ${isHovered ? 'scale-110' : 'scale-100'}`}
                 onMouseEnter={onEnter}
                 onMouseLeave={onLeave}
                 onPointerDown={onNodePointerDown}
@@ -199,11 +192,11 @@ function TreeNodeCard({
             >
                 <div
                     style={sizeStyle}
-                    className={`rounded-full overflow-hidden flex items-center justify-center font-semibold bg-muted box-content ${borderClass} ${isSearchTop ? 'ft-search-top-node' : ''}`}
+                    className={`overflow-hidden flex items-center justify-center font-mono font-semibold box-content transition-colors duration-200 motion-reduce:transition-none ${isHovered ? 'bg-foreground' : 'bg-page'} ${borderClass} ${isSearchTop ? 'ft-search-top-node' : ''}`}
                 >
                     {member.profile_picture_url
                         ? <img src={member.profile_picture_url} alt="" className="w-full h-full object-cover" />
-                        : <span className="text-muted-foreground">{initials}</span>}
+                        : <span className={isHovered ? 'text-page' : 'text-muted-foreground'}>{initials}</span>}
                 </div>
             </div>
         </Html>
@@ -314,6 +307,8 @@ function FamilyScene({
     const hasChildren = family.tree.littles.length > 0;
     // Tighter autofit: scale so this family's content fills the view (small trees get slightly more padding)
     const paddingScale = hasChildren ? 1.12 : 1.6;
+    // Monochrome 1px ink connectors, resolved from the border token
+    const edgeColor = getInkLineColor();
 
     return (
         <>
@@ -322,7 +317,7 @@ function FamilyScene({
             <pointLight position={[0, 0, 10]} intensity={0.6} color="#ffffff" />
             {allEdges.map(([bigId, littleId]) => {
                 const from = positions.get(bigId), to = positions.get(littleId);
-                return from && to ? <TreeEdge key={`${bigId}-${littleId}`} from={from} to={to} /> : null;
+                return from && to ? <TreeEdge key={`${bigId}-${littleId}`} from={from} to={to} color={edgeColor} /> : null;
             })}
             {allNodes.map(node => {
                 const pos = positions.get(node.member.id);
@@ -568,9 +563,9 @@ export function FamilyTree({
             {/* No-relationships overlay */}
             {!hasRelationships && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-                    <div className="text-center space-y-2 opacity-50 px-8">
-                        <GitBranch className="h-8 w-8 mx-auto text-muted-foreground" />
-                        <p className="text-sm font-medium text-muted-foreground">No family connections yet</p>
+                    <div className="text-center space-y-2 px-8">
+                        <GitBranch className="h-7 w-7 mx-auto text-grey-3" />
+                        <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">No family connections yet</p>
                         {canManage && (
                             <p className="text-xs text-muted-foreground">
                                 Use the link button to connect bigs and littles
@@ -592,8 +587,8 @@ export function FamilyTree({
                                 title={`${f.root.full_name}'s Family`}
                                 className="group relative flex items-center justify-end"
                             >
-                                <div className={`rounded-full transition-all duration-300 ${i === activeFamilyIdx ? 'w-2.5 h-2.5 bg-primary shadow-sm' : 'w-2 h-2 bg-muted-foreground/40 hover:bg-muted-foreground/60'}`} />
-                                <span className="absolute right-full mr-2 px-2 py-1 rounded-md text-xs bg-popover text-popover-foreground border border-border shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                <div className={`transition-all duration-200 ${i === activeFamilyIdx ? 'w-2.5 h-2.5 bg-primary' : 'w-2 h-2 bg-grey-3 hover:bg-muted-foreground'}`} />
+                                <span className="absolute right-full mr-2 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] bg-page text-foreground border border-border whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                                     {f.root.full_name?.split(' ')[0]}'s Family
                                 </span>
                             </button>
@@ -604,8 +599,8 @@ export function FamilyTree({
                                 title="Orphans (not in a family)"
                                 className="group relative flex items-center justify-end"
                             >
-                                <div className={`rounded-full transition-all duration-300 ${activeFamilyIdx === families.length ? 'w-2.5 h-2.5 bg-primary shadow-sm' : 'w-2 h-2 bg-muted-foreground/40 hover:bg-muted-foreground/60'}`} />
-                                <span className="absolute right-full mr-2 px-2 py-1 rounded-md text-xs bg-popover text-popover-foreground border border-border shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                <div className={`transition-all duration-200 ${activeFamilyIdx === families.length ? 'w-2.5 h-2.5 bg-primary' : 'w-2 h-2 bg-grey-3 hover:bg-muted-foreground'}`} />
+                                <span className="absolute right-full mr-2 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] bg-page text-foreground border border-border whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                                     Orphans
                                 </span>
                             </button>
@@ -614,11 +609,11 @@ export function FamilyTree({
                 ) : null}
 
                 {/* Zoom rocker */}
-                <div data-no-pan className="absolute top-3 right-3 flex flex-col rounded-lg border border-border bg-card/95 shadow-sm overflow-hidden pointer-events-auto">
+                <div data-no-pan className="absolute top-3 right-3 flex flex-col border border-border bg-page overflow-hidden pointer-events-auto">
                     <button
                         type="button"
                         onClick={() => setZoom(f => Math.max(f / 1.25, 0.4))}
-                        className="p-2 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                        className="p-2 hover:bg-tint transition-colors text-muted-foreground hover:text-foreground"
                         title="Zoom in"
                     >
                         <ZoomIn className="h-4 w-4" />
@@ -627,7 +622,7 @@ export function FamilyTree({
                     <button
                         type="button"
                         onClick={() => setZoom(f => Math.min(f * 1.25, 3))}
-                        className="p-2 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                        className="p-2 hover:bg-tint transition-colors text-muted-foreground hover:text-foreground"
                         title="Zoom out"
                     >
                         <ZoomOut className="h-4 w-4" />
@@ -637,10 +632,10 @@ export function FamilyTree({
 
             {/* Keyboard hint */}
             {((hasRelationships && families.length > 0) || (orphans && orphans.length > 0)) && (families.length + (orphans?.length ? 1 : 0) > 1) && (
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 opacity-75 pointer-events-none text-muted-foreground text-xs">
-                    <kbd className="px-2 py-1 rounded border border-border bg-muted/50 font-mono text-base leading-none">↑</kbd>
-                    <kbd className="px-2 py-1 rounded border border-border bg-muted/50 font-mono text-base leading-none">↓</kbd>
-                    <span className="ml-0.5">switch families</span>
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 pointer-events-none text-muted-foreground">
+                    <kbd className="px-2 py-1 border border-border bg-page font-mono text-base leading-none">↑</kbd>
+                    <kbd className="px-2 py-1 border border-border bg-page font-mono text-base leading-none">↓</kbd>
+                    <span className="ml-0.5 font-mono text-[10px] uppercase tracking-[0.08em]">switch families</span>
                 </div>
             )}
         </div>

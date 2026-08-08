@@ -29,6 +29,10 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip';
 
+/** Inline `code` chip recipe, imposed on nested <code> elements (incl. legacy consumer classes). */
+const INLINE_CODE_CHIP =
+    '[&_code]:font-mono [&_code]:text-[0.85em] [&_code]:border [&_code]:border-hairline-faint [&_code]:bg-tint [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded-none';
+
 // ─── Section Heading ──────────────────────────────────────────────────────────
 
 /**
@@ -41,11 +45,11 @@ interface LectureSectionHeadingProps {
 }
 
 export const LectureSectionHeading = ({ number, title }: LectureSectionHeadingProps) => (
-    <div className="flex items-start gap-4 mt-8 mb-4 first:mt-6">
-        <span className="text-xs font-bold text-muted-foreground mt-1.5 w-6 shrink-0 text-right select-none">
+    <div className="flex items-start gap-3 mt-12 mb-5 first:mt-6">
+        <span className="font-mono text-xs font-medium tracking-[0.08em] tabular-nums text-grey-3 mt-1 w-7 shrink-0 text-right select-none">
             {number}
         </span>
-        <h2 className="text-xl font-bold tracking-tight text-foreground border-l-2 border-primary pl-4">
+        <h2 className="font-mono text-xl font-extrabold tracking-[-0.02em] leading-snug text-foreground border-l-2 border-primary pl-4">
             {title}
         </h2>
     </div>
@@ -55,7 +59,7 @@ export const LectureSectionHeading = ({ number, title }: LectureSectionHeadingPr
 
 /** Subsection heading — sits inside a section, no number. */
 export const LectureSubHeading = ({ title }: { title: string }) => (
-    <h3 className="text-base font-semibold text-foreground mt-6 mb-3">{title}</h3>
+    <h3 className="font-mono text-lg font-extrabold tracking-[-0.02em] text-foreground mt-8 mb-3">{title}</h3>
 );
 
 // ─── Paragraph ───────────────────────────────────────────────────────────────
@@ -65,7 +69,9 @@ export const LectureSubHeading = ({ title }: { title: string }) => (
  * LectureTip (term or code mode), LectureTerm, or plain <code> inline.
  */
 export const LectureP = ({ children }: { children: React.ReactNode }) => (
-    <p className="text-sm leading-7 text-muted-foreground">{children}</p>
+    <p className={`text-[16px] md:text-[17px] leading-[1.65] font-light text-ink-soft max-w-[720px] ${INLINE_CODE_CHIP}`}>
+        {children}
+    </p>
 );
 
 // ─── Term ─────────────────────────────────────────────────────────────────────
@@ -91,13 +97,13 @@ export const LectureTip = ({ children, tip, code = false, warn }: LectureTipProp
     const Trigger = code ? 'code' : 'span';
     const triggerClassName = code
         ? `
-          px-1.5 py-0.5 rounded text-xs font-mono cursor-help border transition-colors
+          font-mono text-[0.85em] border border-hairline-faint bg-tint px-1.5 py-0.5 rounded-none cursor-help transition-colors duration-200
           ${showWarn
-                ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
-                : 'bg-zinc-100 text-zinc-800 border-zinc-200 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700'
+                ? 'text-destructive font-medium hover:border-destructive'
+                : 'text-foreground hover:border-primary hover:text-primary'
             }
         `
-        : 'font-semibold text-foreground cursor-help border-b border-dotted border-muted-foreground/50 hover:border-foreground/50 transition-colors';
+        : 'font-medium text-foreground cursor-help underline decoration-dotted decoration-grey-3 underline-offset-4 hover:decoration-primary transition-colors duration-200';
 
     return (
         <Tooltip delayDuration={100}>
@@ -106,9 +112,9 @@ export const LectureTip = ({ children, tip, code = false, warn }: LectureTipProp
             </TooltipTrigger>
             <TooltipContent
                 side="top"
-                className={`max-w-xs text-xs leading-relaxed ${showWarn ? 'border-rose-300 bg-rose-50 text-rose-800 dark:bg-rose-950 dark:text-rose-200' : ''}`}
+                className={`max-w-xs font-mono text-xs leading-relaxed rounded-none ${showWarn ? 'border-destructive text-destructive' : ''}`}
             >
-                {showWarn && <AlertTriangle className="inline h-3 w-3 mr-1 text-rose-500" />}
+                {showWarn && <AlertTriangle className="inline h-3 w-3 mr-1 text-destructive" />}
                 {tip}
             </TooltipContent>
         </Tooltip>
@@ -124,32 +130,34 @@ interface LectureCalloutProps {
 
 const CALLOUT_STYLES = {
     tip: {
-        bg: 'bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800',
-        icon: <Lightbulb className="h-6 w-6 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />,
+        border: 'border-primary',
+        icon: <Lightbulb className="h-3.5 w-3.5 shrink-0" />,
         label: 'Tip',
-        labelColor: 'text-emerald-700 dark:text-emerald-400',
+        labelColor: 'text-primary',
     },
     warning: {
-        bg: 'bg-rose-50 border-rose-200 dark:bg-rose-950/30 dark:border-rose-800',
-        icon: <AlertTriangle className="h-6 w-6 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />,
+        border: 'border-destructive',
+        icon: <AlertTriangle className="h-3.5 w-3.5 shrink-0" />,
         label: 'Warning',
-        labelColor: 'text-rose-700 dark:text-rose-400',
+        labelColor: 'text-destructive',
     },
     info: {
-        bg: 'bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800',
-        icon: <Info className="h-6 w-6 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />,
+        border: 'border-foreground',
+        icon: <Info className="h-3.5 w-3.5 shrink-0" />,
         label: 'Note',
-        labelColor: 'text-blue-700 dark:text-blue-400',
+        labelColor: 'text-muted-foreground',
     },
 };
 
 export const LectureCallout = ({ type, children }: LectureCalloutProps) => {
     const s = CALLOUT_STYLES[type];
     return (
-        <div className={`my-6 flex items-center gap-3 rounded-xl border p-4 ${s.bg}`}>
-            {s.icon}
-            <div className="text-sm leading-relaxed text-foreground">
-                <span className={`font-semibold ${s.labelColor}`}>{s.label}: </span>
+        <div className={`my-6 border-l-2 ${s.border} pl-4 py-0.5`}>
+            <p className={`flex items-center gap-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.14em] mb-1.5 select-none ${s.labelColor}`}>
+                {s.icon}
+                {s.label}
+            </p>
+            <div className={`text-[15px] leading-relaxed font-light text-ink-soft max-w-[720px] ${INLINE_CODE_CHIP}`}>
                 {children}
             </div>
         </div>
@@ -182,7 +190,7 @@ export const LectureHeader = ({
             <motion.div
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-1.5 text-xs text-muted-foreground mb-6"
+                className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground mb-8"
             >
                 <BookOpen className="h-3.5 w-3.5" />
                 <button
@@ -213,25 +221,27 @@ export const LectureHeader = ({
                     Week {week}
                 </button>
                 <ChevronRight className="h-3 w-3" />
-                <span className="text-foreground font-medium">{session}</span>
+                <span className="text-foreground font-semibold">{session}</span>
             </motion.div>
 
             <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 }}
-                className="mb-6"
+                className="mb-8 pb-8 border-b border-border"
             >
-                <div className="flex items-center gap-4 mb-3">
-                    <div className="w-8 h-8 rounded-lg text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800 flex items-center justify-center">
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 border border-border text-primary flex items-center justify-center shrink-0">
                         {icon}
                     </div>
-                    <span className="text-sm font-bold uppercase tracking-widest text-orange-600 dark:text-orange-400">
+                    <span className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground tabular-nums">
                         Week {week} · {session}
                     </span>
                 </div>
-                <h1 className="text-3xl font-bold tracking-tight text-foreground mb-3">{title}</h1>
-                <p className="text-base text-muted-foreground leading-relaxed">{description}</p>
+                <h1 className="font-mono font-extrabold tracking-[-0.03em] text-[clamp(28px,4vw,40px)] leading-[1.1] text-foreground mb-3">
+                    {title}
+                </h1>
+                <p className="text-[16px] md:text-[17px] leading-[1.65] font-light text-ink-soft max-w-[720px]">{description}</p>
             </motion.div>
         </>
     );
@@ -246,14 +256,14 @@ export interface LectureFooterNavItem {
 
 function LectureLayoutFooter({ prev, next }: { prev?: LectureFooterNavItem; next?: LectureFooterNavItem }) {
     return (
-        <div className="mt-16 pt-8 border-t border-border flex items-center justify-between">
+        <div className="mt-16 pt-6 border-t border-border flex items-center justify-between gap-4">
             {prev ? (
                 <button
                     type="button"
                     onClick={prev.onClick}
-                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    className="group flex items-center gap-2 font-mono text-xs text-muted-foreground hover:text-foreground transition-colors text-left"
                 >
-                    <ArrowLeft className="h-4 w-4" />
+                    <ArrowLeft className="h-3.5 w-3.5 shrink-0 group-hover:-translate-x-0.5 transition-transform motion-reduce:transition-none" />
                     {prev.label}
                 </button>
             ) : (
@@ -263,10 +273,10 @@ function LectureLayoutFooter({ prev, next }: { prev?: LectureFooterNavItem; next
                 <button
                     type="button"
                     onClick={next.onClick}
-                    className="flex items-center gap-2 text-sm font-medium text-primary/80 hover:text-primary transition-colors"
+                    className="group flex items-center gap-2 font-mono text-xs font-semibold text-primary hover:text-accent-hover transition-colors text-right"
                 >
                     {next.label}
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="h-3.5 w-3.5 shrink-0 group-hover:translate-x-0.5 transition-transform motion-reduce:transition-none" />
                 </button>
             ) : (
                 <div />

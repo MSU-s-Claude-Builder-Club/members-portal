@@ -88,9 +88,9 @@ function MemberCombobox({
                 >
                     {selected ? (
                         <span className="flex items-center gap-2 min-w-0">
-                            <Avatar className="h-6 w-6 shrink-0">
-                                <AvatarImage src={selected.profile_picture_url ?? undefined} />
-                                <AvatarFallback className="text-xs bg-muted text-muted-foreground font-medium">
+                            <Avatar className="h-6 w-6 shrink-0 rounded-none">
+                                <AvatarImage src={selected.profile_picture_url ?? undefined} className="rounded-none" />
+                                <AvatarFallback className="rounded-none text-xs bg-muted text-muted-foreground font-medium">
                                     {getInitials(selected.full_name ?? selected.email ?? '?')}
                                 </AvatarFallback>
                             </Avatar>
@@ -130,9 +130,9 @@ function MemberCombobox({
                                         }}
                                         className="flex items-center gap-3 py-2"
                                     >
-                                        <Avatar className="h-8 w-8 shrink-0">
-                                            <AvatarImage src={m.profile_picture_url ?? undefined} />
-                                            <AvatarFallback className="text-xs bg-muted text-muted-foreground font-medium">
+                                        <Avatar className="h-8 w-8 shrink-0 rounded-none">
+                                            <AvatarImage src={m.profile_picture_url ?? undefined} className="rounded-none" />
+                                            <AvatarFallback className="rounded-none text-xs bg-muted text-muted-foreground font-medium">
                                                 {getInitials(m.full_name ?? m.email ?? '?')}
                                             </AvatarFallback>
                                         </Avatar>
@@ -375,13 +375,13 @@ export function ManageFamilyModal({ open, onClose, members }: Props) {
     return (
         <DialogPrimitive.Root open={open} onOpenChange={v => { if (!v) onClose(); }}>
             <DialogPrimitive.Portal>
-                <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+                <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-foreground/40 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
 
                 <DialogPrimitive.Content
                     className={cn(
                         'fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%]',
                         'flex w-[90vw] max-w-lg flex-col gap-4',
-                        'rounded-lg border bg-page p-6 shadow-lg',
+                        'border border-border bg-page p-6 shadow-[8px_8px_0_0_hsl(var(--foreground))]',
                         'duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out',
                         'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
                         'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
@@ -391,15 +391,15 @@ export function ManageFamilyModal({ open, onClose, members }: Props) {
                     )}
                 >
                     {/* Header */}
-                    <div className="flex flex-col space-y-1.5">
-                        <DialogPrimitive.Title className="text-lg font-semibold leading-none tracking-tight">
+                    <div className="hatch -mx-6 -mt-6 border-b border-border px-6 py-4">
+                        <DialogPrimitive.Title className="font-mono text-lg font-extrabold tracking-[-0.02em]">
                             Manage Big/Little Links
                         </DialogPrimitive.Title>
                     </div>
 
                     {/* ── Add new link ── */}
                     <div className="space-y-3">
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
                             Add New Link
                         </p>
                         <div className="flex items-center gap-2">
@@ -465,9 +465,9 @@ export function ManageFamilyModal({ open, onClose, members }: Props) {
                     {/* ── New connections (this session) ── */}
                     {newConnectionIds.length > 0 && (
                         <div className="space-y-2">
-                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
                                 New Connections
-                                <span className="ml-1.5 normal-case font-normal">
+                                <span className="ml-1.5 font-normal tabular-nums">
                                     ({newConnections.length})
                                 </span>
                             </p>
@@ -479,35 +479,35 @@ export function ManageFamilyModal({ open, onClose, members }: Props) {
                                     return (
                                         <div
                                             key={rel.id}
-                                            className="flex items-center gap-4 p-3 rounded-lg border bg-card hover:bg-card/60 transition-colors group"
+                                            className="flex items-center gap-4 border border-hairline-faint bg-page p-3 transition-colors hover:bg-tint group"
                                         >
                                             <div className="flex items-center gap-2 shrink-0">
-                                                <Avatar className="h-8 w-8 shrink-0">
-                                                    <AvatarImage src={big.profile_picture_url ?? undefined} />
-                                                    <AvatarFallback className="text-xs bg-muted text-muted-foreground font-medium">
+                                                <Avatar className="h-8 w-8 shrink-0 rounded-none border border-hairline-faint">
+                                                    <AvatarImage src={big.profile_picture_url ?? undefined} className="rounded-none" />
+                                                    <AvatarFallback className="rounded-none text-xs bg-muted text-muted-foreground font-medium">
                                                         {getInitials(big.full_name ?? big.email ?? '?')}
                                                     </AvatarFallback>
                                                 </Avatar>
-                                                <span className="text-sm font-medium whitespace-nowrap">
+                                                <span className="font-mono text-xs font-semibold whitespace-nowrap">
                                                     {big.full_name?.split(' ')[0] ?? big.email}
                                                 </span>
                                             </div>
                                             <ConnectionArrow />
                                             <div className="flex items-center gap-2 shrink-0">
-                                                <Avatar className="h-8 w-8 shrink-0">
-                                                    <AvatarImage src={little.profile_picture_url ?? undefined} />
-                                                    <AvatarFallback className="text-xs bg-muted text-muted-foreground font-medium">
+                                                <Avatar className="h-8 w-8 shrink-0 rounded-none border border-hairline-faint">
+                                                    <AvatarImage src={little.profile_picture_url ?? undefined} className="rounded-none" />
+                                                    <AvatarFallback className="rounded-none text-xs bg-muted text-muted-foreground font-medium">
                                                         {getInitials(little.full_name ?? little.email ?? '?')}
                                                     </AvatarFallback>
                                                 </Avatar>
-                                                <span className="text-sm text-muted-foreground whitespace-nowrap">
+                                                <span className="font-mono text-xs text-muted-foreground whitespace-nowrap">
                                                     {little.full_name?.split(' ')[0] ?? little.email}
                                                 </span>
                                             </div>
                                             <Button
                                                 size="icon"
                                                 variant="ghost"
-                                                className="h-8 w-8 shrink-0 ml-auto opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-600 hover:bg-red-600/10 transition-all"
+                                                className="h-8 w-8 shrink-0 ml-auto opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
                                                 onClick={() => handleUnlink(rel.id)}
                                                 disabled={deletingId === rel.id}
                                                 title="Remove connection"
@@ -528,10 +528,10 @@ export function ManageFamilyModal({ open, onClose, members }: Props) {
 
                     {/* ── Existing connections ── */}
                     <div className="space-y-2">
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
                             Existing Connections
                             {existingConnections.length > 0 && (
-                                <span className="ml-1.5 normal-case font-normal">
+                                <span className="ml-1.5 font-normal tabular-nums">
                                     ({existingConnections.length})
                                 </span>
                             )}
@@ -554,17 +554,17 @@ export function ManageFamilyModal({ open, onClose, members }: Props) {
                                     return (
                                         <div
                                             key={rel.id}
-                                            className="flex items-center gap-4 p-3 rounded-lg border bg-card hover:bg-card/60 transition-colors group"
+                                            className="flex items-center gap-4 border border-hairline-faint bg-page p-3 transition-colors hover:bg-tint group"
                                         >
                                             {/* Big side */}
                                             <div className="flex items-center gap-2 shrink-0">
-                                                <Avatar className="h-8 w-8 shrink-0">
-                                                    <AvatarImage src={big.profile_picture_url ?? undefined} />
-                                                    <AvatarFallback className="text-xs bg-muted text-muted-foreground font-medium">
+                                                <Avatar className="h-8 w-8 shrink-0 rounded-none border border-hairline-faint">
+                                                    <AvatarImage src={big.profile_picture_url ?? undefined} className="rounded-none" />
+                                                    <AvatarFallback className="rounded-none text-xs bg-muted text-muted-foreground font-medium">
                                                         {getInitials(big.full_name ?? big.email ?? '?')}
                                                     </AvatarFallback>
                                                 </Avatar>
-                                                <span className="text-sm font-medium whitespace-nowrap">
+                                                <span className="font-mono text-xs font-semibold whitespace-nowrap">
                                                     {big.full_name?.split(' ')[0] ?? big.email}
                                                 </span>
                                             </div>
@@ -573,13 +573,13 @@ export function ManageFamilyModal({ open, onClose, members }: Props) {
 
                                             {/* Little side */}
                                             <div className="flex items-center gap-2 shrink-0">
-                                                <Avatar className="h-8 w-8 shrink-0">
-                                                    <AvatarImage src={little.profile_picture_url ?? undefined} />
-                                                    <AvatarFallback className="text-xs bg-muted text-muted-foreground font-medium">
+                                                <Avatar className="h-8 w-8 shrink-0 rounded-none border border-hairline-faint">
+                                                    <AvatarImage src={little.profile_picture_url ?? undefined} className="rounded-none" />
+                                                    <AvatarFallback className="rounded-none text-xs bg-muted text-muted-foreground font-medium">
                                                         {getInitials(little.full_name ?? little.email ?? '?')}
                                                     </AvatarFallback>
                                                 </Avatar>
-                                                <span className="text-sm text-muted-foreground whitespace-nowrap">
+                                                <span className="font-mono text-xs text-muted-foreground whitespace-nowrap">
                                                     {little.full_name?.split(' ')[0] ?? little.email}
                                                 </span>
                                             </div>
@@ -588,7 +588,7 @@ export function ManageFamilyModal({ open, onClose, members }: Props) {
                                             <Button
                                                 size="icon"
                                                 variant="ghost"
-                                                className="h-8 w-8 shrink-0 ml-auto opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-600 hover:bg-red-600/10 transition-all"
+                                                className="h-8 w-8 shrink-0 ml-auto opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
                                                 onClick={() => handleUnlink(rel.id)}
                                                 disabled={deletingId === rel.id}
                                                 title="Remove connection"

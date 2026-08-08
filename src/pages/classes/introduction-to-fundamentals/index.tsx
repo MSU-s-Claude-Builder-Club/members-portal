@@ -1,188 +1,154 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, BookOpen, Zap, Users, Clock, ChevronRight } from 'lucide-react';
+import { ChevronDown, BookOpen, Zap, Clock, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { getCurrent } from '@/lib/semester';
 import {
     INTRODUCTION_TO_FUNDAMENTALS_BASE,
     WEEKS,
     type FundamentalsSessionData,
-    type FundamentalsWeekAccent,
 } from './weeks';
 
 // Week index follows club semester (Sunday week 0, then Sun–Sat weeks 1–12); getCurrent() clamps to published weeks below.
 type Session = FundamentalsSessionData;
 
-// ─── Session Card ─────────────────────────────────────────────────────────────
+// ─── Session Row ──────────────────────────────────────────────────────────────
 
 interface SessionCardProps {
     session: Session;
-    accent: FundamentalsWeekAccent;
 }
 
-const SessionCard = ({ session, accent: c }: SessionCardProps) => {
+const SessionCard = ({ session }: SessionCardProps) => {
     const navigate = useNavigate();
     const basePath = `${INTRODUCTION_TO_FUNDAMENTALS_BASE}/${session.slug}`;
-
-    const typeConfig = {
-        lecture: {
-            icon: <BookOpen className="h-3.5 w-3.5" />,
-            label: session.label,
-            cardBg: 'bg-white dark:bg-card',
-        },
-        activity: {
-            icon: <Zap className="h-3.5 w-3.5" />,
-            label: 'Activity',
-            cardBg: `${c.bg}`,
-        },
-    };
-
-    const config = typeConfig[session.type];
+    const isActivity = session.type === 'activity';
 
     return (
-        <motion.button
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
+        <button
             onClick={() => navigate(basePath)}
-            className={`
-        w-full text-left rounded-xl border p-4 transition-all duration-200 group
-        ${config.cardBg}
-        ${session.type === 'activity'
-                    ? c.border
-                    : 'hover:border-primary/50 dark:hover:border-white/50'}
-      `}
+            className="w-full text-left group flex items-start gap-4 py-3.5 pr-2 hover:bg-tint hover:pl-2 transition-all duration-200 motion-reduce:transition-none"
         >
-            <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                    {/* Type badge */}
-                    <div className="flex items-center gap-2 mb-2">
-                        <span className={`
-              inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full
-              ${session.type === 'activity' ? c.badge : 'bg-muted text-muted-foreground'}
-            `}>
-                            {config.icon}
-                            {config.label}
-                        </span>
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Clock className="h-3 w-3" />
-                            {session.duration}
-                        </span>
-                    </div>
+            {/* Session type label */}
+            <span
+                className={`flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] shrink-0 w-24 mt-0.5 ${
+                    isActivity ? 'text-foreground' : 'text-muted-foreground'
+                }`}
+            >
+                {isActivity ? <Zap className="h-3 w-3 shrink-0" /> : <BookOpen className="h-3 w-3 shrink-0" />}
+                {isActivity ? 'Activity' : session.label}
+            </span>
 
-                    {/* Title */}
-                    <h4 className="font-semibold text-sm text-foreground mb-1 leading-snug">
-                        {session.title}
-                    </h4>
+            <div className="flex-1 min-w-0">
+                {/* Title */}
+                <h4 className="font-mono text-sm font-bold tracking-[-0.01em] text-foreground leading-snug">
+                    {session.title}
+                </h4>
 
-                    {/* Description */}
-                    <p className="text-xs text-muted-foreground leading-relaxed mb-3 line-clamp-2">
-                        {session.description}
-                    </p>
+                {/* Description */}
+                <p className="text-xs font-light text-muted-foreground leading-relaxed mt-1 line-clamp-2 max-w-[68ch]">
+                    {session.description}
+                </p>
 
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-1">
-                        {session.tags.slice(0, 4).map((tag) => (
-                            <span
-                                key={tag}
-                                className="inline-flex items-center text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-mono"
-                            >
-                                {tag}
-                            </span>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Arrow */}
-                <ChevronRight className={`h-4 w-4 ${c.text} shrink-0 mt-1 group-hover:translate-x-0.5 transition-all`} />
+                {/* Meta: duration + tags */}
+                <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1.5 font-mono text-[10px] text-grey-2 tabular-nums">
+                    <span className="flex items-center gap-1 shrink-0">
+                        <Clock className="h-3 w-3" />
+                        {session.duration}
+                    </span>
+                    <span className="text-grey-3 select-none">·</span>
+                    <span className="text-grey-3">{session.tags.slice(0, 4).join(' · ')}</span>
+                </p>
             </div>
-        </motion.button>
+
+            {/* Arrow */}
+            <span
+                className="font-mono text-sm text-muted-foreground shrink-0 mt-0.5 group-hover:text-primary group-hover:translate-x-0.5 transition-all motion-reduce:transition-none"
+                aria-hidden="true"
+            >
+                →
+            </span>
+        </button>
     );
 };
 
-// ─── Week Folder ──────────────────────────────────────────────────────────────
+// ─── Week Row ─────────────────────────────────────────────────────────────────
 
 interface WeekFolderProps {
     week: (typeof WEEKS)[number];
     isOpen: boolean;
     onToggle: () => void;
     index: number;
+    /** The ONE orange marker on this page: the current semester week. */
+    isCurrent?: boolean;
 }
 
-const WeekFolder = ({ week, isOpen, onToggle, index }: WeekFolderProps) => {
-    const c = week.accent;
-
-    return (
-        <motion.div
-            id={`fundamentals-week-${week.number}`}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.06, duration: 0.3 }}
-            className="rounded-xl border border-border bg-card overflow-hidden scroll-my-6"
+const WeekFolder = ({ week, isOpen, onToggle, index, isCurrent }: WeekFolderProps) => (
+    <motion.div
+        id={`fundamentals-week-${week.number}`}
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.06, duration: 0.3 }}
+        className="border-b border-border scroll-my-6"
+    >
+        {/* Header / Toggle */}
+        <button
+            onClick={onToggle}
+            className="w-full flex items-center gap-4 py-4 pr-1 hover:bg-tint transition-colors duration-200 text-left group"
         >
-            {/* Header / Toggle */}
-            <button
-                onClick={onToggle}
-                className="w-full flex items-center gap-4 p-4 hover:bg-muted/40 transition-colors duration-150 text-left"
+            {/* Week number */}
+            <span className="font-mono text-sm font-extrabold tabular-nums text-grey-3 w-8 shrink-0 text-right select-none group-hover:text-foreground transition-colors">
+                {String(week.number).padStart(2, '0')}
+            </span>
+
+            {/* Icon */}
+            <span className="text-muted-foreground shrink-0 [&_svg]:h-4 [&_svg]:w-4">{week.icon}</span>
+
+            {/* Title block */}
+            <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 min-w-0">
+                    <h3 className="font-mono text-base font-extrabold tracking-[-0.02em] text-foreground truncate">
+                        {week.title}
+                    </h3>
+                    {isCurrent && <span className="w-2 h-2 bg-primary shrink-0" aria-label="Current week" />}
+                </div>
+                <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground mt-0.5 truncate">
+                    {week.subtitle}
+                </p>
+            </div>
+
+            {/* Session count */}
+            <span className="hidden md:inline font-mono text-[11px] text-muted-foreground tabular-nums shrink-0">
+                {week.sessions.length} sessions
+            </span>
+            <motion.div
+                animate={{ rotate: isOpen ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
             >
-                {/* Week number + icon */}
-                <div className={`
-          flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center
-          ${c.bg} ${c.text} ${c.border} border
-        `}>
-                    {week.icon}
-                </div>
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            </motion.div>
+        </button>
 
-                {/* Title block */}
-                <div className="flex-1 min-w-0">
-                    <p className="flex items-center gap-2 text-[11px] font-mono text-muted-foreground mb-0.5">
-                        <span>Week {week.number}</span>
-                        <span className={`${c.dot} w-1 h-1 rounded-full inline-block`} />
-                        {week.subtitle}
-                    </p>
-                    <h3 className="font-semibold text-sm text-foreground truncate">{week.title}</h3>
-                </div>
-
-                {/* Session count */}
-                <div className="flex items-center gap-3 shrink-0">
-                    <span className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground">
-                        <Users className="h-3.5 w-3.5" />
-                        {week.sessions.length} sessions
-                    </span>
-                    <motion.div
-                        animate={{ rotate: isOpen ? 180 : 0 }}
-                        transition={{ duration: 0.2 }}
-                    >
-                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                    </motion.div>
-                </div>
-            </button>
-
-            {/* Sessions */}
-            <AnimatePresence initial={false}>
-                {isOpen && (
-                    <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.25, ease: 'easeInOut' }}
-                        className="overflow-hidden"
-                    >
-                        <div className="px-4 pb-4 grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
-                            {week.sessions.map((session) => (
-                                <SessionCard
-                                    key={session.slug}
-                                    session={session}
-                                    accent={week.accent}
-                                />
-                            ))}
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </motion.div>
-    );
-};
+        {/* Sessions */}
+        <AnimatePresence initial={false}>
+            {isOpen && (
+                <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.25, ease: 'easeInOut' }}
+                    className="overflow-hidden"
+                >
+                    <div className="pb-4 pl-12 border-t border-hairline-faint divide-y divide-hairline-faint">
+                        {week.sessions.map((session) => (
+                            <SessionCard key={session.slug} session={session} />
+                        ))}
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    </motion.div>
+);
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
@@ -203,12 +169,20 @@ function getWeekFromSearchParams(searchParams: URLSearchParams): number | null {
     return Number.isInteger(n) && VALID_WEEK_NUMBERS.includes(n) ? n : null;
 }
 
+const SESSION_COUNT = WEEKS.reduce((n, w) => n + w.sessions.length, 0);
+const LECTURE_COUNT = WEEKS.reduce(
+    (n, w) => n + w.sessions.filter((s) => s.type === 'lecture').length,
+    0
+);
+const ACTIVITY_COUNT = SESSION_COUNT - LECTURE_COUNT;
+
 export default function IntroductionToFundamentals() {
     const [searchParams] = useSearchParams();
     const weekFromUrl = getWeekFromSearchParams(searchParams);
     const [openWeeks, setOpenWeeks] = useState<Set<number>>(() =>
         weekFromUrl !== null ? new Set([weekFromUrl]) : new Set()
     );
+    const [currentWeekNumber, setCurrentWeekNumber] = useState<number | null>(null);
     const navigate = useNavigate();
 
     // When URL ?s= changes (e.g. breadcrumb link), expand that week and scroll after panel opens
@@ -230,6 +204,7 @@ export default function IntroductionToFundamentals() {
             .then((week) => {
                 if (cancelled) return;
                 const clamped = Math.min(Math.max(week, 1), 12);
+                setCurrentWeekNumber(clamped);
                 setOpenWeeks((prev) => new Set(prev).add(clamped));
                 scrollTimeoutId = window.setTimeout(() => {
                     if (cancelled) return;
@@ -268,7 +243,7 @@ export default function IntroductionToFundamentals() {
                 transition={{ duration: 0.4 }}
             >
                 {/* Breadcrumb */}
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-4">
+                <div className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground mb-6">
                     <BookOpen className="h-3.5 w-3.5" />
                     <button
                         onClick={() => navigate('/classes')}
@@ -278,24 +253,26 @@ export default function IntroductionToFundamentals() {
                         Classes
                     </button>
                     <ChevronRight className="h-3 w-3" />
-                    <span className="text-foreground font-medium">Introduction to Fundamentals</span>
+                    <span className="text-foreground font-semibold">Introduction to Fundamentals</span>
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                            Introduction to Fundamentals
-                        </h1>
-                        <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
-                            A 36-session journey from zero to full-stack. Terminal fluency, version control,
-                            containers, React, backend APIs, algorithms, auth, testing, deployment — everything
-                            you need to contribute to real projects.
-                        </p>
-                    </div>
-                </div>
+                <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground mb-2">
+                    Course
+                </p>
+                <h1 className="font-mono text-3xl md:text-4xl font-extrabold tracking-[-0.03em] text-foreground">
+                    Introduction to Fundamentals
+                </h1>
+                <p className="mt-2 font-mono text-xs text-muted-foreground tabular-nums">
+                    {WEEKS.length} weeks · {LECTURE_COUNT} lectures · {ACTIVITY_COUNT} activities
+                </p>
+                <p className="mt-4 text-[15px] leading-relaxed font-light text-ink-soft max-w-[68ch]">
+                    A 36-session journey from zero to full-stack. Terminal fluency, version control,
+                    containers, React, backend APIs, algorithms, auth, testing, deployment — everything
+                    you need to contribute to real projects.
+                </p>
 
                 {/* Topic pills */}
-                <div className="flex flex-wrap gap-2 mt-4">
+                <div className="flex flex-wrap gap-2 mt-5">
                     {[
                         'Linux',
                         'Git & Agile',
@@ -315,44 +292,53 @@ export default function IntroductionToFundamentals() {
                         'Sprint Review',
                         'Project Management',
                     ].map((topic, topicIndex) => (
-                        <Badge key={`${topic}-${topicIndex}`} variant="secondary">
+                        <Badge
+                            key={`${topic}-${topicIndex}`}
+                            variant="secondary"
+                            className="rounded-none border bg-page border-border font-mono text-[10px] uppercase tracking-[0.08em] font-semibold text-muted-foreground"
+                        >
                             {topic}
                         </Badge>
                     ))}
                 </div>
             </motion.div>
 
-            {/* ── Controls ── */}
-            <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-foreground">Course Content</h2>
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={expandAll}
-                        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                        Expand all
-                    </button>
-                    <span className="text-muted-foreground text-xs">·</span>
-                    <button
-                        onClick={collapseAll}
-                        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                        Collapse all
-                    </button>
+            {/* ── Course content: ruled list ── */}
+            <div>
+                <div className="flex items-center justify-between pb-3 border-b border-border">
+                    <h2 className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                        Course content
+                    </h2>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={expandAll}
+                            className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground hover:text-primary transition-colors"
+                        >
+                            Expand all
+                        </button>
+                        <span className="text-grey-3 text-xs select-none" aria-hidden="true">/</span>
+                        <button
+                            onClick={collapseAll}
+                            className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground hover:text-primary transition-colors"
+                        >
+                            Collapse all
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            {/* ── Week Folders ── */}
-            <div className="space-y-3 !mt-3">
-                {WEEKS.map((week, i) => (
-                    <WeekFolder
-                        key={week.number}
-                        week={week}
-                        isOpen={openWeeks.has(week.number)}
-                        onToggle={() => toggleWeek(week.number)}
-                        index={i}
-                    />
-                ))}
+                {/* ── Week rows ── */}
+                <div>
+                    {WEEKS.map((week, i) => (
+                        <WeekFolder
+                            key={week.number}
+                            week={week}
+                            isOpen={openWeeks.has(week.number)}
+                            onToggle={() => toggleWeek(week.number)}
+                            index={i}
+                            isCurrent={currentWeekNumber === week.number}
+                        />
+                    ))}
+                </div>
             </div>
         </div>
     );

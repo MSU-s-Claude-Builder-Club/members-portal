@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -222,6 +221,8 @@ const Members = () => {
   const canManageRoles = role === 'e-board';
   const canManageActions = role === 'board' || role === 'e-board';
 
+  const eboardCount = members.filter(m => m.role === 'e-board').length;
+
   const processedMembers = useMemo(() => {
     let filteredMembers = members;
     if (searchQuery.trim()) {
@@ -383,15 +384,14 @@ const Members = () => {
   if (loading) {
     return (
       <div className="p-6 w-full h-full overflow-y-auto">
-        <div>
-          <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold`}>Members</h1>
-          <p className="text-muted-foreground">Club members</p>
+        <div className="border-b border-border pb-6">
+          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">Directory</p>
+          <h1 className="mt-1 font-mono text-3xl md:text-4xl font-extrabold tracking-[-0.03em]">Members</h1>
+          <p className="mt-2 font-mono text-xs text-muted-foreground tabular-nums">Club members</p>
         </div>
-        <Card className="mt-6">
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">Loading members...</p>
-          </CardContent>
-        </Card>
+        <div className="mt-6 border border-border bg-page p-8 text-center">
+          <p className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">Loading members...</p>
+        </div>
       </div>
     );
   }
@@ -400,14 +400,15 @@ const Members = () => {
   if (isMobile) {
     return (
       <div className="p-6 w-full h-full overflow-y-auto">
-        <div className="flex justify-between items-center gap-4">
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold">Members</h1>
-            <p className="text-muted-foreground">
-              {members.length} {members.length === 1 ? 'member' : 'members'}
+        <div className="flex justify-between items-start gap-4 border-b border-border pb-6">
+          <div className="flex-1 min-w-0">
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">Directory</p>
+            <h1 className="mt-1 font-mono text-3xl font-extrabold tracking-[-0.03em]">Members</h1>
+            <p className="mt-2 font-mono text-xs text-muted-foreground tabular-nums">
+              {members.length} {members.length === 1 ? 'member' : 'members'} · {eboardCount} e-board
             </p>
           </div>
-          <div className="relative w-40">
+          <div className="relative w-40 shrink-0">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="text"
@@ -440,17 +441,15 @@ const Members = () => {
         </div>
 
         {members.length === 0 ? (
-          <Card className="mt-6">
-            <CardContent className="pt-6">
-              <p className="text-center text-muted-foreground">No members found.</p>
-            </CardContent>
-          </Card>
+          <div className="mt-6 border border-dashed border-grey-3 p-8 text-center">
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">Empty</p>
+            <p className="mt-2 text-sm text-muted-foreground">No members found.</p>
+          </div>
         ) : processedMembers.length === 0 ? (
-          <Card className="mt-6">
-            <CardContent className="pt-6">
-              <p className="text-center text-muted-foreground">No members match your search criteria.</p>
-            </CardContent>
-          </Card>
+          <div className="mt-6 border border-dashed border-grey-3 p-8 text-center">
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">No results</p>
+            <p className="mt-2 text-sm text-muted-foreground">No members match your search criteria.</p>
+          </div>
         ) : null}
 
         {sharedModals}
@@ -463,12 +462,13 @@ const Members = () => {
     <div className="flex flex-col w-full h-full overflow-hidden p-6">
 
       {/* Header */}
-      <div className="flex-shrink-0">
-        <div className="flex justify-between items-center gap-4">
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold">Members</h1>
-            <p className="text-muted-foreground">
-              {members.length} club {members.length === 1 ? 'member' : 'members'}
+      <div className="flex-shrink-0 border-b border-border pb-6">
+        <div className="flex justify-between items-end gap-4">
+          <div className="flex-1 min-w-0">
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">Directory</p>
+            <h1 className="mt-1 font-mono text-3xl md:text-4xl font-extrabold tracking-[-0.03em]">Members</h1>
+            <p className="mt-2 font-mono text-xs text-muted-foreground tabular-nums">
+              {members.length} {members.length === 1 ? 'member' : 'members'} · {eboardCount} e-board
             </p>
           </div>
           <div className="flex items-center gap-3 flex-shrink-0">
@@ -526,16 +526,15 @@ const Members = () => {
       <div className="flex-1 flex flex-col min-h-0 mt-6">
         {members.length === 0 ? (
           <div className="flex-1 flex items-center justify-center">
-            <Card className="rounded-xl">
-              <CardContent className="pt-6">
-                <p className="text-center text-muted-foreground">No members found.</p>
-              </CardContent>
-            </Card>
+            <div className="border border-dashed border-grey-3 px-10 py-8 text-center">
+              <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">Empty</p>
+              <p className="mt-2 text-sm text-muted-foreground">No members found.</p>
+            </div>
           </div>
         ) : (
           <div
             ref={containerRef}
-            className="flex-1 min-h-0 rounded-xl border border-border bg-card overflow-hidden shadow-sm flex flex-col lg:flex-row"
+            className="flex-1 min-h-0 border border-border bg-page overflow-hidden flex flex-col lg:flex-row"
             tabIndex={-1}
             style={{ outline: 'none' }}
           >
@@ -559,13 +558,13 @@ const Members = () => {
 
             {/* RIGHT / BOTTOM: family directory (full width below tree on medium, 1/3 on large+) — no key so content updates in place and we avoid double fade on family switch */}
             <motion.div
-              className="w-full lg:w-1/3 flex-1 lg:flex-initial min-h-0 lg:min-w-[280px] border-t lg:border-t-0 lg:border-l border-border bg-card flex flex-col flex-shrink-0"
+              className="w-full lg:w-1/3 flex-1 lg:flex-initial min-h-0 lg:min-w-[280px] border-t lg:border-t-0 lg:border-l border-border bg-page flex flex-col flex-shrink-0"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.2 }}
             >
               {/* Family / search header — fade when switching between search and family view */}
-              <div className="flex-shrink-0 p-3 border-b border-border bg-muted/30 overflow-hidden">
+              <div className="flex-shrink-0 p-3 border-b border-border hatch overflow-hidden">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <AnimatePresence mode="wait" initial={false}>
@@ -578,19 +577,19 @@ const Members = () => {
                           transition={{ duration: 0.15 }}
                           className="flex items-center gap-3 min-w-0 flex-1"
                         >
-                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-border bg-muted/50 text-muted-foreground">
-                            <Search className="h-5 w-5" />
+                          <span className="flex h-10 w-10 shrink-0 items-center justify-center border border-border bg-page text-muted-foreground">
+                            <Search className="h-4 w-4" />
                           </span>
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="text-sm font-semibold text-foreground truncate">Search results</span>
+                              <span className="font-mono text-sm font-semibold text-foreground truncate">Search results</span>
                             </div>
-                            <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-3">
+                            <p className="font-mono text-[11px] text-muted-foreground tabular-nums mt-0.5 flex items-center gap-2">
                               <span>
                                 {directoryMembers.length} result
                                 {directoryMembers.length !== 1 ? 's' : ''}
                               </span>
-                              <span className="inline-block w-1 h-1 rounded-full bg-muted-foreground/70 shrink-0" aria-hidden />
+                              <span aria-hidden>·</span>
                               <span className="inline-flex items-center gap-1">
                                 <Users className="h-3 w-3" />
                                 {displayFamilies.length} {displayFamilies.length === 1 ? 'family' : 'families'}
@@ -607,16 +606,16 @@ const Members = () => {
                           transition={{ duration: 0.15 }}
                           className="flex items-center gap-3 min-w-0 flex-1"
                         >
-                          <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-border text-muted-foreground ${isOrphanOnlyView ? 'bg-muted/50' : 'bg-amber-500/10 text-amber-600'}`}>
+                          <span className="flex h-10 w-10 shrink-0 items-center justify-center border border-border bg-page text-muted-foreground">
                             {isOrphanOnlyView ? (
-                              <UserX className="h-5 w-5" aria-hidden />
+                              <UserX className="h-4 w-4" aria-hidden />
                             ) : (
-                              <Home className="h-5 w-5" aria-hidden />
+                              <Home className="h-4 w-4" aria-hidden />
                             )}
                           </span>
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="text-sm font-semibold text-foreground truncate">
+                              <span className="font-mono text-sm font-semibold text-foreground truncate">
                                 {isOrphanOnlyView
                                   ? 'Orphans'
                                   : activeFamily
@@ -633,15 +632,15 @@ const Members = () => {
                                   </span>
                                 </span>
                               ) : (
-                                <Home className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                                <Home className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                               )}
                             </div>
-                            <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-3">
+                            <p className="font-mono text-[11px] text-muted-foreground tabular-nums mt-0.5 flex items-center gap-2">
                               <span>
                                 {directoryMembers.length} member
                                 {directoryMembers.length !== 1 ? 's' : ''}
                               </span>
-                              <span className="inline-block w-1 h-1 rounded-full bg-muted-foreground/70 shrink-0" aria-hidden />
+                              <span aria-hidden>·</span>
                               <span className="inline-flex items-center gap-1">
                                 <Trophy className="h-3 w-3" />
                                 {directoryTotalPoints}
@@ -693,7 +692,7 @@ const Members = () => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -8, transition: { duration: 0.1 } }}
                       transition={{ duration: 0.2, delay: i * 0.012, ease: [0.22, 1, 0.36, 1] }}
-                      className={`min-w-0 rounded-lg border-2 transition-colors ${hoveredId === member.id ? 'border-primary' : 'border-transparent'}`}
+                      className={`min-w-0 border-2 transition-colors ${hoveredId === member.id ? 'border-primary' : 'border-transparent'}`}
                     >
                       <PersonCard
                         person={member}
@@ -717,7 +716,7 @@ const Members = () => {
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.2, delay: (directoryMembers.length + i) * 0.012, ease: [0.22, 1, 0.36, 1] }}
-                      className={`min-w-0 rounded-lg border-2 transition-colors ${hoveredId === member.id ? 'border-primary' : 'border-transparent'}`}
+                      className={`min-w-0 border-2 transition-colors ${hoveredId === member.id ? 'border-primary' : 'border-transparent'}`}
                     >
                       <PersonCard
                         person={member}

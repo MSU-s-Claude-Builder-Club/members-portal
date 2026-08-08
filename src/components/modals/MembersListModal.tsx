@@ -1,7 +1,6 @@
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Popover,
@@ -48,10 +47,11 @@ const getInitials = (name: string) => {
         .slice(0, 2);
 };
 
-const getRoleVariant = (role: string): 'default' | 'secondary' => {
-    if (role === 'lead' || role === 'teacher') return 'secondary';
-    return 'default';
-};
+/** The one chip mapping (mono, uppercase, square): lead/teacher = ink flood, member/student = outline. */
+const roleChipClass = (role: string): string =>
+    role === 'lead' || role === 'teacher'
+        ? 'bg-foreground text-page border-foreground'
+        : 'border-border text-foreground';
 
 export const MembersListModal = ({
     open,
@@ -259,7 +259,7 @@ export const MembersListModal = ({
     return (
         <DialogPrimitive.Root open={open} onOpenChange={onClose}>
             <DialogPrimitive.Portal>
-                <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+                <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-foreground/40 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
 
                 {/* Positioning wrapper: centers both modals as a group */}
                 <div className="fixed inset-0 z-50 flex items-center justify-center gap-5 pointer-events-none p-4">
@@ -267,7 +267,7 @@ export const MembersListModal = ({
                     {/* Modal 1: Members List */}
                     <DialogPrimitive.Content
                         className={cn(
-                            'pointer-events-auto relative flex max-h-[85vh] w-[90vw] max-w-lg flex-col gap-4 rounded-lg border bg-page p-6 shadow-lg duration-200',
+                            'pointer-events-auto relative flex max-h-[85vh] w-[90vw] max-w-lg flex-col gap-4 border border-border bg-page p-6 shadow-[8px_8px_0_0_hsl(var(--foreground))] duration-200',
                             'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
                             isMobile && 'px-4',
                         )}
@@ -278,17 +278,17 @@ export const MembersListModal = ({
                             }
                         }}
                     >
-                        <div className="flex flex-col space-y-1.5 text-left">
-                            <DialogPrimitive.Title className="text-lg font-semibold leading-none tracking-tight">
+                        <div className={cn('hatch -mt-6 flex flex-col space-y-1.5 border-b border-border py-4 text-left', isMobile ? '-mx-4 px-4' : '-mx-6 px-6')}>
+                            <DialogPrimitive.Title className="font-mono text-lg font-extrabold tracking-[-0.02em]">
                                 {title}
                             </DialogPrimitive.Title>
                             <DialogPrimitive.Description asChild>
-                                <div className="text-sm text-muted-foreground">{displaySubtitle}</div>
+                                <div className="font-mono text-xs text-muted-foreground tabular-nums">{displaySubtitle}</div>
                             </DialogPrimitive.Description>
                         </div>
 
                         {showRemoveButton && (
-                            <div className="hidden md:block pb-3 border-b">
+                            <div className="hidden md:block pb-3 border-b border-hairline-faint">
                                 <Popover open={addMemberOpen} onOpenChange={setAddMemberOpen}>
                                     <PopoverTrigger asChild>
                                         <Button
@@ -357,19 +357,19 @@ export const MembersListModal = ({
                             </div>
                         )}
 
-                        <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+                        <div className="max-h-[60vh] overflow-y-auto border-t border-border">
                             {displayMembers.map((member) => (
                                 <div
                                     key={member.id}
                                     className={cn(
-                                        'flex items-center gap-3 p-3 rounded-lg border bg-card transition-colors',
-                                        !isMobile && 'cursor-pointer hover:bg-muted/50',
+                                        'flex items-center gap-3 border-b border-hairline-faint px-2 py-2.5 transition-colors',
+                                        !isMobile && 'cursor-pointer hover:bg-tint',
                                     )}
                                     onClick={() => !isMobile && setSelectedMember(member)}
                                 >
-                                    <Avatar className="h-10 w-10 flex-shrink-0">
-                                        <AvatarImage src={member.profile.profile_picture_url || undefined} />
-                                        <AvatarFallback>
+                                    <Avatar className="h-10 w-10 flex-shrink-0 rounded-none border border-hairline-faint">
+                                        <AvatarImage src={member.profile.profile_picture_url || undefined} className="rounded-none" />
+                                        <AvatarFallback className="rounded-none font-mono text-sm">
                                             {member.profile.full_name
                                                 ? getInitials(member.profile.full_name)
                                                 : member.profile.email.charAt(0).toUpperCase()}
@@ -377,10 +377,10 @@ export const MembersListModal = ({
                                     </Avatar>
 
                                     <div className="min-w-0 flex-1">
-                                        <p className="truncate font-medium">
+                                        <p className="truncate font-mono text-sm font-semibold">
                                             {member.profile.full_name || 'No name'}
                                         </p>
-                                        <p className="truncate text-sm text-muted-foreground">
+                                        <p className="truncate font-mono text-xs text-muted-foreground">
                                             {member.profile.email}
                                         </p>
                                     </div>
@@ -396,19 +396,21 @@ export const MembersListModal = ({
                                             }
                                         }}
                                     >
-                                        <Badge
-                                            variant={getRoleVariant(memberRoles[member.id] || member.role)}
-                                            className="capitalize"
+                                        <span
+                                            className={cn(
+                                                'inline-flex shrink-0 items-center whitespace-nowrap border px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em]',
+                                                roleChipClass(memberRoles[member.id] || member.role),
+                                            )}
                                         >
                                             {memberRoles[member.id] || member.role}
-                                        </Badge>
+                                        </span>
                                     </motion.div>
 
                                     {showRemoveButton && (
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="hidden h-8 w-8 text-muted-foreground hover:bg-red-600/10 hover:text-red-600 md:flex"
+                                            className="hidden h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive md:flex"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleRemoveMember(member.id);
@@ -422,7 +424,7 @@ export const MembersListModal = ({
                             ))}
 
                             {displayMembers.length === 0 && (
-                                <div className="py-8 text-center text-muted-foreground">
+                                <div className="mt-3 border border-dashed border-grey-3 py-8 text-center font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
                                     No members yet
                                 </div>
                             )}
@@ -439,7 +441,7 @@ export const MembersListModal = ({
                                 exit={{ opacity: 0, x: 24 }}
                                 transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
                                 data-profile-modal
-                                className="pointer-events-auto relative flex max-h-[85vh] w-[28rem] flex-col rounded-lg border bg-page shadow-lg overflow-hidden"
+                                className="pointer-events-auto relative flex max-h-[85vh] w-[28rem] flex-col border border-border bg-page shadow-[8px_8px_0_0_hsl(var(--foreground))] overflow-hidden"
                             >
                                 <ProfileModal
                                     member={profileViewerMember}

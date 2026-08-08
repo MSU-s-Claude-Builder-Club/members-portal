@@ -4,7 +4,9 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
-const labelVariants = cva("text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70");
+const labelVariants = cva(
+  "font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+);
 
 interface LabelProps
   extends React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>,
@@ -18,7 +20,7 @@ const Label = React.forwardRef<
 >(({ className, required, children, ...props }, ref) => (
   <LabelPrimitive.Root ref={ref} className={cn(labelVariants(), className)} {...props}>
     {children}
-    {required ? <span className="text-red-600"> *</span> : null}
+    {required ? <span className="text-destructive"> *</span> : null}
   </LabelPrimitive.Root>
 ));
 Label.displayName = LabelPrimitive.Root.displayName;

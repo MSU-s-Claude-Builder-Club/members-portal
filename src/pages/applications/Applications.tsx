@@ -2,11 +2,9 @@ import { useState, useEffect } from 'react';
 import { useProfile } from '@/contexts/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Plus, Eye, Calendar, Briefcase, BookOpen, FileCode, ChevronDown, ChevronRight, Folder, FolderOpen, User, Shield, Search } from 'lucide-react';
+import { Plus, Eye, ChevronDown, ChevronRight, Search } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ApplicationCreateModal } from '@/components/modals/ApplicationCreateModal';
 import { Input } from '@/components/ui/input';
@@ -17,6 +15,10 @@ import {
 } from '@/components/ui/tooltip';
 import { canOpenApplicationForm, getNextSemesterStartIso } from '@/lib/semester';
 import type { ApplicationWithProfile, ApplicationGroup } from '@/contexts/AuthContext';
+
+/** Status chip base — mono uppercase micro-label per the design contract. */
+const CHIP_BASE =
+  'inline-flex items-center whitespace-nowrap border px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em]';
 
 const Applications = ({ openCreateModal: openCreateModalProp = false }: { openCreateModal?: boolean }) => {
   const { isBoardOrAbove, userApplications, applicationsLoading, refreshApplications } = useProfile();
@@ -107,14 +109,19 @@ const Applications = ({ openCreateModal: openCreateModalProp = false }: { openCr
     return group.applications.some(applicationMatchesSearch);
   };
 
-  const getStatusVariant = (status: string): 'green' | 'red' | 'default' => {
+  /** Status chip class per the ink/outline/strike/grey status system. */
+  const getStatusChipClass = (status: string): string => {
     switch (status) {
       case 'accepted':
-        return 'green';
+        return 'border-foreground bg-foreground text-page';
       case 'rejected':
-        return 'red';
+        return 'border-border text-muted-foreground line-through decoration-primary decoration-2';
+      case 'pending':
+      case 'submitted':
+        return 'border-border text-foreground';
       default:
-        return 'default';
+        // draft / withdrawn / anything else
+        return 'border-grey-3 text-grey-2';
     }
   };
 
@@ -125,19 +132,6 @@ const Applications = ({ openCreateModal: openCreateModalProp = false }: { openCr
       .join(' ');
   };
 
-  const getApplicationIcon = (type: string) => {
-    switch (type) {
-      case 'board':
-        return <Briefcase className="h-4 w-4" />;
-      case 'project':
-        return <FileCode className="h-4 w-4" />;
-      case 'class':
-        return <BookOpen className="h-4 w-4" />;
-      default:
-        return <Briefcase className="h-4 w-4" />;
-    }
-  };
-
   const getApplicationTarget = (application: ApplicationWithProfile) => {
     if (application.application_type === 'board' && application.board_position) {
       return application.board_position;
@@ -145,12 +139,12 @@ const Applications = ({ openCreateModal: openCreateModalProp = false }: { openCr
     return formatApplicationType(application.application_type);
   };
 
-  /** Dot color by status (only used in review-pending section). */
+  /** Dot class by status (only used in review-pending section). */
   const getReviewPendingDotClass = (a: ApplicationWithProfile, currentAppId: string) => {
     if (a.id === currentAppId) return 'bg-primary application-dot-current';
-    if (a.status === 'accepted') return 'bg-green-500 opacity-80';
-    if (a.status === 'rejected') return 'bg-red-500 opacity-80';
-    return 'bg-primary opacity-60';
+    if (a.status === 'accepted') return 'bg-foreground opacity-80';
+    if (a.status === 'rejected') return 'bg-destructive opacity-80';
+    return 'bg-grey-3';
   };
 
   const renderApplicationCard = (
@@ -167,57 +161,53 @@ const Applications = ({ openCreateModal: openCreateModalProp = false }: { openCr
       : [];
 
     return (
-      <Card key={app.id} className="hover:shadow-md transition-shadow p-6">
-        <div className={`flex h-full justify-between items-center ${isMobile ? 'gap-3' : ''}`}>
-          <div className={`flex flex-col justify-between ${isMobile ? 'h-full' : 'gap-2'}`}>
-            <div className="flex items-center gap-2">
-              {getApplicationIcon(app.application_type)}
-              <CardTitle className={isMobile ? 'text-lg' : ''}>{app.profiles?.full_name ?? 'Applicant'}</CardTitle>
-            </div>
-            <CardDescription className={`flex items-center ${isMobile ? 'flex-col items-start mt-1 gap-1' : 'mt-1 gap-2'}`}>
-              <span>{getApplicationTarget(app)}</span>
-              <span className={isMobile ? 'hidden' : ''}>•</span>
-              <span className="flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
-                {new Date(app.created_at).toLocaleDateString()}
-              </span>
-            </CardDescription>
-          </div>
-          <div className={`flex ${isMobile ? 'flex-col h-full justify-between items-end' : 'items-center gap-7'}`}>
-            {showDots && (
-              <div className="flex items-center gap-1 shrink-0" title={`${sortedSame.length} applications from this person`}>
-                {sortedSame.map((a) => (
-                  <span
-                    key={a.id}
-                    className={`h-1.5 w-1.5 rounded-full shrink-0 ${getReviewPendingDotClass(a, app.id)}`}
-                    aria-hidden
-                  />
-                ))}
-              </div>
-            )}
-            <Badge variant={getStatusVariant(app.status)} className="capitalize">
-              {app.status}
-            </Badge>
-            {!isMobile && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={(e) => {
-                  if (e.ctrlKey || e.metaKey) {
-                    window.open(`/applications/${app.id}`, '_blank', 'noopener');
-                  } else {
-                    navigate(`/applications/${app.id}`);
-                  }
-                }}
-                className="rounded-md px-3 h-9"
-              >
-                <Eye className="h-4 w-4 mr-2" />
-                {isBoardOrAbove ? 'Review' : 'View'}
-              </Button>
-            )}
-          </div>
+      <div
+        key={app.id}
+        className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-hairline-faint px-2 py-3 transition-colors hover:bg-tint"
+      >
+        <div className="min-w-0 flex-1 basis-44">
+          <p className="truncate font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            {getApplicationTarget(app)}
+          </p>
+          <p className="mt-0.5 truncate text-sm font-semibold">
+            {app.profiles?.full_name ?? 'Applicant'}
+          </p>
         </div>
-      </Card>
+        {showDots && (
+          <div className="flex shrink-0 items-center gap-1" title={`${sortedSame.length} applications from this person`}>
+            {sortedSame.map((a) => (
+              <span
+                key={a.id}
+                className={`h-1.5 w-1.5 shrink-0 rounded-full ${getReviewPendingDotClass(a, app.id)}`}
+                aria-hidden
+              />
+            ))}
+          </div>
+        )}
+        <span className="shrink-0 font-mono text-xs tabular-nums text-muted-foreground">
+          {new Date(app.created_at).toLocaleDateString()}
+        </span>
+        <span className={`${CHIP_BASE} shrink-0 ${getStatusChipClass(app.status)}`}>
+          {app.status}
+        </span>
+        {!isMobile && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              if (e.ctrlKey || e.metaKey) {
+                window.open(`/applications/${app.id}`, '_blank', 'noopener');
+              } else {
+                navigate(`/applications/${app.id}`);
+              }
+            }}
+            className="h-9 shrink-0 px-3"
+          >
+            <Eye className="h-4 w-4 mr-2" />
+            {isBoardOrAbove ? 'Review' : 'View'}
+          </Button>
+        )}
+      </div>
     );
   };
 
@@ -226,32 +216,32 @@ const Applications = ({ openCreateModal: openCreateModalProp = false }: { openCr
     applications: ApplicationWithProfile[],
     collapsed: boolean,
     onToggle: () => void,
-    icon: React.ReactNode,
     allFromSamePerson?: ApplicationWithProfile[]
   ) => {
     if (applications.length === 0) return null;
 
     return (
       <Collapsible open={!collapsed} onOpenChange={onToggle}>
-        <div className="space-y-4">
+        <div className="space-y-3">
           <CollapsibleTrigger asChild>
-            <button className="w-full justify-start p-0 h-auto border-0 hover:bg-transparent hover:text-inherit focus:bg-transparent focus:text-inherit active:bg-transparent active:text-inherit">
-              <div className="flex items-center gap-2 w-full">
+            <button className="h-auto w-full border-0 p-0 text-left hover:bg-transparent focus:bg-transparent active:bg-transparent">
+              <div className="flex w-full items-center gap-2">
                 {collapsed ? (
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0" />
                 ) : (
-                  <ChevronDown className="h-4 w-4" />
+                  <ChevronDown className="h-3.5 w-3.5 shrink-0" />
                 )}
-                <div className="flex items-center gap-2">
-                  {icon}
-                  <span className="text-lg font-medium">{title}</span>
-                </div>
-                <Badge>{applications.length}</Badge>
+                <span className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                  {title}
+                </span>
+                <span className="font-mono text-[11px] tabular-nums text-grey-3">
+                  {applications.length}
+                </span>
               </div>
             </button>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <div className={`grid gap-4 ${isMobile ? "ml-0" : "ml-6"}`}>
+            <div className={`border-t border-border ${isMobile ? 'ml-0' : 'ml-6'}`}>
               {applications.map((app) => renderApplicationCard(app, allFromSamePerson, undefined))}
             </div>
           </CollapsibleContent>
@@ -266,31 +256,31 @@ const Applications = ({ openCreateModal: openCreateModalProp = false }: { openCr
     applications: ApplicationWithProfile[],
     collapsed: boolean,
     onToggle: () => void,
-    icon: React.ReactNode,
     allReviewByUser: Map<string, ApplicationWithProfile[]>
   ) => {
     if (applications.length === 0) return null;
     return (
       <Collapsible open={!collapsed} onOpenChange={onToggle}>
-        <div className="space-y-4">
+        <div className="space-y-3">
           <CollapsibleTrigger asChild>
-            <button className="w-full justify-start p-0 h-auto border-0 hover:bg-transparent hover:text-inherit focus:bg-transparent focus:text-inherit active:bg-transparent active:text-inherit">
-              <div className="flex items-center gap-2 w-full">
+            <button className="h-auto w-full border-0 p-0 text-left hover:bg-transparent focus:bg-transparent active:bg-transparent">
+              <div className="flex w-full items-center gap-2">
                 {collapsed ? (
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0" />
                 ) : (
-                  <ChevronDown className="h-4 w-4" />
+                  <ChevronDown className="h-3.5 w-3.5 shrink-0" />
                 )}
-                <div className="flex items-center gap-2">
-                  {icon}
-                  <span className="text-lg font-medium">{title}</span>
-                </div>
-                <Badge>{applications.length}</Badge>
+                <span className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                  {title}
+                </span>
+                <span className="font-mono text-[11px] tabular-nums text-grey-3">
+                  {applications.length}
+                </span>
               </div>
             </button>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <div className={`grid gap-4 ${isMobile ? "ml-0" : "ml-6"}`}>
+            <div className={`border-t border-border ${isMobile ? 'ml-0' : 'ml-6'}`}>
               {applications.map((app) => {
                 const samePerson = (allReviewByUser.get(app.user_id) ?? []).sort(
                   (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -309,43 +299,42 @@ const Applications = ({ openCreateModal: openCreateModalProp = false }: { openCr
     title: string,
     groups: ApplicationGroup[],
     collapsed: boolean,
-    onToggle: () => void,
-    icon: React.ReactNode
+    onToggle: () => void
   ) => {
     const totalCount = groups.reduce((acc, g) => acc + g.applications.length, 0);
     if (totalCount === 0) return null;
 
     return (
       <Collapsible open={!collapsed} onOpenChange={onToggle}>
-        <div className="space-y-4">
+        <div className="space-y-3">
           <CollapsibleTrigger asChild>
-            <button className="w-full justify-start p-0 h-auto border-0 hover:bg-transparent hover:text-inherit focus:bg-transparent focus:text-inherit active:bg-transparent active:text-inherit">
-              <div className="flex items-center gap-2 w-full">
+            <button className="h-auto w-full border-0 p-0 text-left hover:bg-transparent focus:bg-transparent active:bg-transparent">
+              <div className="flex w-full items-center gap-2">
                 {collapsed ? (
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0" />
                 ) : (
-                  <ChevronDown className="h-4 w-4" />
+                  <ChevronDown className="h-3.5 w-3.5 shrink-0" />
                 )}
-                <div className="flex items-center gap-2">
-                  {icon}
-                  <span className="text-lg font-medium">{title}</span>
-                </div>
-                <Badge>{totalCount}</Badge>
+                <span className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                  {title}
+                </span>
+                <span className="font-mono text-[11px] tabular-nums text-grey-3">
+                  {totalCount}
+                </span>
               </div>
             </button>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <div className={`space-y-6 ${isMobile ? "ml-0" : "ml-6"}`}>
+            <div className={`space-y-6 ${isMobile ? 'ml-0' : 'ml-6'}`}>
               {groups.map((group) => (
-                <div key={group.user_id} className="space-y-3">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <User className="h-4 w-4" />
-                    <span className="font-medium text-foreground">{group.applicantName}</span>
-                    <Badge variant="secondary" className="text-xs">
+                <div key={group.user_id} className="space-y-2">
+                  <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                    <span className="text-sm font-semibold">{group.applicantName}</span>
+                    <span className="font-mono text-[10px] uppercase tracking-[0.08em] tabular-nums text-muted-foreground">
                       {group.applications.length} {group.applications.length === 1 ? 'application' : 'applications'}
-                    </Badge>
+                    </span>
                   </div>
-                  <div className="grid gap-4">
+                  <div className="border-t border-border">
                     {group.applications.map((app) => renderApplicationCard(app, undefined, undefined))}
                   </div>
                 </div>
@@ -383,12 +372,14 @@ const Applications = ({ openCreateModal: openCreateModalProp = false }: { openCr
   const reviewApplicationsTotal =
     filteredReviewPending.length +
     filteredReviewDecided.reduce((acc, g) => acc + g.applications.length, 0);
-  const hasAnyApplicationsUnfiltered = userApplications
-    ? userApplications.self.pending.length +
-    userApplications.self.decided.length +
-    userApplications.review.pending.length +
-    userApplications.review.decided.reduce((acc, g) => acc + g.applications.length, 0) > 0
-    : false;
+  const selfCountAll = userApplications
+    ? userApplications.self.pending.length + userApplications.self.decided.length
+    : 0;
+  const reviewCountAll = userApplications
+    ? userApplications.review.pending.length +
+    userApplications.review.decided.reduce((acc, g) => acc + g.applications.length, 0)
+    : 0;
+  const hasAnyApplicationsUnfiltered = selfCountAll + reviewCountAll > 0;
   const showEmptySearchState = searchQuery.trim() && myApplicationsTotal === 0 && reviewApplicationsTotal === 0;
 
   // When searching, open all folders/sections that contain results
@@ -433,101 +424,110 @@ const Applications = ({ openCreateModal: openCreateModalProp = false }: { openCr
   })();
 
   return (
-    <div className="p-6 w-full h-full overflow-y-auto">
-      <div className={`flex ${isMobile ? 'flex-col gap-4' : 'justify-between items-center'}`}>
-        <div>
-          <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold`}>Applications</h1>
-          <p className="text-muted-foreground">
-            {isBoardOrAbove ? 'Manage applications' : 'Your applications'}
-          </p>
+    <div className="h-full w-full overflow-y-auto p-6 md:p-10">
+      {/* Page header */}
+      <header className="border-b border-border pb-6">
+        <div className={`flex ${isMobile ? 'flex-col gap-4' : 'items-end justify-between gap-4'}`}>
+          <div>
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+              Applications
+            </p>
+            <h1 className="mt-2 font-mono text-3xl font-extrabold tracking-[-0.03em] md:text-4xl">
+              Applications
+            </h1>
+            <p className="mt-3 font-mono text-xs tabular-nums text-muted-foreground">
+              {applicationsLoading
+                ? 'Loading applications...'
+                : `${selfCountAll} filed by you${reviewCountAll > 0 ? ` · ${reviewCountAll} for review` : ''}`}
+            </p>
+          </div>
+          <div className={`flex gap-3 ${isMobile ? 'flex-col' : 'items-center'}`}>
+            {applyButtonDisabled ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className={hasAnyApplicationsUnfiltered && !isMobile ? 'inline-flex shrink-0' : 'inline-flex'}>
+                    <Button
+                      type="button"
+                      disabled
+                      className={hasAnyApplicationsUnfiltered && !isMobile ? 'shrink-0' : ''}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      New Application
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <p>{applyGateReady ? applicationClosedTooltip : 'Checking application window…'}</p>
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <Button
+                type="button"
+                onClick={() => setIsCreateModalOpen(true)}
+                className={hasAnyApplicationsUnfiltered && !isMobile ? 'shrink-0' : ''}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                New Application
+              </Button>
+            )}
+            {hasAnyApplicationsUnfiltered && (
+              <div className={`relative ${isMobile ? 'w-40' : 'w-64'}`}>
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder={isMobile ? 'Search' : 'Search applications...'}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            )}
+          </div>
         </div>
-        <div className={`flex gap-3 ${isMobile ? 'flex-col' : 'items-center'}`}>
-          {applyButtonDisabled ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className={hasAnyApplicationsUnfiltered && !isMobile ? 'inline-flex shrink-0' : 'inline-flex'}>
-                  <Button
-                    type="button"
-                    disabled
-                    className={hasAnyApplicationsUnfiltered && !isMobile ? 'shrink-0' : ''}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Application
-                  </Button>
-                </span>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p>{applyGateReady ? applicationClosedTooltip : 'Checking application window…'}</p>
-              </TooltipContent>
-            </Tooltip>
-          ) : (
-            <Button
-              type="button"
-              onClick={() => setIsCreateModalOpen(true)}
-              className={hasAnyApplicationsUnfiltered && !isMobile ? 'shrink-0' : ''}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Application
-            </Button>
-          )}
-          {hasAnyApplicationsUnfiltered && (
-            <div className={`relative ${isMobile ? "w-40" : "w-64"}`}>
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder={isMobile ? "Search" : "Search applications..."}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-          )}
-        </div>
-      </div>
+      </header>
 
       {applicationsLoading ? (
-        <Card className="mt-6">
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">Loading applications...</p>
-          </CardContent>
-        </Card>
+        <div className="mt-6 border border-border p-8">
+          <p className="text-center font-mono text-sm text-muted-foreground">Loading applications...</p>
+        </div>
       ) : !userApplications || !hasAnyApplicationsUnfiltered ? (
-        <Card className="mt-6">
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">
-              {applyGateReady && !canApply
-                ? 'Applications are only open Sunday–Wednesday during week zero before each term. Use the New Application button tooltip for the next term start when available.'
-                : 'No applications yet. When applications are open, use New Application to get started.'}
-            </p>
-          </CardContent>
-        </Card>
+        <div className="mt-6 border border-dashed border-grey-3 p-8 text-center">
+          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+            No applications
+          </p>
+          <p className="mx-auto mt-2 max-w-[68ch] text-sm text-muted-foreground">
+            {applyGateReady && !canApply
+              ? 'Applications are only open Sunday–Wednesday during week zero before each term. Use the New Application button tooltip for the next term start when available.'
+              : 'No applications yet. When applications are open, use New Application to get started.'}
+          </p>
+        </div>
       ) : showEmptySearchState ? (
-        <Card className="mt-6">
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">
-              No applications match your search criteria.
-            </p>
-          </CardContent>
-        </Card>
+        <div className="mt-6 border border-dashed border-grey-3 p-8 text-center">
+          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+            No matches
+          </p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            No applications match your search criteria.
+          </p>
+        </div>
       ) : (
-        <div className="space-y-6 mt-6">
+        <div className="mt-6 space-y-8">
           {/* My Applications Folder */}
           {myApplicationsTotal > 0 && (
             <Collapsible open={!myApplicationsCollapsed} onOpenChange={setMyApplicationsCollapsed}>
               <div className="space-y-4">
                 <CollapsibleTrigger asChild>
-                  <button className="w-full justify-start p-0 h-auto hover:bg-transparent hover:text-inherit focus:bg-transparent focus:text-inherit active:bg-transparent active:text-inherit border-0">
-                    <div className="flex items-center gap-2 w-full">
+                  <button className="h-auto w-full border-0 p-0 text-left hover:bg-transparent focus:bg-transparent active:bg-transparent">
+                    <div className="flex w-full items-center gap-2 border-b border-border pb-2">
                       {myApplicationsCollapsed ? (
-                        <Folder className="h-5 w-5" />
+                        <ChevronRight className="h-4 w-4 shrink-0" />
                       ) : (
-                        <FolderOpen className="h-5 w-5" />
+                        <ChevronDown className="h-4 w-4 shrink-0" />
                       )}
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        <h2 className="text-xl font-semibold">My Applications</h2>
-                      </div>
-                      <Badge>{myApplicationsTotal}</Badge>
+                      <h2 className="font-mono text-lg font-extrabold tracking-[-0.02em]">My Applications</h2>
+                      <span className="ml-auto font-mono text-xs tabular-nums text-muted-foreground">
+                        {myApplicationsTotal}
+                      </span>
                     </div>
                   </button>
                 </CollapsibleTrigger>
@@ -538,7 +538,6 @@ const Applications = ({ openCreateModal: openCreateModalProp = false }: { openCr
                     filteredSelfPending,
                     myPendingCollapsed,
                     () => setMyPendingCollapsed(!myPendingCollapsed),
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>,
                     undefined
                   )}
 
@@ -548,7 +547,6 @@ const Applications = ({ openCreateModal: openCreateModalProp = false }: { openCr
                     filteredSelfDecided,
                     myReviewedCollapsed,
                     () => setMyReviewedCollapsed(!myReviewedCollapsed),
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>,
                     undefined
                   )}
                 </CollapsibleContent>
@@ -561,29 +559,27 @@ const Applications = ({ openCreateModal: openCreateModalProp = false }: { openCr
             <Collapsible open={!reviewApplicationsCollapsed} onOpenChange={setReviewApplicationsCollapsed}>
               <div className="space-y-4">
                 <CollapsibleTrigger asChild>
-                  <button className="w-full justify-start p-0 h-auto hover:bg-transparent hover:text-inherit focus:bg-transparent focus:text-inherit active:bg-transparent active:text-inherit border-0">
-                    <div className="flex items-center gap-2 w-full">
+                  <button className="h-auto w-full border-0 p-0 text-left hover:bg-transparent focus:bg-transparent active:bg-transparent">
+                    <div className="flex w-full items-center gap-2 border-b border-border pb-2">
                       {reviewApplicationsCollapsed ? (
-                        <Folder className="h-5 w-5" />
+                        <ChevronRight className="h-4 w-4 shrink-0" />
                       ) : (
-                        <FolderOpen className="h-5 w-5" />
+                        <ChevronDown className="h-4 w-4 shrink-0" />
                       )}
-                      <div className="flex items-center gap-2">
-                        <Shield className="h-4 w-4" />
-                        <h2 className="text-xl font-semibold">Review Applications</h2>
-                      </div>
-                      <Badge>{reviewApplicationsTotal}</Badge>
+                      <h2 className="font-mono text-lg font-extrabold tracking-[-0.02em]">Review Applications</h2>
+                      <span className="ml-auto font-mono text-xs tabular-nums text-muted-foreground">
+                        {reviewApplicationsTotal}
+                      </span>
                     </div>
                   </button>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="space-y-4">
-                  {/* Review Pending (flat by time, status dots: green/red/primary, current pulsating) */}
+                  {/* Review Pending (flat by time, status dots, current pulsating) */}
                   {renderReviewPendingSection(
                     "Pending Review",
                     filteredReviewPending,
                     reviewPendingCollapsed,
                     () => setReviewPendingCollapsed(!reviewPendingCollapsed),
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>,
                     allReviewByUser
                   )}
 
@@ -592,8 +588,7 @@ const Applications = ({ openCreateModal: openCreateModalProp = false }: { openCr
                     "Reviewed",
                     filteredReviewDecided,
                     reviewReviewedCollapsed,
-                    () => setReviewReviewedCollapsed(!reviewReviewedCollapsed),
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                    () => setReviewReviewedCollapsed(!reviewReviewedCollapsed)
                   )}
                 </CollapsibleContent>
               </div>

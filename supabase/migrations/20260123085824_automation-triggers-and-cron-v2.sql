@@ -3,8 +3,11 @@
 -- - point to the new process-application-update edge function
 -- - standardize on app.settings.supabase_url + app.settings.supabase_service_role_key
 
--- 1) Ensure pg_net extension (for net.http_post used by cron)
-CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA net;
+-- 1) Ensure pg_net extension (for net.http_post used by cron).
+-- pg_net creates and owns its own `net` schema. Passing WITH SCHEMA net (or
+-- pre-creating that schema) makes the install collide on a fresh Supabase
+-- project, so install it plainly and let it place its objects in `net`.
+CREATE EXTENSION IF NOT EXISTS pg_net;
 
 -- 2) (Re)create daily cron job for start-automation, using standardized settings
 SELECT cron.schedule(

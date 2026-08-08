@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -261,34 +260,34 @@ const Prospects = () => {
 
   const canManageProspects = userRole === 'board' || userRole === 'e-board';
 
+  const termCount = new Set(prospects.map(p => p.term_joined ?? 'Unknown Term')).size;
+
   if (loading) {
     return (
-      <div className="p-6 w-full h-full overflow-y-auto">
-        <div>
-          <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold`}>Prospects</h1>
-          <p className="text-muted-foreground">Manage prospective members</p>
+      <div className="p-6 md:p-10 w-full h-full overflow-y-auto">
+        <div className="border-b border-border pb-6">
+          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">Admissions</p>
+          <h1 className="mt-1 font-mono text-3xl md:text-4xl font-extrabold tracking-[-0.03em]">Prospects</h1>
+          <p className="mt-2 font-mono text-xs text-muted-foreground tabular-nums">Manage prospective members</p>
         </div>
-        <Card className="mt-6">
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">Loading prospects...</p>
-          </CardContent>
-        </Card>
+        <div className="mt-6 border border-border bg-page p-8 text-center">
+          <p className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">Loading prospects...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 w-full h-full overflow-y-auto">
-      <div className="flex justify-between items-center gap-4">
-        <div className="flex-1">
-          <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold`}>Prospects</h1>
-          <p className="text-muted-foreground">
-            {isMobile
-              ? `${prospects.length} ${prospects.length === 1 ? 'prospect' : 'prospects'}`
-              : `${prospects.length} club ${prospects.length === 1 ? 'prospect' : 'prospects'}`}
+    <div className="p-6 md:p-10 w-full h-full overflow-y-auto">
+      <div className="flex justify-between items-end gap-4 border-b border-border pb-6">
+        <div className="flex-1 min-w-0">
+          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">Admissions</p>
+          <h1 className="mt-1 font-mono text-3xl md:text-4xl font-extrabold tracking-[-0.03em]">Prospects</h1>
+          <p className="mt-2 font-mono text-xs text-muted-foreground tabular-nums">
+            {prospects.length} {prospects.length === 1 ? 'prospect' : 'prospects'} · {termCount} {termCount === 1 ? 'term' : 'terms'}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0">
           {!isMobile && canManageProspects && (
             <Button size="icon" onClick={copyEmailsCsv} title="Copy filtered emails as CSV">
               <Mail className="h-4 w-4" />
@@ -308,19 +307,17 @@ const Prospects = () => {
       </div>
 
       {prospects.length === 0 ? (
-        <Card className="mt-6">
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">No prospects at this time.</p>
-          </CardContent>
-        </Card>
+        <div className="mt-6 border border-dashed border-grey-3 p-8 text-center">
+          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">Empty</p>
+          <p className="mt-2 text-sm text-muted-foreground">No prospects at this time.</p>
+        </div>
       ) : processedProspects.length === 0 ? (
-        <Card className="mt-6">
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">
-              No prospects match your search criteria.
-            </p>
-          </CardContent>
-        </Card>
+        <div className="mt-6 border border-dashed border-grey-3 p-8 text-center">
+          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">No results</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            No prospects match your search criteria.
+          </p>
+        </div>
       ) : (
         <div className="grid gap-4 grid-cols-[repeat(auto-fit,minmax(300px,1fr))] mt-6">
           {processedProspects.map((prospect, i) => {

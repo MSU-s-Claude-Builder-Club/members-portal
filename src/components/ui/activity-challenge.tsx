@@ -2,8 +2,9 @@
  * ActivityChallenge
  *
  * A card container for a single challenge within an activity page.
- * Shows a large faded number, title, and description in the header,
- * with a content area for tasks, terminal blocks, hints, and callouts.
+ * Hatched chrome strip with a mono CHALLENGE eyebrow and number, title and
+ * description below, with a content area for tasks, terminal blocks, hints,
+ * and callouts.
  *
  * Usage:
  *   <ActivityChallenge
@@ -30,15 +31,22 @@ export const ActivityChallenge = ({
     description,
     children,
 }: ActivityChallengeProps) => (
-    <div className="rounded-xl border border-border bg-card overflow-hidden my-8">
-        <div className="flex items-start gap-4 p-5 border-b border-border bg-muted/30">
-            <span className="text-2xl font-black text-primary/70 leading-none select-none">
+    <div className="my-8 border border-border bg-page shadow-[8px_8px_0_0_hsl(var(--foreground))]">
+        {/* Chrome strip */}
+        <div className="hatch h-[38px] px-4 flex items-center justify-between gap-3 border-b border-border select-none">
+            <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                Challenge
+            </span>
+            <span className="font-mono text-[10.5px] font-bold tracking-[0.08em] text-primary tabular-nums">
                 {number}
             </span>
-            <div>
-                <h3 className="font-semibold text-sm text-foreground">{title}</h3>
-                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{description}</p>
-            </div>
+        </div>
+        {/* Header */}
+        <div className="px-5 py-4 border-b border-hairline-faint">
+            <h3 className="font-mono text-lg font-extrabold tracking-[-0.02em] text-foreground">{title}</h3>
+            <p className="mt-1 text-sm font-light leading-relaxed text-muted-foreground max-w-[720px]">
+                {description}
+            </p>
         </div>
         <div className="p-5">{children}</div>
     </div>

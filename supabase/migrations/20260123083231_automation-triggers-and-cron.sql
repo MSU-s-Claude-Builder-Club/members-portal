@@ -1,7 +1,15 @@
 -- No additional columns needed - we'll check Slack/GitHub directly
 
--- Delete old cron job and function
-SELECT cron.unschedule('process-project-automation');
+-- Delete old cron job and function.
+-- Guard the unschedule: the 'process-project-automation' job is not created on
+-- fresh installs (its old hardcoded-URL setup was neutralized), so unscheduling
+-- it unconditionally would error. Same pattern as 20260222215434.
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'process-project-automation') THEN
+    PERFORM cron.unschedule('process-project-automation');
+  END IF;
+END $$;
 DROP FUNCTION IF EXISTS process_project_automation();
 
 -- Function to trigger application acceptance automation

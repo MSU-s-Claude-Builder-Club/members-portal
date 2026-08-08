@@ -1,48 +1,52 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { FileEdit, ArrowRight, ArrowLeft } from "lucide-react";
 
 const MemberResourceGate = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-page via-orange-50/20 to-page dark:from-page dark:via-orange-950/10 dark:to-page">
-      <div className="container mx-auto px-4">
-        <div className="max-w-2xl mx-auto text-center space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-page px-6 py-12">
+      {/* A bordered notice document with hard extrusion */}
+      <div className="w-full max-w-xl border border-border bg-page shadow-[8px_8px_0_0_hsl(var(--foreground))]">
+        {/* Titlebar strip */}
+        <div className="hatch flex h-[38px] items-center gap-1.5 border-b border-border px-4">
+          <span aria-hidden="true" className="h-[9px] w-[9px] rounded-full bg-grey-3" />
+          <span aria-hidden="true" className="h-[9px] w-[9px] rounded-full bg-grey-3" />
+          <span aria-hidden="true" className="h-[9px] w-[9px] rounded-full bg-grey-3" />
+          <span className="ml-2 font-mono text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Access — Restricted
+          </span>
+        </div>
 
-          {/* Lock / member-only visual */}
-          <div className="space-y-4">
-            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-orange-100 dark:bg-orange-950/50">
-              <FileEdit className="h-12 w-12 text-orange-600 dark:text-orange-400" />
-            </div>
-            <h2 className="text-4xl font-bold text-foreground">
-              Member resource
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-md mx-auto">
-              This page is for members only.
-            </p>
-          </div>
+        <div className="p-6 md:p-10">
+          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
+            Members only
+          </p>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-2 justify-center">
-            <Button
-              size="lg"
-              onClick={() => navigate(-1)}
-              variant="outline"
-              className="gap-2"
-            >
-              {/* Use an arrow-left icon, matching NotFound pattern */}
-              <ArrowLeft className="h-5 w-5" />
-              Go Back
-            </Button>
+          <h2 className="mt-3 font-mono text-2xl md:text-3xl font-extrabold tracking-[-0.02em] text-foreground">
+            Member resource
+          </h2>
+
+          <p className="mt-4 max-w-[55ch] text-[15px] leading-relaxed text-ink-soft">
+            This page is for members only. Submit an application to unlock member resources.
+          </p>
+
+          <div className="mt-8 flex flex-col gap-3 md:flex-row">
             <Button
               size="lg"
               onClick={() => navigate("/applications/new")}
               variant="default"
-              className="gap-2"
+              className="font-mono text-sm font-semibold uppercase tracking-[0.1em]"
             >
-              Apply to join
-              <ArrowRight className="h-5 w-5" />
+              Apply to join <span aria-hidden="true">→</span>
+            </Button>
+            <Button
+              size="lg"
+              onClick={() => navigate(-1)}
+              variant="outline"
+              className="font-mono text-sm font-semibold uppercase tracking-[0.1em]"
+            >
+              <span aria-hidden="true">←</span> Go Back
             </Button>
           </div>
         </div>

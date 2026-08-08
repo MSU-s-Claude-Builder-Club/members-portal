@@ -69,21 +69,25 @@ export const EditModal = ({
         <>
             <Dialog open={open} onOpenChange={onClose}>
                 <DialogContent
-                    className={`max-w-3xl rounded-xl overflow-y-auto ${isMobile ? 'mx-4 max-w-[85vw] max-h-[85vh] overflow-x-hidden m-0' : 'max-h-[90vh]'}`}
+                    className={`max-w-3xl gap-0 overflow-y-auto rounded-none border border-border p-0 shadow-[8px_8px_0_0_hsl(var(--foreground))] ${isMobile ? 'mx-4 max-w-[85vw] max-h-[85vh] overflow-x-hidden m-0' : 'max-h-[90vh]'}`}
                 >
-                    <DialogHeader className="flex-shrink-0">
-                        <DialogTitle>{title}</DialogTitle>
-                        {description && <DialogDescription>{description}</DialogDescription>}
+                    <DialogHeader className="hatch flex-shrink-0 space-y-1 border-b border-border px-6 py-4 text-left">
+                        <DialogTitle className="font-mono text-lg font-extrabold tracking-[-0.02em]">{title}</DialogTitle>
+                        {description && (
+                            <DialogDescription className="font-mono text-xs text-muted-foreground">
+                                {description}
+                            </DialogDescription>
+                        )}
                     </DialogHeader>
 
-                    <div className="flex-1 overflow-y-auto">
-                        <form id="edit-modal-form" onSubmit={handleSubmit} className={`space-y-4 p-1`}>
+                    <div className="flex-1 overflow-y-auto px-6 py-5">
+                        <form id="edit-modal-form" onSubmit={handleSubmit} className="space-y-4">
                             {children}
                         </form>
                     </div>
 
                     <div
-                        className={`gap-2 pt-4 w-full flex flex-shrink-0 border-t bg-page/95 backdrop-blur supports-[backdrop-filter]:bg-page/60
+                        className={`flex w-full flex-shrink-0 gap-2 border-t border-border bg-page px-6 py-4
                             ${isMobile ? 'flex-col' : 'flex-row'}
                         `}
                     >
@@ -124,15 +128,17 @@ export const EditModal = ({
 
             {onDelete && (
                 <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-                    <AlertDialogContent>
+                    <AlertDialogContent className="rounded-none border border-border shadow-[8px_8px_0_0_hsl(var(--foreground))]">
                         <AlertDialogHeader>
-                            <div className="flex w-full justify-between items-center">
-                                <AlertDialogTitle className="text-left">Delete {deleteItemName || 'Item'}</AlertDialogTitle>
-                                <div className="h-8 w-8 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
-                                    <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+                            <div className="flex w-full items-center justify-between">
+                                <AlertDialogTitle className="text-left font-mono font-extrabold tracking-[-0.02em]">
+                                    Delete {deleteItemName || 'Item'}
+                                </AlertDialogTitle>
+                                <div className="flex h-8 w-8 items-center justify-center bg-destructive text-destructive-foreground">
+                                    <AlertTriangle className="h-5 w-5" />
                                 </div>
                             </div>
-                            <AlertDialogDescription className="text-left mt-2">
+                            <AlertDialogDescription className="mt-2 text-left">
                                 Are you sure you want to delete this {deleteItemName?.toLowerCase() || 'item'}? This action
                                 cannot be undone and will permanently remove all associated data.
                             </AlertDialogDescription>

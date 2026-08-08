@@ -28,8 +28,8 @@ export function DataTable({ columns, rows, footer, className = '' }: DataTablePr
     }[columns.length] || 'grid-cols-1';
 
     return (
-        <div className={`my-6 rounded-xl border border-border overflow-hidden ${className}`}>
-            <div className={`grid ${gridCols} bg-muted/50 border-b border-border text-xs font-semibold text-muted-foreground`}>
+        <div className={`my-6 rounded-none border border-border overflow-hidden ${className}`}>
+            <div className={`grid ${gridCols} border-b border-border font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground`}>
                 {columns.map((col) => (
                     <div key={col.key} className={`px-3 py-2.5 ${col.className || ''}`}>
                         {col.label}
@@ -39,7 +39,7 @@ export function DataTable({ columns, rows, footer, className = '' }: DataTablePr
             {rows.map((row, rowIndex) => (
                 <div
                     key={rowIndex}
-                    className={`grid ${gridCols} border-b border-border last:border-b-0 text-xs`}
+                    className={`grid ${gridCols} border-b border-hairline-faint last:border-b-0 text-xs transition-colors hover:bg-tint`}
                 >
                     {columns.map((col) => (
                         <div key={col.key} className={`px-3 py-2.5 ${col.className || ''}`}>
@@ -49,7 +49,7 @@ export function DataTable({ columns, rows, footer, className = '' }: DataTablePr
                 </div>
             ))}
             {footer && (
-                <div className="px-3 py-2 text-xs text-muted-foreground bg-muted/20">
+                <div className="border-t border-hairline-faint px-3 py-2 font-mono text-xs text-muted-foreground">
                     {footer}
                 </div>
             )}

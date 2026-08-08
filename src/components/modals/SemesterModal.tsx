@@ -180,15 +180,19 @@ const SemesterModal = ({ open, onClose, onSuccess }: SemesterModalProps) => {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className={`${isMobile ? 'max-w-[90vw]' : 'max-w-xl'} rounded-xl`}>
-        <DialogHeader>
-          <DialogTitle>Create New Term</DialogTitle>
-          <DialogDescription>
+      <DialogContent
+        className={`${isMobile ? 'max-w-[90vw]' : 'max-w-xl'} gap-0 rounded-none border border-border bg-page p-0 shadow-[8px_8px_0_0_hsl(var(--foreground))]`}
+      >
+        <DialogHeader className="hatch space-y-1 border-b border-border px-6 py-4 text-left">
+          <DialogTitle className="font-mono text-lg font-extrabold tracking-[-0.02em]">
+            Create New Term
+          </DialogTitle>
+          <DialogDescription className="font-mono text-xs text-muted-foreground">
             Add a new semester/term for projects and classes
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 p-6">
           <div className="space-y-2">
             <Label htmlFor="code" required>
               Code
@@ -200,7 +204,7 @@ const SemesterModal = ({ open, onClose, onSuccess }: SemesterModalProps) => {
               onChange={(e) => setFormData({ ...formData, code: e.target.value })}
               maxLength={10}
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="font-mono text-[11px] text-muted-foreground">
               e.g., S26 (Spring 2026), F27 (Fall 2027)
               {!isMobile
                 && ', Su26 (Summer 2026)'}
@@ -229,7 +233,7 @@ const SemesterModal = ({ open, onClose, onSuccess }: SemesterModalProps) => {
                   <Button
                     variant="secondary"
                     className={cn(
-                      'w-full justify-center text-left font-normal',
+                      'w-full justify-start border border-input bg-page px-3 font-mono text-sm font-normal text-foreground hover:bg-tint hover:text-foreground',
                       !formData.start_date && 'text-muted-foreground'
                     )}
                   >
@@ -262,7 +266,7 @@ const SemesterModal = ({ open, onClose, onSuccess }: SemesterModalProps) => {
                   <Button
                     variant="secondary"
                     className={cn(
-                      'w-full justify-center text-left font-normal',
+                      'w-full justify-start border border-input bg-page px-3 font-mono text-sm font-normal text-foreground hover:bg-tint hover:text-foreground',
                       !formData.end_date && 'text-muted-foreground'
                     )}
                   >
@@ -287,7 +291,7 @@ const SemesterModal = ({ open, onClose, onSuccess }: SemesterModalProps) => {
             </div>
           </div>
 
-          <DialogFooter className="gap-2">
+          <DialogFooter className="gap-2 border-t border-hairline-faint pt-4">
             <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>
               Cancel
             </Button>

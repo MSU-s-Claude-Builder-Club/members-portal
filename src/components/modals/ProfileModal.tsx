@@ -1,6 +1,4 @@
-import { RoleBadge } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -8,10 +6,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Trophy, Mail, GraduationCap, Crown, Users, Award, Linkedin, Github, Briefcase, BookOpen, Copy, Check } from 'lucide-react';
+import { Mail, Linkedin, Github, Briefcase, BookOpen, Copy, Check } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/database.types';
@@ -40,6 +37,25 @@ interface InvolvementBadge {
   semesterCode: string;
   name: string;
 }
+
+/** The one role-chip mapping (mono, uppercase, square). */
+const CHIP_BASE =
+  'inline-flex shrink-0 items-center whitespace-nowrap border px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em]';
+
+const roleChipClass = (member: MemberWithRole) =>
+  member.is_banned
+    ? 'border-border text-muted-foreground line-through decoration-primary decoration-2'
+    : member.role === 'e-board'
+      ? 'bg-primary text-primary-foreground border-primary'
+      : member.role === 'board'
+        ? 'bg-foreground text-page border-foreground'
+        : member.role === 'member'
+          ? 'border-border text-foreground'
+          : 'border-grey-3 text-grey-2';
+
+/** Mono eyebrow label for meta rows */
+const ROW_LABEL =
+  'shrink-0 font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground';
 
 const ProfileModal = ({ open = false, onClose, member, embedded = false, className = '' }: ProfileViewerProps) => {
   const [involvementBadges, setInvolvementBadges] = useState<InvolvementBadge[]>([]);
@@ -157,185 +173,165 @@ const ProfileModal = ({ open = false, onClose, member, embedded = false, classNa
       .slice(0, 2);
   };
 
-  const getRoleIcon = (role: AppRole) => {
-    switch (role) {
-      case 'e-board':
-        return <Crown className="h-4 w-4 text-yellow-500" />;
-      case 'board':
-        return <Award className="h-4 w-4 text-blue-500" />;
-      default:
-        return <Users className="h-4 w-4 text-green-500" />;
-    }
-  };
-
   const profileContent = member && (
-    <div className="space-y-6">
-      {/* Profile Header */}
-      <div className="flex flex-col items-center text-center space-y-4">
-        <Avatar className="h-24 w-24">
-          <AvatarImage src={member.profile_picture_url || undefined} />
-          <AvatarFallback className="text-2xl">
+    <div>
+      {/* Identity header */}
+      <div className="flex items-center gap-4 pb-4">
+        <Avatar className="h-20 w-20 shrink-0 rounded-none border border-border">
+          <AvatarImage src={member.profile_picture_url || undefined} className="rounded-none" />
+          <AvatarFallback className="rounded-none font-mono text-2xl">
             {member.full_name
               ? getInitials(member.full_name)
               : member.email.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
-        <div className="space-y-2">
-          <h3 className="text-2xl font-bold">
+        <div className="min-w-0 flex-1 space-y-2">
+          <h3 className="truncate font-mono text-xl font-extrabold tracking-[-0.02em]">
             {member.full_name || 'No name'}
           </h3>
-          <div className="flex items-center justify-center gap-2">
-            {getRoleIcon(member.role)}
-            <RoleBadge role={member.role} className="capitalize" />
-          </div>
+          <span className={`${CHIP_BASE} ${roleChipClass(member)}`}>{member.role}</span>
         </div>
       </div>
 
-      <Separator />
-
-      {/* Profile Info */}
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-muted-foreground">Email</p>
+      {/* Meta rows */}
+      <div className="border-t border-border">
+        <div className="flex items-center justify-between gap-4 border-b border-hairline-faint py-2.5">
+          <span className={ROW_LABEL}>Email</span>
           <button
             type="button"
-            className="flex items-center gap-2 rounded-[0.3rem] sm:rounded-[0.375rem] px-1 py-0.5 -ml-1 hover:bg-muted/60 transition-colors cursor-pointer group w-fit"
+            className="group -mr-1 flex min-w-0 cursor-pointer items-center gap-2 px-1 py-0.5 transition-colors hover:bg-tint"
             onClick={copyEmail}
+            title="Copy email"
           >
             <span className="relative inline-flex shrink-0 items-center justify-center text-muted-foreground">
               {emailCopied ? (
-                <Check className="h-4 w-4 text-green-600" />
+                <Check className="h-4 w-4 text-primary" />
               ) : (
-                <span className="inline-flex items-center justify-center h-4 w-4 transition-colors duration-400">
-                  <Mail
-                    className="absolute inset-0 h-4 w-4 transition-opacity duration-400 pointer-events-none group-hover:opacity-0 group-hover:aria-hidden:true"
-                  />
-                  <Copy
-                    className="absolute inset-0 h-4 w-4 transition-opacity duration-400 pointer-events-none opacity-0 group-hover:opacity-100 group-hover:aria-hidden:false"
-                  />
+                <span className="inline-flex h-4 w-4 items-center justify-center">
+                  <Mail className="pointer-events-none absolute inset-0 h-4 w-4 transition-opacity duration-200 group-hover:opacity-0" />
+                  <Copy className="pointer-events-none absolute inset-0 h-4 w-4 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
                 </span>
               )}
             </span>
-            <p className="text-sm">{member.email}</p>
+            <p className="truncate font-mono text-xs">{member.email}</p>
           </button>
         </div>
 
         {member.class_year && (
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-muted-foreground">Class Year</p>
-            <div className="flex items-center gap-2">
-              <GraduationCap className="h-4 w-4 text-muted-foreground" />
-              <p className="text-sm capitalize">{member.class_year}</p>
-            </div>
+          <div className="flex items-center justify-between gap-4 border-b border-hairline-faint py-2.5">
+            <span className={ROW_LABEL}>Class Year</span>
+            <p className="text-sm capitalize">{member.class_year}</p>
           </div>
         )}
 
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-muted-foreground">Club Points</p>
-          <div className="flex items-center gap-2">
-            <Trophy className="h-4 w-4 text-yellow-500" />
-            <p className="text-sm font-semibold">{member.points} points</p>
-          </div>
+        <div className="flex items-center justify-between gap-4 border-b border-hairline-faint py-2.5">
+          <span className={ROW_LABEL}>Points</span>
+          <p className="font-mono text-sm font-semibold tabular-nums">{member.points}</p>
         </div>
 
         {member.position && (
-          <div className="flex justify-between gap-4">
-            {member.position && (
-              <div className="space-y-2 flex-1">
-                <p className="text-sm font-medium text-muted-foreground">Position</p>
-                <p className="text-sm">{member.position}</p>
-              </div>
-            )}
+          <div className="flex items-center justify-between gap-4 border-b border-hairline-faint py-2.5">
+            <span className={ROW_LABEL}>Position</span>
+            <p className="truncate text-sm">{member.position}</p>
           </div>
         )}
 
-        {(member.linkedin_username || member.github_username) && (
-          <>
-            <Separator />
-            <div className="space-y-3">
-              <p className="text-sm font-medium text-muted-foreground">Social Links</p>
-              <div className="flex flex-col gap-2">
-                {member.linkedin_username && (
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start"
-                    onClick={() => window.open(`https://linkedin.com/in/${member.linkedin_username}`, '_blank')}
-                  >
-                    <Linkedin className="h-4 w-4 mr-2 text-blue-600" />
-                    View LinkedIn Profile
-                  </Button>
-                )}
-                {member.github_username && (
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start"
-                    onClick={() => window.open(`https://github.com/${member.github_username}`, '_blank')}
-                  >
-                    <Github className="h-4 w-4 mr-2" />
-                    View GitHub Profile
-                  </Button>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-
-        {!isMobile && involvementBadges.length > 0 && (
-          <>
-            <Separator />
-            <motion.div
-              className="relative rounded-md overflow-hidden"
-              initial={{ height: 0 }}
-              animate={{ height: 'auto' }}
-              transition={{ duration: 0.35, ease: 'easeInOut' }}
-            >
-              <motion.div
-                className="relative"
-                initial={{ y: -24 }}
-                animate={{ y: 0 }}
-                transition={{ duration: 0.45, ease: 'easeInOut', delay: 0.04 }}
-              >
-                <div className="space-y-3">
-                  <p className="text-sm font-medium text-muted-foreground">Involvement</p>
-                  <div className="flex flex-wrap gap-2">
-                    {involvementBadges.map((badge) => (
-                      <Tooltip key={badge.id}>
-                        <TooltipTrigger asChild>
-                          <span className="inline-block">
-                            <Badge
-                              variant="secondary"
-                              className="cursor-pointer flex items-center gap-1.5 px-2.5 py-1 hover:bg-secondary/80 transition-colors"
-                            >
-                              {badge.type === 'project' ? (
-                                <Briefcase className="h-3 w-3" />
-                              ) : (
-                                <BookOpen className="h-3 w-3" />
-                              )}
-                              <span>
-                                {badge.role} {badge.semesterCode}
-                              </span>
-                            </Badge>
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" align="center" className="max-w-xs">
-                          <p className="text-sm">{badge.name}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
-          </>
+        {member.term_joined && (
+          <div className="flex items-center justify-between gap-4 border-b border-hairline-faint py-2.5">
+            <span className={ROW_LABEL}>Term Joined</span>
+            <p className="font-mono text-sm tabular-nums">{member.term_joined}</p>
+          </div>
         )}
       </div>
+
+      {(member.linkedin_username || member.github_username) && (
+        <div className="space-y-2 pt-4">
+          <p className="font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Links</p>
+          <div className="flex flex-col gap-2">
+            {member.linkedin_username && (
+              <button
+                type="button"
+                aria-label="View LinkedIn profile"
+                onClick={() => window.open(`https://linkedin.com/in/${member.linkedin_username}`, '_blank')}
+                className="group flex w-full items-center justify-between gap-3 border border-border px-3 py-2.5 text-foreground transition-colors duration-200 hover:bg-foreground hover:text-page motion-reduce:transition-none"
+              >
+                <span className="flex min-w-0 items-center gap-2 font-mono text-xs">
+                  <Linkedin className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">linkedin.com/in/{member.linkedin_username}</span>
+                </span>
+                <span aria-hidden className="font-mono text-sm transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none">→</span>
+              </button>
+            )}
+            {member.github_username && (
+              <button
+                type="button"
+                aria-label="View GitHub profile"
+                onClick={() => window.open(`https://github.com/${member.github_username}`, '_blank')}
+                className="group flex w-full items-center justify-between gap-3 border border-border px-3 py-2.5 text-foreground transition-colors duration-200 hover:bg-foreground hover:text-page motion-reduce:transition-none"
+              >
+                <span className="flex min-w-0 items-center gap-2 font-mono text-xs">
+                  <Github className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">github.com/{member.github_username}</span>
+                </span>
+                <span aria-hidden className="font-mono text-sm transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none">→</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {!isMobile && involvementBadges.length > 0 && (
+        <motion.div
+          className="relative overflow-hidden pt-4"
+          initial={{ height: 0 }}
+          animate={{ height: 'auto' }}
+          transition={{ duration: 0.35, ease: 'easeInOut' }}
+        >
+          <motion.div
+            className="relative"
+            initial={{ y: -24 }}
+            animate={{ y: 0 }}
+            transition={{ duration: 0.45, ease: 'easeInOut', delay: 0.04 }}
+          >
+            <div className="space-y-3">
+              <p className="font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Involvement</p>
+              <div className="flex flex-wrap gap-2">
+                {involvementBadges.map((badge) => (
+                  <Tooltip key={badge.id}>
+                    <TooltipTrigger asChild>
+                      <span className="inline-block">
+                        <Badge
+                          variant="secondary"
+                          className="flex cursor-pointer items-center gap-1.5 border border-border bg-page px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-foreground hover:text-page"
+                        >
+                          {badge.type === 'project' ? (
+                            <Briefcase className="h-3 w-3" />
+                          ) : (
+                            <BookOpen className="h-3 w-3" />
+                          )}
+                          <span>
+                            {badge.role} {badge.semesterCode}
+                          </span>
+                        </Badge>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" align="center" className="max-w-xs">
+                      <p className="text-sm">{badge.name}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 
   // If embedded mode, return content directly without Dialog wrapper
   if (embedded) {
     return (
-      <div className={`bg-card border rounded-lg shadow-sm overflow-hidden ${className}`}>
+      <div className={`bg-page border border-border overflow-hidden ${className}`}>
         <div className="p-6">
           {profileContent}
         </div>
@@ -346,7 +342,7 @@ const ProfileModal = ({ open = false, onClose, member, embedded = false, classNa
   // Otherwise, return as modal (onOpenChange receives new open state; only call onClose when closing)
   return (
     <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose?.(); }}>
-      <DialogContent className="max-w-lg w-[95vw] mx-auto rounded-lg">
+      <DialogContent className="max-w-lg w-[95vw] mx-auto">
         <DialogHeader>
           <DialogTitle>Member Profile</DialogTitle>
           <DialogDescription>View member details</DialogDescription>

@@ -21,17 +21,25 @@ export default {
       padding: "2rem",
     },
     extend: {
+      fontFamily: {
+        // the display/reading voice
+        sans: ['Geist', 'ui-sans-serif', 'system-ui', '-apple-system', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+        // the machine voice: headlines, labels, code, numbers-as-furniture
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', '"Liberation Mono"', 'monospace'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         page: "hsl(var(--page))",
+        background: "hsl(var(--page))", // alias — stock shadcn primitives use bg-background
         foreground: "hsl(var(--foreground))",
-        cream: "hsl(var(--cream))",
-        "claude-peach": "hsl(var(--claude-peach))",
+        cream: "hsl(var(--cream))",                  // legacy alias → paper
+        "claude-peach": "hsl(var(--claude-peach))",  // legacy alias → accent
         "on-primary": "hsl(var(--on-primary))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--on-primary))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -40,6 +48,10 @@ export default {
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
         },
         accent: {
           DEFAULT: "hsl(var(--primary))",
@@ -63,11 +75,20 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // derived shades — named by job, defined in index.css
+        "accent-hover": "var(--accent-hover)",
+        "ink-soft": "var(--ink-soft)",
+        "grey-2": "var(--grey-2)",
+        "grey-3": "var(--grey-3)",
+        "grey-4": "var(--grey-4)",
+        "hairline-faint": "var(--hairline-faint)",
+        tint: "var(--tint)",
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        // the system has zero radius; these neutralize any straggler rounded-* class
+        lg: "0",
+        md: "0",
+        sm: "0",
       },
       animationDelay: {
         2000: "2s",
@@ -90,25 +111,10 @@ export default {
             height: "0",
           },
         },
-        blob: {
-          "0%": {
-            transform: "translate(0px, 0px) scale(1)",
-          },
-          "33%": {
-            transform: "translate(30px, -50px) scale(1.1)",
-          },
-          "66%": {
-            transform: "translate(-20px, 20px) scale(0.9)",
-          },
-          "100%": {
-            transform: "translate(0px, 0px) scale(1)",
-          },
-        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        blob: "blob 7s infinite",
       },
     },
   },
