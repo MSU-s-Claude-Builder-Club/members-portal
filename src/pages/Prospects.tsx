@@ -258,7 +258,7 @@ const Prospects = () => {
     });
   };
 
-  const canManageProspects = userRole === 'board' || userRole === 'e-board';
+  const canManageProspects = userRole === 'board' || userRole === 'admin';
 
   const termCount = new Set(prospects.map(p => p.term_joined ?? 'Unknown Term')).size;
 

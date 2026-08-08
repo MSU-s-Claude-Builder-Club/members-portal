@@ -13,7 +13,7 @@ const badgeVariants = cva(
         member: "bg-foreground text-page border-foreground",
         green: "bg-foreground text-page border-foreground",
 
-        // orange fill — featured/today/e-board/current
+        // orange fill — featured/today/admin/current
         board: "bg-primary text-primary-foreground border-primary",
         blue: "bg-primary text-primary-foreground border-primary",
 

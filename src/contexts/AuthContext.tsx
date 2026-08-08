@@ -189,7 +189,7 @@ async function fetchUserApplications(userId: string, role: AppRole): Promise<Use
   };
   const review = { pending: [] as ApplicationWithProfile[], decided: [] as ApplicationGroup[] };
 
-  if (role === 'e-board' || role === 'board') {
+  if (role === 'admin' || role === 'board') {
     let reviewQuery = supabase
       .from('applications')
       .select(applicationsSelect)
@@ -373,7 +373,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(null);
         profileCacheRef.current = null;
         await supabase.auth.signOut();
-        throw new Error('Your account has been banned. Please contact the e-board for more information.');
+        throw new Error('Your account has been banned. Please contact the admin for more information.');
       }
       profileCacheRef.current = { userId, data: profileData, timestamp: Date.now() };
       setProfile(profileData);
@@ -511,9 +511,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [user?.id, refetchRole, refetchProjects, refetchClasses, refetchApplications, refetchEvents]);
 
   const profileLoading = roleLoading || projectsLoading || classesLoading || applicationsLoading || (eventsQueryLoading ?? false) || (!!user && !role);
-  const isEBoard = role === 'e-board';
+  const isEBoard = role === 'admin';
   const isBoard = role === 'board';
-  const isBoardOrAbove = role === 'board' || role === 'e-board';
+  const isBoardOrAbove = role === 'board' || role === 'admin';
 
   const value: AuthContextType = {
     user,
@@ -529,11 +529,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     isEBoard,
     isBoard,
     isBoardOrAbove,
-    canManageRoles: role === 'e-board',
-    canManageApplications: role === 'board' || role === 'e-board',
-    canManageProjects: role === 'e-board' || role === 'board',
-    canManageClasses: role === 'board' || role === 'e-board',
-    canManageEvents: role === 'board' || role === 'e-board',
+    canManageRoles: role === 'admin',
+    canManageApplications: role === 'board' || role === 'admin',
+    canManageProjects: role === 'admin' || role === 'board',
+    canManageClasses: role === 'board' || role === 'admin',
+    canManageEvents: role === 'board' || role === 'admin',
     userProjects,
     projectsLoading,
     userClasses,
@@ -554,13 +554,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 // ---------- Role badges (used in header, profile, member cards) ----------
 function getRoleBadgeVariant(role: AppRole): 'default' | 'secondary' {
-  if (role === 'e-board') return 'default';
+  if (role === 'admin') return 'default';
   return role as 'default' | 'secondary';
 }
 
-/** Renders a role badge for any app role (e-board gets gold styling). Use for current user or other members. */
+/** Renders a role badge for any app role (admin gets gold styling). Use for current user or other members. */
 export function RoleBadge({ role, className }: { role: AppRole; className?: string }) {
-  if (role === 'e-board') {
+  if (role === 'admin') {
     return (
       <Badge
         className={`capitalize shrink-0 whitespace-nowrap sparkle gold-shimmer text-yellow-900 font-semibold border-2 border-yellow-400/50 relative ${className ?? ''}`}

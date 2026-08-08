@@ -45,7 +45,7 @@ const CHIP_BASE =
 const roleChipClass = (member: MemberWithRole) =>
   member.is_banned
     ? 'border-border text-muted-foreground line-through decoration-primary decoration-2'
-    : member.role === 'e-board'
+    : member.role === 'admin'
       ? 'bg-primary text-primary-foreground border-primary'
       : member.role === 'board'
         ? 'bg-foreground text-page border-foreground'

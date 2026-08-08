@@ -430,7 +430,7 @@ const ApplicationViewerPage = () => {
         );
     };
 
-    const canReview = user && (role === 'board' || role === 'e-board') && application?.user_id !== user.id;
+    const canReview = user && (role === 'board' || role === 'admin') && application?.user_id !== user.id;
     const deletionInfo = getDeletionInfo();
 
     if (loading) {

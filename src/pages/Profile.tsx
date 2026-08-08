@@ -43,7 +43,7 @@ const CHIP_BASE =
   'inline-flex shrink-0 items-center whitespace-nowrap border px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em]';
 
 const roleChipClass = (role: AppRole | null): string =>
-  role === 'e-board'
+  role === 'admin'
     ? 'bg-primary text-primary-foreground border-primary'
     : role === 'board'
       ? 'bg-foreground text-page border-foreground'

@@ -181,10 +181,10 @@ const Members = () => {
     setSearchParams({ id: member.id });
   };
 
-  const canManageRoles = role === 'e-board';
-  const canManageActions = role === 'board' || role === 'e-board';
+  const canManageRoles = role === 'admin';
+  const canManageActions = role === 'board' || role === 'admin';
 
-  const eboardCount = members.filter(m => m.role === 'e-board').length;
+  const eboardCount = members.filter(m => m.role === 'admin').length;
 
   const processedMembers = useMemo(() => {
     let filteredMembers = members;
@@ -200,7 +200,7 @@ const Members = () => {
         member.linkedin_username?.toLowerCase().includes(query)
       );
     }
-    const rolePriority = (r: string | null) => r === 'e-board' ? 1 : r === 'board' ? 2 : r === 'member' ? 3 : 4;
+    const rolePriority = (r: string | null) => r === 'admin' ? 1 : r === 'board' ? 2 : r === 'member' ? 3 : 4;
     return [...filteredMembers].sort((a, b) => {
       const roleDiff = rolePriority(a.role) - rolePriority(b.role);
       return roleDiff !== 0 ? roleDiff : (a.full_name || a.email).localeCompare(b.full_name || b.email);
@@ -242,7 +242,7 @@ const Members = () => {
           <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">Directory</p>
           <h1 className="mt-1 font-mono text-3xl md:text-4xl font-extrabold tracking-[-0.03em]">Members</h1>
           <p className="mt-2 font-mono text-xs text-muted-foreground tabular-nums">
-            {members.length} {members.length === 1 ? 'member' : 'members'} · {eboardCount} e-board
+            {members.length} {members.length === 1 ? 'member' : 'members'} · {eboardCount} admin
           </p>
         </div>
         <div className="flex items-center gap-3 md:shrink-0">

@@ -69,7 +69,7 @@ export default function Dashboard() {
       return {
         members: rolesRes?.filter(r => r.role !== 'prospect').length || 0,
         board: rolesRes?.filter(r => r.role === 'board').length || 0,
-        eBoard: rolesRes?.filter(r => r.role === 'e-board').length || 0,
+        eBoard: rolesRes?.filter(r => r.role === 'admin').length || 0,
       };
     },
     enabled: isEBoard,
@@ -362,7 +362,7 @@ export default function Dashboard() {
     const Icon = isProject ? FolderKanban : BookOpen;
     const link = isProject ? '/projects' : '/classes';
 
-    // For board/e-board: show all projects/classes from dashboard query
+    // For board/admin: show all projects/classes from dashboard query
     // For members: show their projects/classes from AuthContext
     let items: (Project | Class)[] = [];
     let title = '';

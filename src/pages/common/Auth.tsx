@@ -583,7 +583,7 @@ const Auth = () => {
         if (existingProfile?.is_banned) {
           toast({
             title: 'Account Banned',
-            description: 'This email address is associated with a banned account. Please contact the e-board for more information.',
+            description: 'This email address is associated with a banned account. Please contact the admin for more information.',
             variant: 'destructive',
           });
           setLoading(false);
@@ -607,11 +607,20 @@ const Auth = () => {
           throw new Error('User creation failed');
         }
 
-        // Store credentials for after verification
+        // If email confirmation is disabled, signUp returns a live session and
+        // the account is already active — skip the code step and log straight in.
+        if (authData.session) {
+          toast({
+            title: 'Account created',
+            description: 'Welcome! Finishing setting up your account…',
+          });
+          await signIn(email, password);
+          return;
+        }
+
+        // Otherwise a verification code was emailed — collect it next.
         setSignupEmail(email);
         setSignupPassword(password);
-
-        // Show verification code input
         setShowSignupVerification(true);
 
         toast({
@@ -624,10 +633,10 @@ const Auth = () => {
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
 
       if (errorMessage?.includes('banned')) {
-        setBanError('Your account has been banned. Please contact the e-board for more information.');
+        setBanError('Your account has been banned. Please contact the admin for more information.');
         toast({
           title: 'Account Banned',
-          description: 'Your account has been banned. Please contact the e-board for more information.',
+          description: 'Your account has been banned. Please contact the admin for more information.',
           variant: 'destructive',
         });
       } else if (errorMessage?.toLowerCase().includes('email not confirmed') ||

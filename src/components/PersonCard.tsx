@@ -49,7 +49,7 @@ const CHIP_BASE =
     'inline-flex shrink-0 items-center whitespace-nowrap border px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] transition-colors duration-200';
 
 const ROLE_CHIP: Record<string, string> = {
-    'e-board': 'bg-primary text-primary-foreground border-primary',
+    'admin': 'bg-primary text-primary-foreground border-primary',
     board: 'bg-foreground text-page border-foreground group-hover:bg-page group-hover:text-foreground group-hover:border-page',
     member: 'border-border text-foreground group-hover:border-page/60 group-hover:text-page',
     prospect: 'border-grey-3 text-grey-2 group-hover:border-page/40 group-hover:text-page/70',
@@ -72,15 +72,15 @@ export const PersonCard = ({
     currentUserRole,
     type,
 }: PersonCardProps) => {
-    // Board cannot manage themselves, board members, or e-board members
+    // Board cannot manage themselves, board members, or admin members
     const canManageThisPerson =
         canManage &&
         currentUserId !== person.id &&
-        !(currentUserRole === 'board' && (person.role === 'board' || person.role === 'e-board'));
+        !(currentUserRole === 'board' && (person.role === 'board' || person.role === 'admin'));
 
     const showManageButton = canManageThisPerson && !isMobile;
 
-    // Board cannot promote to e-board
+    // Board cannot promote to admin
     const canPromoteToEBoard = currentUserRole !== 'board';
 
     const chipClass = person.is_banned ? BANNED_CHIP : (ROLE_CHIP[person.role] ?? ROLE_CHIP.member);
@@ -181,7 +181,7 @@ export const PersonCard = ({
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="center" className="w-44" onClick={(e) => e.stopPropagation()}>
-                            {/* Member Management - Only show role change for e-board */}
+                            {/* Member Management - Only show role change for admin */}
                             {type === 'member' && onRoleChange && canChangeRoles && (
                                 <>
                                     <DropdownMenuSub>
@@ -207,8 +207,8 @@ export const PersonCard = ({
                                                 Board
                                             </DropdownMenuItem>
                                             <DropdownMenuItem
-                                                onClick={() => onRoleChange(person.id, 'e-board')}
-                                                disabled={person.role === 'e-board' || !canPromoteToEBoard}
+                                                onClick={() => onRoleChange(person.id, 'admin')}
+                                                disabled={person.role === 'admin' || !canPromoteToEBoard}
                                                 className="font-mono text-xs uppercase tracking-[0.08em]"
                                             >
                                                 <Crown className="h-4 w-4" />

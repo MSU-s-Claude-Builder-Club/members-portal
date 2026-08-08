@@ -569,7 +569,7 @@ export type Database = {
       delete_profile: { Args: { target_user_id: string }; Returns: Json }
     }
     Enums: {
-      app_role: "prospect" | "member" | "board" | "e-board"
+      app_role: "prospect" | "member" | "board" | "admin"
       application_status: "pending" | "accepted" | "rejected"
       application_type: "board" | "project" | "class"
       class_member_type: "teacher" | "student"
@@ -705,7 +705,7 @@ export const Constants = {
   },
   public: {
     Enums: {
-      app_role: ["prospect", "member", "board", "e-board"],
+      app_role: ["prospect", "member", "board", "admin"],
       application_status: ["pending", "accepted", "rejected"],
       application_type: ["board", "project", "class"],
       class_member_type: ["teacher", "student"],

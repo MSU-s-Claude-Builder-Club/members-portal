@@ -268,9 +268,9 @@ const Events = () => {
 
 
   const getAllowedRoles = (): AppRole[] => {
-    if (rsvpRequired) return ['member', 'board', 'e-board'];
-    if (inviteProspects) return ['prospect', 'member', 'board', 'e-board'];
-    return ['member', 'board', 'e-board'];
+    if (rsvpRequired) return ['member', 'board', 'admin'];
+    if (inviteProspects) return ['prospect', 'member', 'board', 'admin'];
+    return ['member', 'board', 'admin'];
   };
 
   const handleSubmit = async () => {
@@ -1172,10 +1172,10 @@ const Events = () => {
           <p className="border-t border-hairline-faint pt-3 font-mono text-[11px] text-muted-foreground">
             Open to:{' '}
             {rsvpRequired
-              ? 'members, board, and e-board only'
+              ? 'members, board, and admin only'
               : inviteProspects
                 ? 'all members including prospects'
-                : 'members, board, and e-board'}
+                : 'members, board, and admin'}
           </p>
         </div>
 

@@ -112,8 +112,10 @@ enable_signup = true
 double_confirm_changes = true
 
 # Require email confirmation before signing in
-# Set to true to require users to verify their email before they can sign in
-enable_confirmations = true
+# Set to false so anyone can create an account and sign in immediately without a
+# verification email (also avoids the built-in-mailer bounce/rate-limit issues on
+# unverified addresses). Re-enable once custom SMTP (Resend) is configured.
+enable_confirmations = false
 
 # Require reauthentication for password changes
 secure_password_change = false
