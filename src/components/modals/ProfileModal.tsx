@@ -337,7 +337,7 @@ const ProfileModal = ({ open = false, onClose, member, embedded = false, classNa
   // Otherwise, return as a right-side sidebar (onOpenChange receives new open state; only call onClose when closing)
   return (
     <Sheet open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose?.(); }}>
-      <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-md">
+      <SheetContent side="right" style={{ width: '100%', maxWidth: '26rem' }} className="overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Member Profile</SheetTitle>
           <SheetDescription>View member details</SheetDescription>
