@@ -411,13 +411,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     mountedRef.current = true;
 
-    // Keep React state in step with GoTrue. This matters most for email
-    // confirmation: clicking the link in the signup email lands back on /auth
-    // with the tokens in the URL fragment, and supabase-js exchanges them
-    // asynchronously (detectSessionInUrl). Without this listener the exchange
-    // lands after our one-shot getSession() and the freshly confirmed member
-    // just sees the login form again. It also picks up the session created by
-    // verifyOtp() when they type the code instead.
+    // Keep React state in step with GoTrue. sign-up.html is code-only, so the
+    // signup path is carried by verifyOtp() rather than a link - and verifyOtp
+    // mints a session that a one-shot getSession() on mount would never see.
+    // This also propagates sign-out across tabs and keeps `session` fresh across
+    // token refreshes.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
       if (!mountedRef.current) return;
       setSession(s);
@@ -433,6 +431,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Never await supabase calls inside this callback - it can deadlock the
       // auth client. Defer to a macrotask instead.
       const userId = s.user.id;
+      // A different identity arriving (e.g. another tab signed in) must not keep
+      // rendering the previous member's profile until the fetch lands.
+      if (profileCacheRef.current && profileCacheRef.current.userId !== userId) {
+        setProfile(null);
+        profileCacheRef.current = null;
+      }
       if (event === 'TOKEN_REFRESHED' && profileCacheRef.current?.userId === userId) return;
       setTimeout(() => {
         if (mountedRef.current) void fetchProfile(userId);
@@ -542,7 +546,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-subscribe when user id changes; refetches are stable
   }, [user?.id, refetchRole, refetchProjects, refetchClasses, refetchApplications, refetchEvents]);
 
-  const profileLoading = roleLoading || projectsLoading || classesLoading || applicationsLoading || (eventsQueryLoading ?? false) || (!!user && !role);
+  // `(!!user && !profile)` matters because of the onAuthStateChange listener: it
+  // flips `loading` to false at INITIAL_SESSION, before the deferred fetchProfile
+  // resolves. Previously `loading === false && user` implied a non-null profile,
+  // and consumers rely on that - Dashboard derefs `profile.full_name` unguarded.
+  const profileLoading = roleLoading || projectsLoading || classesLoading || applicationsLoading || (eventsQueryLoading ?? false) || (!!user && !role) || (!!user && !profile);
   const isEBoard = role === 'admin';
   const isBoard = role === 'board';
   const isBoardOrAbove = role === 'board' || role === 'admin';

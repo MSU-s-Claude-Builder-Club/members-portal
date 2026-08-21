@@ -70,14 +70,6 @@ const Auth = () => {
       const errorCode = hashParams.get('error_code');
       const errorDescription = hashParams.get('error_description');
 
-      console.log('Auth page loaded with hash params:', {
-        hasAccessToken: !!accessToken,
-        type,
-        error,
-        errorCode,
-        fullHash: hash.substring(0, 50) + '...' // Log first 50 chars for debugging
-      });
-
       // Handle password reset errors
       if (error) {
         if (errorCode === 'otp_expired') {
@@ -142,13 +134,21 @@ const Auth = () => {
   useEffect(() => {
     if (authLoading) return; // Wait for auth to initialize
 
+    // verifyOtp() mints a real session, and auth-js emits SIGNED_IN for it
+    // (PASSWORD_RECOVERY is only emitted for type:'recovery'). Now that
+    // AuthContext listens for that, a member part-way through a password reset
+    // counts as "logged in" here - and without this guard they get bounced to
+    // the dashboard with their password silently unchanged, turning "Forgot
+    // Password?" into a passwordless login. Stay put until they've set one.
+    if (isResettingPassword || showCodeInput) return;
+
     if (user) {
       const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
       // Navigate to stored redirect or default to dashboard
       // ProtectedRoute will handle profile completion and redirect clearing
       navigate(redirectUrl || '/dashboard', { replace: true });
     }
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, navigate, isResettingPassword, showCodeInput]);
 
   const validateEmail = (email: string) => {
     if (!isValidEduEmail(email)) {
@@ -200,11 +200,17 @@ const Auth = () => {
       });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      toast(isEmailDeliveryError(errorMessage)
+        ? {
+          title: "Couldn't send the email",
+          description: 'Our email service is temporarily unavailable. Please wait a minute and try again — if it keeps failing, contact RSO.claudemsu@msu.edu.',
+          variant: 'destructive',
+        }
+        : {
+          title: 'Error',
+          description: errorMessage,
+          variant: 'destructive',
+        });
     } finally {
       setLoading(false);
     }
@@ -326,11 +332,17 @@ const Auth = () => {
       });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      toast(isEmailDeliveryError(errorMessage)
+        ? {
+          title: "Couldn't send the email",
+          description: 'Our email service is temporarily unavailable. Please wait a minute and try again — if it keeps failing, contact RSO.claudemsu@msu.edu.',
+          variant: 'destructive',
+        }
+        : {
+          title: 'Error',
+          description: errorMessage,
+          variant: 'destructive',
+        });
     } finally {
       setLoading(false);
     }

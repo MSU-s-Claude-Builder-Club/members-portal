@@ -12,7 +12,11 @@ on:
         default: false
 
 jobs:
+  # Only on a real push. Without this gate, dispatching the workflow just to push
+  # auth config would also re-run db push and functions deploy, and race the
+  # config push against them on the same project.
   migrate-database:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
