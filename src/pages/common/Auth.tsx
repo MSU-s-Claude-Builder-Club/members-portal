@@ -27,6 +27,23 @@ const isEmailDeliveryError = (message: string) => {
   );
 };
 
+/**
+ * Survives a remount mid-reset. verifyOtp leaves a live session behind, so if
+ * the flag lived only in component state, an F5 on the new-password screen (or
+ * a back/forward) would restore the session, drop the redirect guard, and drop
+ * the member on the dashboard with their password never changed.
+ */
+const PASSWORD_RESET_FLAG = 'cbc.passwordResetInProgress';
+
+/**
+ * An account that never confirmed its address gets a signup token rather than a
+ * magic-link one, and type:'email' rejects it. Retry only for that case.
+ */
+const shouldRetryAsSignupToken = (error: { status?: number; message: string }) => {
+  if (error.status === 429 || (error.status ?? 0) >= 500) return false;
+  return /token|otp|invalid|expired/i.test(error.message);
+};
+
 const Auth = () => {
   const location = useLocation();
   const hash = location.hash?.toLowerCase() || '';
@@ -38,7 +55,7 @@ const Auth = () => {
   const [banError, setBanError] = useState<string | null>(null);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [showResendVerification, setShowResendVerification] = useState(false);
-  const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(() => sessionStorage.getItem(PASSWORD_RESET_FLAG) === '1');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [resetCode, setResetCode] = useState('');
@@ -53,7 +70,7 @@ const Auth = () => {
   const [loginVerificationCode, setLoginVerificationCode] = useState('');
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { user, signIn, loading: authLoading } = useAuth();
+  const { user, signIn, signOut, loading: authLoading } = useAuth();
   const isMobile = useIsMobile();
 
   // Check for password reset token on mount
@@ -111,6 +128,11 @@ const Auth = () => {
 
     checkForResetToken();
   }, [toast, navigate]);
+
+  useEffect(() => {
+    if (isResettingPassword) sessionStorage.setItem(PASSWORD_RESET_FLAG, '1');
+    else sessionStorage.removeItem(PASSWORD_RESET_FLAG);
+  }, [isResettingPassword]);
 
   // Sync tab with URL hash (#signup → signup, #login or default → login)
   useEffect(() => {
@@ -448,13 +470,16 @@ const Auth = () => {
         type: 'email',
       });
 
-      if (error) {
+      // Only worth a second attempt when the token itself was rejected. Retrying
+      // a 429 or a 5xx just spends another slot from token_verifications (30 per
+      // 5 min) and reports a misleading reason.
+      if (error && shouldRetryAsSignupToken(error)) {
         const retry = await supabase.auth.verifyOtp({
           email: resetEmail,
           token: resetCode,
           type: 'signup',
         });
-        if (!retry.error) error = null;
+        error = retry.error;
       }
 
       if (error) throw error;
@@ -535,9 +560,16 @@ const Auth = () => {
 
       if (error) throw error;
 
+      // signOut defaults to global scope, so this revokes every refresh token
+      // for the account - if the reset was prompted by a compromise, whoever
+      // else was signed in is evicted too. It also clears `user`, which is what
+      // makes the navigate below stick instead of being clobbered by the
+      // logged-in redirect effect.
+      await signOut();
+
       toast({
         title: 'Password Reset Successful',
-        description: 'Your password has been updated. You can now log in.',
+        description: 'Your password has been updated. Please log in with your new password.',
       });
 
       // Clear the form and reset state
@@ -545,8 +577,8 @@ const Auth = () => {
       setConfirmPassword('');
       setIsResettingPassword(false);
       setResetEmail('');
+      sessionStorage.removeItem('redirectAfterLogin');
 
-      // Clear URL hash
       navigate('/auth#login', { replace: true });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
@@ -1019,11 +1051,15 @@ const Auth = () => {
                 type="button"
                 variant="ghost"
                 className={`w-full hover:bg-transparent hover:text-primary transition-colors duration-200 motion-reduce:transition-none ${isMobile ? 'h-11 text-sm' : ''}`}
-                onClick={() => {
+                onClick={async () => {
                   setIsResettingPassword(false);
                   setNewPassword('');
                   setConfirmPassword('');
                   setResetEmail('');
+                  // verifyOtp left a live session behind. Abandoning the reset
+                  // without dropping it just logs them into the account they
+                  // came here to re-secure.
+                  await signOut();
                   navigate('/auth#login', { replace: true });
                 }}
               >
