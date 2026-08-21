@@ -83,6 +83,8 @@ additional_redirect_urls = [
   "https://claudemsu.vercel.app/auth",
   "http://localhost:8080",
   "http://localhost:8080/auth",
+  "http://127.0.0.1:8080",
+  "http://127.0.0.1:8080/auth",
 ]
 
 # Token and session settings
@@ -173,21 +175,26 @@ sender_name = "Claude Builder Club"
 subject = "Confirm Your Email - Claude Builder Club"
 content_path = "./supabase/emails/sign-up.html"
 
-# Password reset email
+# Password reset email. NOTE: nothing in src/ calls resetPasswordForEmail(), so
+# GoTrue never sends this today - the reset flow goes through magic_link below.
+# Kept configured so the template is correct if that flow is ever switched over.
 [auth.email.template.recovery]
 subject = "Reset Your Password - Claude Builder Club"
 content_path = "./supabase/emails/reset-password.html"
 
-# Magic link email
-[auth.email.template.otp]
-subject = "Your OTP - Claude Builder Club"
+# One-time-code email. This is the template handleForgotPassword() actually
+# triggers: it calls signInWithOtp(), and GoTrue sends `magic_link` for that -
+# NOT `recovery`. magic-link.html is written around {{ .Token }} to match the
+# code box the reset UI shows.
+#
+# This stanza was previously keyed `[auth.email.template.otp]`. There is no such
+# template in GoTrue (the valid names are confirmation, recovery, magic_link,
+# invite, email_change, reauthentication) and the CLI accepts unknown keys
+# without complaint, so it was silently dropped on every push - leaving password
+# reset on Supabase's stock link-only email while the UI asked for a code.
+[auth.email.template.magic_link]
+subject = "Your verification code - Claude Builder Club"
 content_path = "./supabase/emails/magic-link.html"
-
-
-# Magic link email (passwordless sign-in)
-# [auth.email.template.magic_link]
-# subject = "Sign in to Claude Builder Club"
-# content_path = "./supabase/emails/magic-link.html"
 
 # Email change confirmation (sent to current email)
 # [auth.email.template.email_change]
@@ -245,7 +252,10 @@ openai_api_key = "env(OPENAI_API_KEY)"
 # EMAIL TESTING (INBUCKET)
 # =============================================================================
 # Local email testing server - view emails at http://localhost:54324
-# Emails are NOT actually sent in local development
+# WARNING: [auth.email.smtp] above is enabled, which takes precedence over
+# Inbucket. A local `supabase start` will send REAL mail through Resend to real
+# addresses and burn live quota. Set `enabled = false` under [auth.email.smtp]
+# before doing local auth testing.
 [inbucket]
 enabled = true
 port = 54324
@@ -316,21 +326,23 @@ verify_jwt = false
 # =============================================================================
 # NOTES FOR PRODUCTION DEPLOYMENT
 # =============================================================================
-# This config.toml is for LOCAL DEVELOPMENT ONLY
-# Production auth settings MUST be configured via Supabase Dashboard
+# This file is the SOURCE OF TRUTH for auth settings, not just local dev.
+# Do NOT hand-edit auth settings in the Supabase Dashboard: the next
+# `supabase config push` overwrites them, so dashboard edits silently disappear.
+# Change them here and push instead.
 #
-# Via CLI (code-managed):
-# - supabase link --project-ref your-project-ref
-# - supabase db push (migrations, RLS policies, functions)
+# Deployed automatically on push to main (.github/workflows/deploy.yml):
+# - supabase db push          (migrations, RLS policies)
 # - supabase functions deploy (edge functions)
 #
-# Via Dashboard (one-time setup):
-# - Authentication → Email → SMTP Settings (Resend configuration)
-# - Authentication → Email Templates (upload sign-up.html, reset-password.html)
-# - Authentication → Rate Limits (increase email_sent limit to 100+)
-# - Authentication → URL Configuration (site_url, redirect_urls)
+# Deployed only when you ask for it (Actions -> Deploy -> Run workflow, with
+# "Also push supabase/config.toml" ticked):
+# - supabase config push      (site_url, redirect allow-list, enable_confirmations,
+#                              SMTP, rate limits, and the email templates under
+#                              supabase/emails/: sign-up.html and magic-link.html)
 #
-# Remember:
-# - Upload email templates from supabase/emails/ to dashboard
-# - Set RESEND_API_KEY in production environment variables
-# - Test email flows after deployment
+# Requires the RESEND_API_KEY repo secret - [auth.email.smtp] reads the SMTP
+# password from it, and pushing an empty password would break every auth email.
+#
+# After changing anything here, test both flows end to end: signup confirmation
+# and password reset.

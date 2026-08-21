@@ -183,6 +183,7 @@ const Auth = () => {
         email,
         options: {
           shouldCreateUser: false, // Don't create new users during password reset
+          emailRedirectTo: `${window.location.origin}/auth`,
         },
       });
 
@@ -219,7 +220,7 @@ const Auth = () => {
       return;
     }
 
-    if (verificationCode.length < 6) {
+    if (verificationCode.length !== 6) {
       toast({
         title: 'Invalid Code',
         description: 'Please enter the complete verification code.',
@@ -345,7 +346,7 @@ const Auth = () => {
       return;
     }
 
-    if (loginVerificationCode.length < 6) {
+    if (loginVerificationCode.length !== 6) {
       toast({
         title: 'Invalid Code',
         description: 'Please enter the complete verification code.',
@@ -414,7 +415,7 @@ const Auth = () => {
       return;
     }
 
-    if (resetCode.length < 6) {
+    if (resetCode.length !== 6) {
       toast({
         title: 'Invalid Code',
         description: 'Please enter the complete verification code.',
@@ -425,12 +426,24 @@ const Auth = () => {
 
     setLoading(true);
     try {
-      // Verify the OTP code - this will log the user in
-      const { error } = await supabase.auth.verifyOtp({
+      // Verify the OTP code - this will log the user in.
+      // An account that has never confirmed its address gets a *signup* token
+      // from GoTrue rather than a magic-link one, and type:'email' rejects it.
+      // Retry as 'signup' so those members aren't dead-ended on the reset screen.
+      let { error } = await supabase.auth.verifyOtp({
         email: resetEmail,
         token: resetCode,
         type: 'email',
       });
+
+      if (error) {
+        const retry = await supabase.auth.verifyOtp({
+          email: resetEmail,
+          token: resetCode,
+          type: 'signup',
+        });
+        if (!retry.error) error = null;
+      }
 
       if (error) throw error;
 
@@ -616,10 +629,11 @@ const Auth = () => {
           return;
         }
 
-        // Sign up with OTP verification. emailRedirectTo controls where the
-        // link in the confirmation email sends people back to — without it
-        // GoTrue falls back to the project's Site URL, which is how confirmation
-        // links end up pointing at localhost instead of the live site.
+        // Sign up with OTP verification. sign-up.html is code-only, so today
+        // nothing clickable ships in that mail; emailRedirectTo is set anyway so
+        // the flow stays correct if the template ever regains a link (and because
+        // GoTrue otherwise falls back to Site URL, which is how these ended up
+        // pointing at localhost in the first place).
         const { data: authData, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
@@ -806,8 +820,8 @@ const Auth = () => {
                   id="verificationCode"
                   type="text"
                   value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 8))}
-                  maxLength={8}
+                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  maxLength={6}
                   placeholder="Enter code from email"
                   className="text-center font-mono text-2xl tracking-widest tabular-nums"
                 />
@@ -860,8 +874,8 @@ const Auth = () => {
                   id="loginVerificationCode"
                   type="text"
                   value={loginVerificationCode}
-                  onChange={(e) => setLoginVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 8))}
-                  maxLength={8}
+                  onChange={(e) => setLoginVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  maxLength={6}
                   placeholder="Enter code from email"
                   className="text-center font-mono text-2xl tracking-widest tabular-nums"
                 />
@@ -916,8 +930,8 @@ const Auth = () => {
                   id="resetCode"
                   type="text"
                   value={resetCode}
-                  onChange={(e) => setResetCode(e.target.value.replace(/\D/g, '').slice(0, 8))}
-                  maxLength={8}
+                  onChange={(e) => setResetCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  maxLength={6}
                   placeholder="Enter code from email"
                   className="text-center font-mono text-2xl tracking-widest tabular-nums"
                 />
