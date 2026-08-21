@@ -64,13 +64,26 @@ allowed_cidrs_v6 = ["::/0"]
 [auth]
 enabled = true
 
-# IMPORTANT: Update these URLs for production!
-# The base URL of your website - used as an allow-list for redirects and in emails
-site_url = "http://127.0.0.1:3000"
+# The base URL of the site - used as the allow-list root for redirects and as the
+# fallback target for links inside auth emails. This MUST be the live site: when
+# it pointed at 127.0.0.1 every "confirm your email" link led members to a dead
+# localhost page.
+site_url = "https://claudemsu.dev"
 
-# A list of *exact* URLs that auth providers are permitted to redirect to post authentication
-# Add your production URLs here: ["https://claudemsu.dev", "https://www.claudemsu.dev"]
-additional_redirect_urls = ["https://127.0.0.1:3000"]
+# A list of *exact* URLs that auth providers are permitted to redirect to post
+# authentication. The frontend passes emailRedirectTo: `${window.location.origin}/auth`,
+# so every origin the app is served from needs an entry here or GoTrue silently
+# falls back to site_url.
+additional_redirect_urls = [
+  "https://claudemsu.dev",
+  "https://claudemsu.dev/auth",
+  "https://www.claudemsu.dev",
+  "https://www.claudemsu.dev/auth",
+  "https://claudemsu.vercel.app",
+  "https://claudemsu.vercel.app/auth",
+  "http://localhost:8080",
+  "http://localhost:8080/auth",
+]
 
 # Token and session settings
 jwt_expiry = 3600  # 1 hour (in seconds)
@@ -90,8 +103,10 @@ password_requirements = ""  # Options: "letters_digits", "lower_upper_letters_di
 # RATE LIMITING
 # =============================================================================
 [auth.rate_limit]
-# Number of emails per hour (local development - captured by Inbucket)
-email_sent = 10  # Reasonable for local testing
+# Number of auth emails per hour. The old value of 10 was sized for Inbucket and
+# throttled real signup bursts (a single club callout can exceed it in minutes).
+# Safe to raise now that Resend, not the built-in mailer, sends the mail.
+email_sent = 100
 # Number of sessions that can be refreshed in a 5 minute interval per IP address
 token_refresh = 150
 # Number of sign up and sign-in requests in a 5 minute interval per IP address
@@ -111,11 +126,11 @@ enable_signup = true
 # If false, only new email needs confirmation
 double_confirm_changes = true
 
-# Require email confirmation before signing in
-# Set to false so anyone can create an account and sign in immediately without a
-# verification email (also avoids the built-in-mailer bounce/rate-limit issues on
-# unverified addresses). Re-enable once custom SMTP (Resend) is configured.
-enable_confirmations = false
+# Require email confirmation before signing in. This is ON deliberately: members
+# must prove they own the .edu address they sign up with. It only works because
+# [auth.email.smtp] below routes mail through Resend - with the built-in Supabase
+# mailer this silently fails for anyone outside the project team.
+enable_confirmations = true
 
 # Require reauthentication for password changes
 secure_password_change = false
@@ -130,11 +145,25 @@ otp_expiry = 3600  # OTP expiration time in seconds (1 hour)
 # -----------------------------------------------------------------------------
 # SMTP CONFIGURATION
 # -----------------------------------------------------------------------------
-# NOTE: SMTP is disabled for local development
-# All emails are captured by Inbucket at http://localhost:54324
-# Configure SMTP in production via Supabase Dashboard → Authentication → Email
-# [auth.email.smtp]
-# enabled = false
+# Auth email (signup confirmation, password reset) goes out through Resend on the
+# already-DKIM-verified claudemsu.dev domain - the same sender the
+# process-application-update edge function uses.
+#
+# Supabase's built-in mailer is NOT a substitute: it is capped at a few messages
+# per hour and refuses to deliver to addresses outside the project team, which is
+# why confirmation codes never reached students' @msu.edu inboxes.
+#
+# `pass` is read from the RESEND_API_KEY environment variable - the key itself is
+# never committed. Set it locally before `supabase config push`, and as a repo
+# secret for the Deploy workflow.
+[auth.email.smtp]
+enabled = true
+host = "smtp.resend.com"
+port = 465
+user = "resend"
+pass = "env(RESEND_API_KEY)"
+admin_email = "noreply@claudemsu.dev"
+sender_name = "Claude Builder Club"
 
 # -----------------------------------------------------------------------------
 # CUSTOM EMAIL TEMPLATES

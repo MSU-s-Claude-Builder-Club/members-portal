@@ -8,6 +8,10 @@ on:
 jobs:
   migrate-database:
     runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      # SMTP password for [auth.email.smtp] in supabase/config.toml.
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
     steps:
       - uses: actions/checkout@v3
 
@@ -16,15 +20,27 @@ jobs:
         with:
           version: latest
 
+      - name: Link project
+        run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+
       - name: Run Migrations
+        run: supabase db push
+
+      # Auth settings used to be dashboard-only, which is how production drifted
+      # into "confirmation required" with no working mailer and a localhost Site
+      # URL. Pushing config.toml keeps Site URL, redirect allow-list, the
+      # confirmation toggle, SMTP and the email templates in version control.
+      #
+      # Skipped rather than failed when RESEND_API_KEY is absent: pushing an
+      # empty SMTP password would knock out every auth email.
+      - name: Push auth & project config
+        if: env.RESEND_API_KEY != ''
+        run: supabase config push
+
+      - name: Warn if auth config was skipped
+        if: env.RESEND_API_KEY == ''
         run: |
-          supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
-          supabase db push
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          echo "::warning title=Auth config not pushed::RESEND_API_KEY secret is unset, so 'supabase config push' was skipped. Signup confirmation emails will keep using whatever is currently set in the dashboard."
 
       - name: Deploy Edge Functions
-        run: |
-          supabase functions deploy
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase functions deploy

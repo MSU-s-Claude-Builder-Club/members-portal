@@ -410,6 +410,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     mountedRef.current = true;
+
+    // Keep React state in step with GoTrue. This matters most for email
+    // confirmation: clicking the link in the signup email lands back on /auth
+    // with the tokens in the URL fragment, and supabase-js exchanges them
+    // asynchronously (detectSessionInUrl). Without this listener the exchange
+    // lands after our one-shot getSession() and the freshly confirmed member
+    // just sees the login form again. It also picks up the session created by
+    // verifyOtp() when they type the code instead.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
+      if (!mountedRef.current) return;
+      setSession(s);
+      setUser(s?.user ?? null);
+      setLoading(false);
+
+      if (event === 'SIGNED_OUT' || !s?.user) {
+        setProfile(null);
+        profileCacheRef.current = null;
+        return;
+      }
+
+      // Never await supabase calls inside this callback - it can deadlock the
+      // auth client. Defer to a macrotask instead.
+      const userId = s.user.id;
+      if (event === 'TOKEN_REFRESHED' && profileCacheRef.current?.userId === userId) return;
+      setTimeout(() => {
+        if (mountedRef.current) void fetchProfile(userId);
+      }, 0);
+    });
+
     const initAuth = async () => {
       try {
         const { data: { session: s } } = await supabase.auth.getSession();
@@ -422,7 +451,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
     initAuth();
-    return () => { mountedRef.current = false; };
+    return () => {
+      mountedRef.current = false;
+      subscription.unsubscribe();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchProfile is stable (uses refs), run once on mount
   }, []);
 

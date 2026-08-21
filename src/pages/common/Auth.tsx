@@ -11,6 +11,22 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { isValidEduEmail } from '@/lib/validation';
 
+/**
+ * GoTrue reports SMTP/transport failures as opaque 500s and its own throttling as
+ * 429s. Both mean "the account is fine, the email did not go out" — which needs a
+ * very different message from a bad password.
+ */
+const isEmailDeliveryError = (message: string) => {
+  const m = message.toLowerCase();
+  return (
+    m.includes('error sending confirmation email') ||
+    m.includes('error sending email') ||
+    m.includes('email rate limit exceeded') ||
+    m.includes('over_email_send_rate_limit') ||
+    m.includes('smtp')
+  );
+};
+
 const Auth = () => {
   const location = useLocation();
   const hash = location.hash?.toLowerCase() || '';
@@ -228,8 +244,15 @@ const Auth = () => {
         description: 'Your account has been verified. Logging you in...',
       });
 
-      // Log the user in with their credentials
-      await signIn(signupEmail, signupPassword);
+      // verifyOtp already returned a session, so the user is authenticated at
+      // this point; AuthContext's onAuthStateChange listener picks it up. The
+      // explicit signIn is only to populate the profile eagerly, so a failure
+      // here must not be reported as a failed verification.
+      try {
+        await signIn(signupEmail, signupPassword);
+      } catch (signInError) {
+        console.warn('Post-verification signIn failed; relying on the verified session', signInError);
+      }
 
       // Clear verification state
       setShowSignupVerification(false);
@@ -282,6 +305,9 @@ const Auth = () => {
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: emailToUse,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth`,
+        },
       });
 
       if (error) throw error;
@@ -590,11 +616,15 @@ const Auth = () => {
           return;
         }
 
-        // Sign up with OTP verification
+        // Sign up with OTP verification. emailRedirectTo controls where the
+        // link in the confirmation email sends people back to — without it
+        // GoTrue falls back to the project's Site URL, which is how confirmation
+        // links end up pointing at localhost instead of the live site.
         const { data: authData, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
+            emailRedirectTo: `${window.location.origin}/auth`,
             data: {
               full_name: fullName,
             },
@@ -605,6 +635,20 @@ const Auth = () => {
 
         if (!authData.user) {
           throw new Error('User creation failed');
+        }
+
+        // With email-enumeration protection on, signing up with an address that
+        // already exists returns a decoy user with no identities rather than an
+        // error. Treat that as "you already have an account" instead of sending
+        // them to a code screen for a code that will never arrive.
+        if ((authData.user.identities?.length ?? 0) === 0 && !authData.session) {
+          setIsLogin(true);
+          navigate('/auth#login', { replace: true });
+          toast({
+            title: 'Account already exists',
+            description: 'That email is already registered. Try logging in, or use "Forgot Password?" if you need to reset it.',
+          });
+          return;
         }
 
         // If email confirmation is disabled, signUp returns a live session and
@@ -624,8 +668,8 @@ const Auth = () => {
         setShowSignupVerification(true);
 
         toast({
-          title: 'Verification Code Sent',
-          description: 'Check your email for a verification code to complete signup.',
+          title: 'Check your email',
+          description: 'We sent a 6-digit verification code. Enter it below to finish creating your account.',
         });
       }
     } catch (error: unknown) {
@@ -654,6 +698,15 @@ const Auth = () => {
         toast({
           title: 'Invalid Credentials',
           description: 'The email or password you entered is incorrect.',
+          variant: 'destructive',
+        });
+      } else if (isEmailDeliveryError(errorMessage)) {
+        // Mail transport failed. GoTrue rolls the signup back in this case, so
+        // don't claim an account exists and don't advance to the code screen -
+        // there is nothing to resend against. Keep them on the form to retry.
+        toast({
+          title: "Couldn't send the verification email",
+          description: 'Our email service is temporarily unavailable, so we could not send your code. Please wait a minute and try again — if it keeps failing, contact RSO.claudemsu@msu.edu.',
           variant: 'destructive',
         });
       } else {
