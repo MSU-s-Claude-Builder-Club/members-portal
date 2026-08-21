@@ -4,14 +4,18 @@ name: Deploy
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      push_auth_config:
+        description: "Also push supabase/config.toml (Site URL, redirect allow-list, email confirmation, SMTP, email templates)"
+        type: boolean
+        default: false
 
 jobs:
   migrate-database:
     runs-on: ubuntu-latest
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      # SMTP password for [auth.email.smtp] in supabase/config.toml.
-      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
     steps:
       - uses: actions/checkout@v3
 
@@ -26,21 +30,41 @@ jobs:
       - name: Run Migrations
         run: supabase db push
 
-      # Auth settings used to be dashboard-only, which is how production drifted
-      # into "confirmation required" with no working mailer and a localhost Site
-      # URL. Pushing config.toml keeps Site URL, redirect allow-list, the
-      # confirmation toggle, SMTP and the email templates in version control.
-      #
-      # Skipped rather than failed when RESEND_API_KEY is absent: pushing an
-      # empty SMTP password would knock out every auth email.
-      - name: Push auth & project config
-        if: env.RESEND_API_KEY != ''
-        run: supabase config push
-
-      - name: Warn if auth config was skipped
-        if: env.RESEND_API_KEY == ''
-        run: |
-          echo "::warning title=Auth config not pushed::RESEND_API_KEY secret is unset, so 'supabase config push' was skipped. Signup confirmation emails will keep using whatever is currently set in the dashboard."
-
       - name: Deploy Edge Functions
         run: supabase functions deploy
+
+  # Auth settings used to be dashboard-only, which is how production drifted into
+  # "confirmation required" with a localhost Site URL and no working mailer.
+  # Keeping them in config.toml makes that reviewable, but `supabase config push`
+  # syncs the whole file - api, db and storage stanzas included - so it runs only
+  # when someone asks for it from the Actions tab, never as a side effect of a
+  # normal deploy.
+  push-auth-config:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.push_auth_config == 'true'
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      # SMTP password for [auth.email.smtp] in supabase/config.toml.
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # Pushing an empty SMTP password would take down every auth email, so stop
+      # before that happens rather than after.
+      - name: Require RESEND_API_KEY
+        run: |
+          if [ -z "$RESEND_API_KEY" ]; then
+            echo "::error title=Missing secret::RESEND_API_KEY is unset. config.toml sets the SMTP password to env(RESEND_API_KEY); pushing without it would disable auth email delivery."
+            exit 1
+          fi
+
+      - name: Link project
+        run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+
+      - name: Push project config
+        run: supabase config push
