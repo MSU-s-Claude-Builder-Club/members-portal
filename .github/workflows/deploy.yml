@@ -2,8 +2,11 @@
 name: Deploy
 
 on:
-  push:
-    branches: [main]
+  # Manual-only. This job runs `supabase db push` and deploys edge functions
+  # straight to a live project, so it must not fire automatically on push.
+  # Re-enable a push trigger only once SUPABASE_PROJECT_REF / SUPABASE_ACCESS_TOKEN
+  # are set to the intended project for this org.
+  workflow_dispatch:
 
 jobs:
   migrate-database:
